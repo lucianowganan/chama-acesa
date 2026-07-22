@@ -117,23 +117,20 @@
 
   /* ---------- HERO ---------- */
   .hero{padding:40px 0 30px;}
-  .logo-flame{width:230px; height:230px; margin:0 auto -32px; filter:drop-shadow(0 0 24px rgba(242,113,28,.5));}
+  .logo-flame{width:280px; height:280px; margin:0 auto -44px; filter:drop-shadow(0 0 24px rgba(242,113,28,.5));}
   .logo-flame path{fill:var(--dourado-claro);}
 
-  .brand-title{text-align:center;}
+  .brand-title{text-align:center; display:flex; align-items:baseline; justify-content:center; gap:14px; flex-wrap:wrap;}
   .brand-title .chama{
-    display:block;
     font-family:var(--font-display); font-weight:300;
     font-size:clamp(2rem,7vw,3rem);
     color:#fff; letter-spacing:.02em;
   }
   .brand-title .acesa{
-    display:block;
     font-family:var(--font-serif); font-weight:400;
     font-size:clamp(1.6rem,6vw,2.5rem);
     letter-spacing:.28em;
     color:var(--dourado);
-    margin-top:-2px;
   }
 
   .subtitle{
@@ -323,7 +320,7 @@
   @media (min-width:768px){
     .hero .wrap{display:grid; grid-template-columns:1fr 1fr; gap:50px; align-items:center;}
     .hero-left{text-align:left;}
-    .logo-flame{margin:0 0 -20px;}
+    .logo-flame{margin:0 0 -30px;}
     .brand-title{text-align:left;}
     .subtitle{text-align:left; margin-left:0;}
     .event-meta{justify-content:flex-start;}
