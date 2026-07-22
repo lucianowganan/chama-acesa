@@ -1,0 +1,225 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Admin — Chama Acesa</title>
+<style>
+  :root{
+    --vinho:#3a0d1a; --dourado:#d9ab5f; --dourado-claro:#f2c98a;
+    --texto:#f5ece0; --erro:#e15c5c; --ok:#6fbf73;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; font-family:'Segoe UI',system-ui,sans-serif; background:var(--vinho); color:var(--texto);
+    min-height:100vh; padding:24px;
+  }
+  .wrap{max-width:800px; margin:0 auto;}
+  h1{font-size:1.6rem; color:var(--dourado-claro); margin-bottom:4px;}
+  .sub{color:rgba(245,236,224,0.7); margin-bottom:24px; font-size:0.95rem;}
+  .login-box{
+    max-width:340px; margin:80px auto; background:rgba(255,255,255,0.05);
+    border:1px solid rgba(217,171,95,0.3); border-radius:14px; padding:28px; text-align:center;
+  }
+  .login-box input{
+    width:100%; padding:12px; margin:16px 0; border-radius:8px; border:1px solid rgba(217,171,95,0.4);
+    background:rgba(0,0,0,0.2); color:var(--texto); font-size:1rem;
+  }
+  .login-box button, .btn{
+    background:var(--dourado); color:#2a0a13; border:none; padding:12px 18px; border-radius:8px;
+    font-weight:600; cursor:pointer; font-size:0.95rem;
+  }
+  .login-box button:hover, .btn:hover{background:var(--dourado-claro);}
+  .erro{color:var(--erro); font-size:0.85rem; margin-top:8px; display:none;}
+  .stats{
+    display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;
+  }
+  .stat-card{
+    background:rgba(255,255,255,0.05); border:1px solid rgba(217,171,95,0.25);
+    border-radius:12px; padding:16px 20px; flex:1; min-width:140px;
+  }
+  .stat-card .num{font-size:1.8rem; font-weight:700; color:var(--dourado-claro);}
+  .stat-card .label{font-size:0.8rem; color:rgba(245,236,224,0.7);}
+  .filtros{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
+  .filtros button{
+    background:rgba(255,255,255,0.05); color:var(--texto); border:1px solid rgba(217,171,95,0.3);
+    padding:8px 14px; border-radius:999px; cursor:pointer; font-size:0.85rem;
+  }
+  .filtros button.ativo{background:var(--dourado); color:#2a0a13; font-weight:600;}
+  table{width:100%; border-collapse:collapse; background:rgba(255,255,255,0.04); border-radius:12px; overflow:hidden;}
+  th, td{padding:10px 12px; text-align:left; font-size:0.85rem; border-bottom:1px solid rgba(255,255,255,0.08);}
+  th{background:rgba(0,0,0,0.2); color:var(--dourado-claro); font-weight:600;}
+  .badge{padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:600;}
+  .badge.pendente{background:rgba(217,171,95,0.2); color:var(--dourado-claro);}
+  .badge.confirmado{background:rgba(111,191,115,0.2); color:var(--ok);}
+  .badge.lista_espera{background:rgba(150,150,150,0.2); color:#ccc;}
+  .acao-btn{
+    background:var(--ok); color:#0a2a0d; border:none; padding:6px 12px; border-radius:6px;
+    cursor:pointer; font-size:0.8rem; font-weight:600;
+  }
+  .acao-btn:disabled{opacity:0.5; cursor:default;}
+  .refresh{margin-bottom:16px;}
+  .vazio{text-align:center; padding:40px; color:rgba(245,236,224,0.6);}
+  @media (max-width:640px){
+    table, thead, tbody, th, td, tr{display:block;}
+    thead{display:none;}
+    tr{margin-bottom:12px; border:1px solid rgba(217,171,95,0.25); border-radius:10px; padding:10px;}
+    td{border:none; padding:6px 4px;}
+    td:before{content:attr(data-label); font-weight:600; color:var(--dourado-claro); display:inline-block; width:110px;}
+  }
+</style>
+</head>
+<body>
+
+<div id="login-view" class="login-box">
+  <h1 style="font-size:1.3rem;">🔒 Admin Chama Acesa</h1>
+  <input type="password" id="senha-input" placeholder="Senha de acesso">
+  <button onclick="tentarLogin()">Entrar</button>
+  <div class="erro" id="erro-login">Senha incorreta.</div>
+</div>
+
+<div class="wrap" id="painel-view" style="display:none;">
+  <h1>🔥 Chama Acesa — Painel de inscrições</h1>
+  <p class="sub">Confirme o pagamento assim que o comprovante chegar pelo WhatsApp.</p>
+
+  <div class="stats">
+    <div class="stat-card"><div class="num" id="stat-confirmadas">—</div><div class="label">Vagas confirmadas / 40</div></div>
+    <div class="stat-card"><div class="num" id="stat-pendentes">—</div><div class="label">Aguardando confirmação</div></div>
+    <div class="stat-card"><div class="num" id="stat-espera">—</div><div class="label">Lista de espera</div></div>
+  </div>
+
+  <div class="refresh"><button class="btn" onclick="carregarInscricoes()">🔄 Atualizar lista</button></div>
+
+  <div class="filtros">
+    <button class="ativo" data-filtro="todos" onclick="filtrar('todos', this)">Todos</button>
+    <button data-filtro="pendente" onclick="filtrar('pendente', this)">Pendentes</button>
+    <button data-filtro="confirmado" onclick="filtrar('confirmado', this)">Confirmados</button>
+    <button data-filtro="lista_espera" onclick="filtrar('lista_espera', this)">Lista de espera</button>
+  </div>
+
+  <table>
+    <thead>
+      <tr><th>Nº</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Status</th><th>Ação</th></tr>
+    </thead>
+    <tbody id="tabela-corpo"></tbody>
+  </table>
+  <div class="vazio" id="vazio-msg" style="display:none;">Nenhuma inscrição nesse filtro.</div>
+</div>
+
+<script>
+  const CONFIG = {
+    SUPABASE_URL: "https://gbbjpltqmbhlfluqhrmg.supabase.co",
+    SUPABASE_ANON_KEY: "sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP",
+    SENHA_ADMIN: "Bioflora26"
+  };
+
+  let dadosAtuais = [];
+  let filtroAtual = 'todos';
+
+  function tentarLogin(){
+    const val = document.getElementById('senha-input').value;
+    if(val === CONFIG.SENHA_ADMIN){
+      document.getElementById('login-view').style.display = 'none';
+      document.getElementById('painel-view').style.display = 'block';
+      carregarInscricoes();
+    }else{
+      document.getElementById('erro-login').style.display = 'block';
+    }
+  }
+  document.getElementById('senha-input').addEventListener('keydown', e => {
+    if(e.key === 'Enter') tentarLogin();
+  });
+
+  async function carregarInscricoes(){
+    try{
+      const resp = await fetch(
+        `${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_inscricoes?select=*&order=criado_em.asc`,
+        {
+          headers: {
+            'apikey': CONFIG.SUPABASE_ANON_KEY,
+            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+          }
+        }
+      );
+      dadosAtuais = await resp.json();
+      atualizarStats();
+      renderizarTabela();
+    }catch(err){
+      console.error('Erro ao carregar inscrições:', err);
+      alert('Erro ao carregar inscrições. Veja o console.');
+    }
+  }
+
+  function atualizarStats(){
+    const confirmadas = dadosAtuais.filter(d => d.status_pagamento === 'confirmado').length;
+    const pendentes = dadosAtuais.filter(d => d.status_pagamento === 'pendente').length;
+    const espera = dadosAtuais.filter(d => d.status_pagamento === 'lista_espera').length;
+    document.getElementById('stat-confirmadas').textContent = confirmadas;
+    document.getElementById('stat-pendentes').textContent = pendentes;
+    document.getElementById('stat-espera').textContent = espera;
+  }
+
+  function filtrar(status, btn){
+    filtroAtual = status;
+    document.querySelectorAll('.filtros button').forEach(b => b.classList.remove('ativo'));
+    btn.classList.add('ativo');
+    renderizarTabela();
+  }
+
+  function renderizarTabela(){
+    const corpo = document.getElementById('tabela-corpo');
+    const lista = filtroAtual === 'todos'
+      ? dadosAtuais
+      : dadosAtuais.filter(d => d.status_pagamento === filtroAtual);
+
+    corpo.innerHTML = '';
+    document.getElementById('vazio-msg').style.display = lista.length ? 'none' : 'block';
+
+    lista.forEach(item => {
+      const tr = document.createElement('tr');
+      const statusLabel = item.status_pagamento === 'lista_espera' ? 'Lista de espera'
+        : item.status_pagamento === 'confirmado' ? 'Confirmado' : 'Pendente';
+
+      tr.innerHTML = `
+        <td data-label="Nº">${item.numero_inscricao ?? '—'}</td>
+        <td data-label="Nome">${escapeHtml(item.nome)}</td>
+        <td data-label="WhatsApp">${escapeHtml(item.whatsapp)}</td>
+        <td data-label="E-mail">${escapeHtml(item.email)}</td>
+        <td data-label="Status"><span class="badge ${item.status_pagamento}">${statusLabel}</span></td>
+        <td data-label="Ação">
+          ${item.status_pagamento !== 'confirmado'
+            ? `<button class="acao-btn" onclick="confirmarPagamento('${item.id}')">Confirmar pagamento</button>`
+            : '—'}
+        </td>
+      `;
+      corpo.appendChild(tr);
+    });
+  }
+
+  async function confirmarPagamento(id){
+    try{
+      await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_inscricoes?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': CONFIG.SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ status_pagamento: 'confirmado' })
+      });
+      await carregarInscricoes();
+    }catch(err){
+      console.error('Erro ao confirmar pagamento:', err);
+      alert('Erro ao confirmar pagamento. Veja o console.');
+    }
+  }
+
+  function escapeHtml(str){
+    const div = document.createElement('div');
+    div.textContent = str ?? '';
+    return div.innerHTML;
+  }
+</script>
+</body>
+</html>
