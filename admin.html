@@ -58,6 +58,8 @@
     cursor:pointer; font-size:0.8rem; font-weight:600;
   }
   .acao-btn:disabled{opacity:0.5; cursor:default;}
+  .excluir-btn{background:var(--erro); color:#fff; margin-left:6px;}
+  .excluir-btn:hover{background:#c94848;}
   .refresh{margin-bottom:16px;}
   .vazio{text-align:center; padding:40px; color:rgba(245,236,224,0.6);}
   @media (max-width:640px){
@@ -189,7 +191,8 @@
         <td data-label="Ação">
           ${item.status_pagamento !== 'confirmado'
             ? `<button class="acao-btn" onclick="confirmarPagamento('${item.id}')">Confirmar pagamento</button>`
-            : '—'}
+            : ''}
+          <button class="acao-btn excluir-btn" onclick="cancelarInscricao('${item.id}', '${escapeHtml(item.nome)}')">Cancelar / apagar</button>
         </td>
       `;
       corpo.appendChild(tr);
@@ -212,6 +215,26 @@
     }catch(err){
       console.error('Erro ao confirmar pagamento:', err);
       alert('Erro ao confirmar pagamento. Veja o console.');
+    }
+  }
+
+  async function cancelarInscricao(id, nome){
+    const confirmar = confirm(`Tem certeza que deseja apagar a inscrição de "${nome}"? Essa ação não pode ser desfeita.`);
+    if(!confirmar) return;
+
+    try{
+      await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_inscricoes?id=eq.${id}`, {
+        method: 'DELETE',
+        headers: {
+          'apikey': CONFIG.SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+          'Prefer': 'return=minimal'
+        }
+      });
+      await carregarInscricoes();
+    }catch(err){
+      console.error('Erro ao apagar inscrição:', err);
+      alert('Erro ao apagar inscrição. Veja o console.');
     }
   }
 
