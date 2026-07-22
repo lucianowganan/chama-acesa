@@ -90,7 +90,10 @@
     <div class="stat-card"><div class="num" id="stat-espera">—</div><div class="label">Lista de espera</div></div>
   </div>
 
-  <div class="refresh"><button class="btn" onclick="carregarInscricoes()">🔄 Atualizar lista</button></div>
+  <div class="refresh">
+    <button class="btn" onclick="carregarInscricoes()">🔄 Atualizar lista</button>
+    <button class="btn" onclick="exportarCSV()" style="margin-left:8px;">⬇️ Exportar CSV</button>
+  </div>
 
   <div class="filtros">
     <button class="ativo" data-filtro="todos" onclick="filtrar('todos', this)">Todos</button>
@@ -101,7 +104,7 @@
 
   <table>
     <thead>
-      <tr><th>Nº</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Status</th><th>Ação</th></tr>
+      <tr><th>Nº</th><th>Nome</th><th>CPF</th><th>WhatsApp</th><th>E-mail</th><th>Status</th><th>Ação</th></tr>
     </thead>
     <tbody id="tabela-corpo"></tbody>
   </table>
@@ -185,6 +188,7 @@
       tr.innerHTML = `
         <td data-label="Nº">${item.numero_inscricao ?? '—'}</td>
         <td data-label="Nome">${escapeHtml(item.nome)}</td>
+        <td data-label="CPF">${escapeHtml(item.cpf)}</td>
         <td data-label="WhatsApp">${escapeHtml(item.whatsapp)}</td>
         <td data-label="E-mail">${escapeHtml(item.email)}</td>
         <td data-label="Status"><span class="badge ${item.status_pagamento}">${statusLabel}</span></td>
@@ -236,6 +240,29 @@
       console.error('Erro ao apagar inscrição:', err);
       alert('Erro ao apagar inscrição. Veja o console.');
     }
+  }
+
+  function exportarCSV(){
+    if(!dadosAtuais.length){
+      alert('Nenhum dado carregado ainda.');
+      return;
+    }
+    const colunas = ['numero_inscricao','nome','cpf','whatsapp','email','status_pagamento','criado_em'];
+    const cabecalho = ['Numero','Nome','CPF','WhatsApp','Email','Status','Criado em'];
+    const linhas = dadosAtuais.map(item =>
+      colunas.map(col => {
+        const valor = item[col] ?? '';
+        return `"${String(valor).replace(/"/g, '""')}"`;
+      }).join(';')
+    );
+    const csv = [cabecalho.join(';'), ...linhas].join('\n');
+    const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chama-acesa-inscricoes-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
   }
 
   function escapeHtml(str){
