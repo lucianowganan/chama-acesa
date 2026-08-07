@@ -344,6 +344,57 @@
   @media (max-width:520px){
     .experts-grid{grid-template-columns:1fr;}
   }
+
+  /* ---------- MOVIMENTO / v2.0 ---------- */
+  .logo-flame{animation:respirar 3.2s ease-in-out infinite;}
+  @keyframes respirar{
+    0%,100%{transform:scale(1); filter:drop-shadow(0 0 24px rgba(242,113,28,.5));}
+    50%{transform:scale(1.06); filter:drop-shadow(0 0 40px rgba(242,113,28,.85));}
+  }
+
+  .badge-esgotado{
+    display:inline-block; margin:14px auto 0; padding:6px 16px;
+    background:rgba(211,72,15,.18); border:1px solid rgba(242,113,28,.5);
+    border-radius:999px; color:var(--brasa-2); font-weight:600; font-size:.85rem;
+    animation:pulsar-badge 2.4s ease-in-out infinite;
+  }
+  @keyframes pulsar-badge{
+    0%,100%{box-shadow:0 0 0 rgba(242,113,28,0);}
+    50%{box-shadow:0 0 18px rgba(242,113,28,.45);}
+  }
+
+  .embers{position:fixed; inset:0; pointer-events:none; overflow:hidden; z-index:0;}
+  .embers span{
+    position:absolute; bottom:-20px; width:5px; height:5px; border-radius:50%;
+    background:var(--brasa-2); opacity:0; filter:blur(.3px);
+    animation:subir 9s linear infinite;
+  }
+  .embers span:nth-child(1){left:8%; animation-delay:0s; animation-duration:8s;}
+  .embers span:nth-child(2){left:20%; animation-delay:1.5s; animation-duration:10s;}
+  .embers span:nth-child(3){left:34%; animation-delay:3s; animation-duration:7s;}
+  .embers span:nth-child(4){left:48%; animation-delay:0.8s; animation-duration:11s;}
+  .embers span:nth-child(5){left:62%; animation-delay:4s; animation-duration:9s;}
+  .embers span:nth-child(6){left:74%; animation-delay:2.2s; animation-duration:8s;}
+  .embers span:nth-child(7){left:86%; animation-delay:5s; animation-duration:10s;}
+  .embers span:nth-child(8){left:94%; animation-delay:1s; animation-duration:7s;}
+  @keyframes subir{
+    0%{transform:translateY(0) scale(1); opacity:0;}
+    10%{opacity:.8;}
+    90%{opacity:.3;}
+    100%{transform:translateY(-100vh) scale(.3); opacity:0;}
+  }
+
+  .video-wrap{
+    margin-top:28px; border-radius:18px; overflow:hidden;
+    border:1px solid rgba(217,171,95,.25); box-shadow:0 12px 40px rgba(0,0,0,.35);
+    max-width:480px;
+  }
+  .video-wrap video{width:100%; display:block; border-radius:18px;}
+
+  .reveal{opacity:0; transform:translateY(24px); transition:opacity .7s ease, transform .7s ease;}
+  .reveal.visivel{opacity:1; transform:translateY(0);}
+
+  .hero, section{position:relative; z-index:1;}
 </style>
 </head>
 <body>
@@ -352,6 +403,9 @@
 
 <!-- ============================ HERO + FORM ============================ -->
 <section class="hero">
+  <div class="embers" aria-hidden="true">
+    <span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span>
+  </div>
   <div class="wrap">
     <div class="hero-left">
       <svg class="logo-flame" viewBox="0 0 1000 1000" xmlns="http://www.w3.org/2000/svg">
@@ -365,19 +419,27 @@
         <span class="chama">Chama</span>
         <span class="acesa">ACESA</span>
       </h1>
-      <p class="subtitle">Uma noite exclusiva para mulheres 35+ sobre sexualidade, libido, menopausa, autocuidado e protagonismo feminino.</p>
+      <p class="badge-esgotado">🔥 Vagas esgotadas</p>
+      <p class="subtitle">A mesa lotou — mas a conversa não para por aqui. Entre na lista de espera e seja a primeira a saber quando surgir uma vaga nova.</p>
       <div class="event-meta">
         <span>📅 12 de agosto de 2026</span>
         <span>🕖 19h</span>
         <span>📍 Restaurante Villa, Itajubá</span>
       </div>
+
+      <div class="video-wrap reveal">
+        <video controls playsinline poster="" preload="metadata">
+          <source src="video-vagas-esgotadas.mp4" type="video/mp4">
+          Seu navegador não suporta vídeo.
+        </video>
+      </div>
     </div>
 
     <div>
       <!-- FORMULÁRIO -->
-      <form id="form-inscricao" class="card form-card" novalidate>
-        <h2>Garanta sua vaga</h2>
-        <p class="small">Apenas 40 lugares à mesa</p>
+      <form id="form-inscricao" class="card form-card reveal" novalidate>
+        <h2>Entrar na lista de espera</h2>
+        <p class="small">Avisamos você assim que surgir uma vaga</p>
 
         <label for="nome">Nome completo</label>
         <input type="text" id="nome" name="nome" placeholder="Seu nome" required>
@@ -396,7 +458,7 @@
           <label for="lgpd">Li e aceito os <a onclick="abrirLGPD(event)">termos de uso e privacidade (LGPD)</a> da Farmácia Bioflora.</label>
         </div>
 
-        <button type="submit" class="btn-primary" id="btn-enviar">Garantir minha vaga — R$99</button>
+        <button type="submit" class="btn-primary" id="btn-enviar">Entrar na lista de espera</button>
 
         <p class="img-auth-note">Ao se inscrever, você autoriza o uso de imagens capturadas durante o evento para divulgação da Bioflora em suas redes sociais.</p>
       </form>
@@ -423,12 +485,12 @@
 
       <div class="card pay-card" id="tela-espera" style="display:none;">
         <h2>Você entrou na lista de espera</h2>
-        <p class="small">As vagas do Chama Acesa estão esgotadas no momento</p>
-        <p class="pay-note" id="espera-numero" style="margin-top:16px;">Você é a próxima da fila caso surja uma vaga.</p>
+        <p class="small">Assim que surgir uma vaga, você é a próxima a ser chamada</p>
+        <p class="pay-note" id="espera-numero" style="margin-top:16px;">Fique de olho no seu WhatsApp — é por lá que vamos te avisar com as novidades.</p>
         <a href="#" id="btn-whatsapp-espera" class="btn-whatsapp" target="_blank">📲 Falar no WhatsApp</a>
       </div>
 
-      <p class="see-more"><a href="#sobre">Quer saber mais antes de se inscrever? Veja os detalhes ↓</a></p>
+      <p class="see-more"><a href="#sobre">Quer saber mais sobre o evento? Veja os detalhes ↓</a></p>
     </div>
   </div>
 </section>
@@ -510,7 +572,7 @@
         <span class="count" id="vagas-count">—</span>
       </div>
       <div class="progress-track"><div class="progress-fill" id="progress-fill"></div></div>
-      <p class="vagas-note">Apenas <strong id="vagas-restantes">—</strong> lugares à mesa. Garanta a sua antes que acabe.</p>
+      <p class="vagas-note" id="vagas-nota">Apenas <strong id="vagas-restantes">—</strong> lugares à mesa. Garanta a sua antes que acabe.</p>
     </div>
   </div>
 </section>
@@ -665,12 +727,25 @@
       vagasEsgotadas = confirmadas >= CONFIG.VAGAS_TOTAL;
       if(vagasEsgotadas){
         document.getElementById('btn-enviar').textContent = 'Entrar na lista de espera';
+        document.getElementById('vagas-nota').innerHTML = 'As <strong>40 vagas</strong> foram todas preenchidas. Entre na lista de espera para ser avisada em primeira mão.';
       }
     }catch(err){
       console.error('Erro ao buscar vagas confirmadas:', err);
     }
   }
   atualizarVagas();
+
+  // ---------- SCROLL REVEAL ----------
+  document.querySelectorAll('section').forEach(sec => sec.classList.add('reveal'));
+  const observer = new IntersectionObserver((entries) => {
+    entries.forEach(entry => {
+      if(entry.isIntersecting){
+        entry.target.classList.add('visivel');
+        observer.unobserve(entry.target);
+      }
+    });
+  }, {threshold: 0.12});
+  document.querySelectorAll('.reveal').forEach(el => observer.observe(el));
 
   // ---------- ENVIO DO FORMULÁRIO ----------
   const form = document.getElementById('form-inscricao');
