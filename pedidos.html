@@ -37,6 +37,27 @@
     background:rgba(0,0,0,.2); color:var(--texto); font-size:.95rem; min-height:60px; font-family:inherit;
   }
 
+  .cliente-box{background:rgba(255,255,255,.05); border:1px solid rgba(217,171,95,.3); border-radius:12px; padding:14px; margin-bottom:16px;}
+  .cliente-box label{font-size:.85rem; color:var(--dourado-claro); display:block; margin-bottom:8px;}
+  .cliente-resultados{margin-top:6px;}
+  .cliente-resultado{
+    background:rgba(255,255,255,.05); border:1px solid rgba(217,171,95,.2); border-radius:10px;
+    padding:10px 12px; margin-bottom:6px; cursor:pointer; font-size:.9rem;
+  }
+  .cliente-resultado:hover{background:rgba(255,255,255,.09);}
+  .cliente-selecionado{
+    background:rgba(111,191,115,.12); border:1px solid rgba(111,191,115,.4); border-radius:10px;
+    padding:12px 14px; display:flex; justify-content:space-between; align-items:center;
+  }
+  .cliente-selecionado .nome{font-weight:700;}
+  .cliente-selecionado button{background:none; border:none; color:var(--erro); cursor:pointer; font-size:.85rem;}
+  .cadastro-inline{
+    margin-top:10px; padding:14px; background:rgba(0,0,0,.15); border-radius:10px; border:1px dashed rgba(217,171,95,.4);
+  }
+  .cadastro-inline label{font-size:.8rem; color:var(--dourado-claro); display:block; margin:8px 0 4px;}
+  .cadastro-inline input{margin-bottom:0;}
+  .aviso-sem-cliente{color:var(--erro); font-size:.85rem; margin-top:8px;}
+
   .produtos-grid{display:grid; grid-template-columns:repeat(auto-fill, minmax(150px,1fr)); gap:10px; margin-bottom:20px;}
   .produto-card{
     background:rgba(255,255,255,.05); border:1px solid rgba(217,171,95,.25); border-radius:12px;
@@ -53,6 +74,18 @@
   .produto-card .estoque-tag.baixo{color:var(--erro);}
   .cor-bolinha{display:inline-block; width:14px; height:14px; border-radius:50%; border:1px solid rgba(255,255,255,.4); vertical-align:middle; margin-right:4px;}
 
+  .modal-overlay{position:fixed; inset:0; background:rgba(0,0,0,.6); display:flex; align-items:center; justify-content:center; z-index:50; padding:20px;}
+  .modal-cores{background:#2a0a13; border:1px solid rgba(217,171,95,.4); border-radius:14px; padding:20px; max-width:340px; width:100%;}
+  .modal-cores h3{margin-top:0; color:var(--dourado-claro); font-size:1.05rem;}
+  .cor-opcao{
+    display:flex; align-items:center; gap:10px; padding:10px; border-radius:10px; cursor:pointer;
+    border:1px solid rgba(217,171,95,.2); margin-bottom:8px;
+  }
+  .cor-opcao:hover{background:rgba(255,255,255,.06);}
+  .cor-opcao.esgotada{opacity:.4; cursor:not-allowed;}
+  .cor-opcao .bolinha-grande{width:22px; height:22px; border-radius:50%; border:1px solid rgba(255,255,255,.4);}
+  .modal-fechar{background:rgba(255,255,255,.08); border:none; color:var(--texto); padding:10px; border-radius:8px; width:100%; margin-top:8px; cursor:pointer;}
+
   .carrinho{background:rgba(255,255,255,.05); border:1px solid rgba(217,171,95,.3); border-radius:14px; padding:16px; margin-top:16px;}
   .item-carrinho{display:flex; justify-content:space-between; align-items:center; padding:8px 0; border-bottom:1px solid rgba(255,255,255,.08);}
   .item-carrinho:last-child{border-bottom:none;}
@@ -68,7 +101,6 @@
   .btn{background:var(--dourado); color:#2a0a13; border:none; padding:13px 18px; border-radius:10px; font-weight:700; cursor:pointer; font-size:1rem; width:100%; margin-top:14px;}
   .btn:hover{background:var(--dourado-claro);}
   .btn:disabled{opacity:.5; cursor:default;}
-  .btn-secundario{background:rgba(255,255,255,.08); color:var(--texto); border:1px solid rgba(217,171,95,.3); margin-top:8px;}
 
   .historico{margin-top:26px;}
   .historico h2{font-size:1.05rem; color:var(--dourado-claro);}
@@ -94,8 +126,13 @@
     </div>
   </div>
 
-  <label style="font-size:.85rem; color:var(--dourado-claro);">Nome de quem está pedindo</label>
-  <input type="text" id="nome-cliente" placeholder="Nome completo">
+  <div class="cliente-box">
+    <label>Nome da cliente</label>
+    <div id="cliente-area">
+      <input type="text" id="busca-cliente" placeholder="Digite o nome..." autocomplete="off">
+      <div class="cliente-resultados" id="cliente-resultados"></div>
+    </div>
+  </div>
 
   <div id="produtos-container" class="produtos-grid"></div>
 
@@ -104,7 +141,7 @@
   </div>
 
   <div class="campo-extra">
-    <label>Observação (ex: 1 item vai faltar, entregar depois)</label>
+    <label>Observação (ex: 1 item vai faltar, entregar depois / promoção aplicada)</label>
     <textarea id="observacao" placeholder="Opcional"></textarea>
   </div>
 
@@ -113,16 +150,23 @@
     <label for="quer-entrega" style="margin:0;">Cliente quer receber em casa (entrega)</label>
   </div>
   <div class="campo-extra" id="campo-endereco" style="display:none;">
-    <label>Endereço para entrega <span id="endereco-obrig" style="color:var(--erro);">*</span></label>
+    <label>Endereço para entrega <span style="color:var(--erro);">*</span></label>
     <input type="text" id="endereco" placeholder="Rua, número, bairro, cidade">
   </div>
 
   <button class="btn" id="btn-finalizar" onclick="finalizarPedido()" disabled>Salvar pedido</button>
-  <button class="btn btn-secundario" onclick="exportarCSVLocal()">⬇️ Exportar backup CSV</button>
 
   <div class="historico">
     <h2>Últimos pedidos salvos aqui</h2>
     <div id="lista-historico"></div>
+  </div>
+</div>
+
+<div class="modal-overlay" id="modal-cores" style="display:none;">
+  <div class="modal-cores">
+    <h3 id="modal-cores-titulo">Escolha a cor</h3>
+    <div id="modal-cores-lista"></div>
+    <button class="modal-fechar" onclick="fecharModalCores()">Cancelar</button>
   </div>
 </div>
 
@@ -133,88 +177,241 @@
   };
 
   const CACHE_PRODUTOS = 'chama_acesa_cache_produtos';
-  const FILA_KEY = 'chama_acesa_fila_pedidos_v2';
+  const CACHE_INSCRICOES = 'chama_acesa_cache_inscricoes';
+  const FILA_PEDIDOS = 'chama_acesa_fila_pedidos_v3';
+  const FILA_INSCRICOES = 'chama_acesa_fila_checkin'; // mesma fila usada pelo checkin.html
 
   let produtos = JSON.parse(localStorage.getItem(CACHE_PRODUTOS) || '[]');
-  let fila = JSON.parse(localStorage.getItem(FILA_KEY) || '[]');
+  let inscricoes = JSON.parse(localStorage.getItem(CACHE_INSCRICOES) || '[]');
+  let filaPedidos = JSON.parse(localStorage.getItem(FILA_PEDIDOS) || '[]');
+  let filaInscricoes = JSON.parse(localStorage.getItem(FILA_INSCRICOES) || '[]');
+
   let carrinho = {};
   let vendedoraAtual = null;
+  let clienteSelecionado = null; // {id, nome, numero_inscricao, numero_cadastro_bioflora}
+  let produtoPillboxAtual = null;
 
-  function salvarFila(){ localStorage.setItem(FILA_KEY, JSON.stringify(fila)); atualizarStatus(); renderHistorico(); }
+  function salvarFilaPedidos(){ localStorage.setItem(FILA_PEDIDOS, JSON.stringify(filaPedidos)); atualizarStatus(); renderHistorico(); }
+  function salvarFilaInscricoes(){ localStorage.setItem(FILA_INSCRICOES, JSON.stringify(filaInscricoes)); }
   function salvarCacheProdutos(){ localStorage.setItem(CACHE_PRODUTOS, JSON.stringify(produtos)); }
+  function salvarCacheInscricoes(){ localStorage.setItem(CACHE_INSCRICOES, JSON.stringify(inscricoes)); }
 
   function atualizarStatus(){
     const online = navigator.onLine;
     const pill = document.getElementById('status-conexao');
     pill.textContent = online ? '🟢 Online' : '🔴 Offline (salvando local)';
     pill.className = 'status-pill ' + (online ? 'online' : 'offline');
-    const pendentes = fila.filter(f => !f.sincronizado).length;
+    const pendentes = filaPedidos.filter(f => !f.sincronizado).length;
     document.getElementById('fila-info').textContent = pendentes ? `${pendentes} pendente(s) de sincronizar` : 'Tudo sincronizado';
   }
 
   function selecionarVendedora(nome){
     vendedoraAtual = nome;
-    document.querySelectorAll('#vendedora-opcoes button').forEach(b => {
-      b.classList.toggle('ativo', b.textContent === nome);
-    });
+    document.querySelectorAll('#vendedora-opcoes button').forEach(b => b.classList.toggle('ativo', b.textContent === nome));
   }
 
   function toggleEndereco(){
-    const quer = document.getElementById('quer-entrega').checked;
-    document.getElementById('campo-endereco').style.display = quer ? 'block' : 'none';
+    document.getElementById('campo-endereco').style.display = document.getElementById('quer-entrega').checked ? 'block' : 'none';
   }
 
+  // ---------- CARREGAR DADOS ----------
   async function carregarProdutos(){
     try{
       const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_produtos?select=*&order=nome.asc`, {
-        headers: {
-          'apikey': CONFIG.SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-        }
+        headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}` }
       });
-      if(resp.ok){
-        produtos = await resp.json();
-        salvarCacheProdutos();
-      }
-    }catch(err){
-      console.warn('Sem conexão, usando cache local de produtos.', err);
-    }
+      if(resp.ok){ produtos = await resp.json(); salvarCacheProdutos(); }
+    }catch(err){ console.warn('Sem conexão, usando cache local de produtos.', err); }
     renderProdutos();
-    atualizarStatus();
   }
 
+  async function carregarInscricoes(){
+    try{
+      const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_inscricoes?select=*&order=nome.asc`, {
+        headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}` }
+      });
+      if(resp.ok){ inscricoes = await resp.json(); salvarCacheInscricoes(); }
+    }catch(err){ console.warn('Sem conexão, usando cache local de inscrições.', err); }
+  }
+
+  // ---------- BUSCA / SELEÇÃO DE CLIENTE ----------
+  document.getElementById('busca-cliente').addEventListener('input', function(){
+    const termo = this.value.trim().toLowerCase();
+    const box = document.getElementById('cliente-resultados');
+    if(termo.length < 2){ box.innerHTML = ''; return; }
+
+    const encontrados = inscricoes.filter(i => (i.nome || '').toLowerCase().includes(termo)).slice(0, 8);
+    let html = encontrados.map(i => `
+      <div class="cliente-resultado" onclick='selecionarCliente(${JSON.stringify({id:i.id, nome:i.nome, numero_inscricao:i.numero_inscricao, numero_cadastro_bioflora:i.numero_cadastro_bioflora}).replace(/'/g,"&apos;")})'>
+        <strong>${escapeHtml(i.nome)}</strong> — Nº ${i.numero_inscricao ?? '—'} ${i.numero_cadastro_bioflora ? '· Cadastro ' + escapeHtml(i.numero_cadastro_bioflora) : ''}
+      </div>
+    `).join('');
+
+    if(!encontrados.length){
+      html = `<p style="color:rgba(245,236,224,.6); font-size:.85rem; margin:8px 0;">Nenhum cadastro encontrado com esse nome.</p>
+        <button class="btn" style="margin-top:0;" onclick="abrirCadastroInline('${escapeAttr(this_value(termo))}')">+ Cadastrar "${escapeHtml(this.value.trim())}" agora</button>`;
+    }
+    box.innerHTML = html;
+  });
+
+  function this_value(v){ return v; } // helper simples
+
+  function selecionarCliente(dados){
+    clienteSelecionado = dados;
+    renderClienteSelecionado();
+  }
+
+  function abrirCadastroInline(nomeDigitado){
+    const nome = document.getElementById('busca-cliente').value.trim();
+    document.getElementById('cliente-area').innerHTML = `
+      <div class="cadastro-inline">
+        <strong style="color:var(--dourado-claro);">Cadastrar nova inscrição</strong>
+        <label>Nome completo</label>
+        <input type="text" id="novo-nome" value="${escapeHtml(nome)}">
+        <label>CPF</label>
+        <input type="text" id="novo-cpf" placeholder="000.000.000-00">
+        <label>WhatsApp</label>
+        <input type="text" id="novo-whatsapp" placeholder="(35) 90000-0000">
+        <label>E-mail</label>
+        <input type="text" id="novo-email" placeholder="email@exemplo.com">
+        <button class="btn" onclick="salvarCadastroInline()">Salvar cadastro e continuar</button>
+        <button class="btn" style="background:rgba(255,255,255,.08); color:var(--texto);" onclick="cancelarCadastroInline()">Cancelar</button>
+      </div>
+    `;
+  }
+
+  function cancelarCadastroInline(){ resetClienteArea(); }
+
+  function salvarCadastroInline(){
+    const nome = document.getElementById('novo-nome').value.trim();
+    const cpf = document.getElementById('novo-cpf').value.trim();
+    const whatsapp = document.getElementById('novo-whatsapp').value.trim();
+    const email = document.getElementById('novo-email').value.trim();
+    if(!nome || !cpf || !whatsapp){
+      alert('Preencha ao menos nome, CPF e WhatsApp.');
+      return;
+    }
+    const novoId = 'novo-' + Date.now();
+    const registro = {
+      id: novoId, nome, cpf, whatsapp, email,
+      aceite_lgpd: true, status_pagamento: 'confirmado', presente: true, novo: true
+    };
+    inscricoes.push(registro);
+    salvarCacheInscricoes();
+    filaInscricoes.push({...registro, tentativa_em: new Date().toISOString()});
+    salvarFilaInscricoes();
+
+    clienteSelecionado = {id: novoId, nome, numero_inscricao: null, numero_cadastro_bioflora: null};
+    renderClienteSelecionado();
+  }
+
+  function renderClienteSelecionado(){
+    document.getElementById('cliente-area').innerHTML = `
+      <div class="cliente-selecionado">
+        <span class="nome">✅ ${escapeHtml(clienteSelecionado.nome)} ${clienteSelecionado.numero_inscricao ? '(Nº '+clienteSelecionado.numero_inscricao+')' : '(novo cadastro)'}</span>
+        <button onclick="resetClienteArea()">trocar</button>
+      </div>
+    `;
+    atualizarBotaoFinalizar();
+  }
+
+  function resetClienteArea(){
+    clienteSelecionado = null;
+    document.getElementById('cliente-area').innerHTML = `
+      <input type="text" id="busca-cliente" placeholder="Digite o nome..." autocomplete="off">
+      <div class="cliente-resultados" id="cliente-resultados"></div>
+    `;
+    document.getElementById('busca-cliente').addEventListener('input', function(){
+      const termo = this.value.trim().toLowerCase();
+      const box = document.getElementById('cliente-resultados');
+      if(termo.length < 2){ box.innerHTML = ''; return; }
+      const encontrados = inscricoes.filter(i => (i.nome || '').toLowerCase().includes(termo)).slice(0, 8);
+      let html = encontrados.map(i => `
+        <div class="cliente-resultado" onclick='selecionarCliente(${JSON.stringify({id:i.id, nome:i.nome, numero_inscricao:i.numero_inscricao, numero_cadastro_bioflora:i.numero_cadastro_bioflora}).replace(/'/g,"&apos;")})'>
+          <strong>${escapeHtml(i.nome)}</strong> — Nº ${i.numero_inscricao ?? '—'} ${i.numero_cadastro_bioflora ? '· Cadastro ' + escapeHtml(i.numero_cadastro_bioflora) : ''}
+        </div>
+      `).join('');
+      if(!encontrados.length){
+        html = `<p style="color:rgba(245,236,224,.6); font-size:.85rem; margin:8px 0;">Nenhum cadastro encontrado com esse nome.</p>
+          <button class="btn" style="margin-top:0;" onclick="abrirCadastroInline()">+ Cadastrar "${escapeHtml(this.value.trim())}" agora</button>`;
+      }
+      box.innerHTML = html;
+    });
+    atualizarBotaoFinalizar();
+  }
+
+  // ---------- PRODUTOS (com agrupamento de Pillbox por cor) ----------
   function renderProdutos(){
     const box = document.getElementById('produtos-container');
     if(!produtos.length){
-      box.innerHTML = '<p style="grid-column:1/-1; color:rgba(245,236,224,.6);">Nenhum produto carregado ainda. Verifique a conexão.</p>';
+      box.innerHTML = '<p style="grid-column:1/-1; color:rgba(245,236,224,.6);">Nenhum produto carregado ainda.</p>';
       return;
     }
-    box.innerHTML = produtos.map(p => {
+
+    const pillboxNomes = ['Pillbox média', 'Pillbox grande'];
+    const normais = produtos.filter(p => !pillboxNomes.includes(p.nome));
+    const grupos = pillboxNomes.map(nome => ({
+      nome,
+      variacoes: produtos.filter(p => p.nome === nome)
+    })).filter(g => g.variacoes.length);
+
+    let html = normais.map(p => {
       const esgotado = p.estoque_atual <= 0;
       const baixo = p.estoque_atual > 0 && p.estoque_atual <= 2;
       const imagem = p.imagem_url
         ? `<img src="${p.imagem_url}" alt="${escapeHtml(p.nome)}">`
-        : `<div class="icone-generico">${p.cor_hex ? `<span class="cor-bolinha" style="background:${p.cor_hex}; width:28px; height:28px;"></span>` : '🧴'}</div>`;
+        : `<div class="icone-generico">🧴</div>`;
       return `<div class="produto-card ${esgotado ? 'esgotado' : ''}" onclick="${esgotado ? '' : `adicionarAoCarrinho('${p.id}')`}">
         ${imagem}
-        <div class="nome">${p.cor_hex ? `<span class="cor-bolinha" style="background:${p.cor_hex};"></span>` : ''}${escapeHtml(p.nome)}</div>
+        <div class="nome">${escapeHtml(p.nome)}</div>
         ${p.variante ? `<div class="variante">${escapeHtml(p.variante)}</div>` : ''}
         <div class="preco">R$ ${Number(p.preco).toFixed(2)}</div>
         <div class="estoque-tag ${baixo ? 'baixo' : ''}">${esgotado ? 'Esgotado' : p.estoque_atual + ' em estoque'}</div>
       </div>`;
     }).join('');
+
+    html += grupos.map(g => {
+      const totalEstoque = g.variacoes.reduce((s,v) => s + v.estoque_atual, 0);
+      const esgotado = totalEstoque <= 0;
+      const preco = g.variacoes[0].preco;
+      return `<div class="produto-card ${esgotado ? 'esgotado' : ''}" onclick="${esgotado ? '' : `abrirModalCores('${g.nome}')`}">
+        <div class="icone-generico">🎨</div>
+        <div class="nome">${escapeHtml(g.nome)}</div>
+        <div class="preco">R$ ${Number(preco).toFixed(2)}</div>
+        <div class="estoque-tag">${esgotado ? 'Esgotado' : totalEstoque + ' em estoque (todas cores)'}</div>
+      </div>`;
+    }).join('');
+
+    box.innerHTML = html;
+  }
+
+  function abrirModalCores(nomeGrupo){
+    const variacoes = produtos.filter(p => p.nome === nomeGrupo);
+    document.getElementById('modal-cores-titulo').textContent = `${nomeGrupo} — escolha a cor`;
+    document.getElementById('modal-cores-lista').innerHTML = variacoes.map(v => {
+      const esgotada = v.estoque_atual <= 0;
+      return `<div class="cor-opcao ${esgotada ? 'esgotada' : ''}" onclick="${esgotada ? '' : `escolherCorPillbox('${v.id}')`}">
+        <span class="bolinha-grande" style="background:${v.cor_hex || '#999'};"></span>
+        <span>${escapeHtml(v.cor || v.variante)}</span>
+        <span style="margin-left:auto; font-size:.8rem; color:rgba(245,236,224,.6);">${esgotada ? 'esgotado' : v.estoque_atual + ' un.'}</span>
+      </div>`;
+    }).join('');
+    document.getElementById('modal-cores').style.display = 'flex';
+  }
+
+  function fecharModalCores(){ document.getElementById('modal-cores').style.display = 'none'; }
+
+  function escolherCorPillbox(produtoId){
+    adicionarAoCarrinho(produtoId);
+    fecharModalCores();
   }
 
   function adicionarAoCarrinho(produtoId){
     const p = produtos.find(x => x.id === produtoId);
     if(!p || p.estoque_atual <= 0) return;
-
     const qtdNoCarrinho = carrinho[produtoId] ? carrinho[produtoId].qtd : 0;
-    if(qtdNoCarrinho >= p.estoque_atual){
-      alert('Não há mais estoque disponível desse item.');
-      return;
-    }
-    if(!carrinho[produtoId]) carrinho[produtoId] = {nome: p.nome, variante: p.variante, preco: Number(p.preco), qtd: 0};
+    if(qtdNoCarrinho >= p.estoque_atual){ alert('Não há mais estoque disponível desse item.'); return; }
+    if(!carrinho[produtoId]) carrinho[produtoId] = {nome: p.nome, variante: p.variante || p.cor, preco: Number(p.preco), qtd: 0};
     carrinho[produtoId].qtd += 1;
     renderCarrinho();
   }
@@ -231,7 +428,7 @@
     const ids = Object.keys(carrinho);
     if(!ids.length){
       box.innerHTML = '<p style="color:rgba(245,236,224,.6); margin:0;">Nenhum item no carrinho ainda.</p>';
-      document.getElementById('btn-finalizar').disabled = true;
+      atualizarBotaoFinalizar();
       return;
     }
     let total = 0;
@@ -248,25 +445,21 @@
         </div>
       </div>`;
     }).join('') + `<div class="total-linha"><span>Total</span><span>R$ ${total.toFixed(2)}</span></div>`;
-    document.getElementById('btn-finalizar').disabled = false;
+    atualizarBotaoFinalizar();
+  }
+
+  function atualizarBotaoFinalizar(){
+    const temItens = Object.keys(carrinho).length > 0;
+    document.getElementById('btn-finalizar').disabled = !(temItens && clienteSelecionado && vendedoraAtual);
   }
 
   function finalizarPedido(){
-    if(!vendedoraAtual){
-      alert('Selecione quem está atendendo antes de salvar.');
-      return;
-    }
-    const nomeCliente = document.getElementById('nome-cliente').value.trim();
-    if(!nomeCliente){
-      alert('Digite o nome de quem está fazendo o pedido.');
-      return;
-    }
+    if(!vendedoraAtual){ alert('Selecione quem está atendendo.'); return; }
+    if(!clienteSelecionado){ alert('Busque e selecione (ou cadastre) a cliente antes de finalizar.'); return; }
+
     const querEntrega = document.getElementById('quer-entrega').checked;
     const endereco = document.getElementById('endereco').value.trim();
-    if(querEntrega && !endereco){
-      alert('Como a cliente quer entrega, o endereço é obrigatório.');
-      return;
-    }
+    if(querEntrega && !endereco){ alert('Como a cliente quer entrega, o endereço é obrigatório.'); return; }
 
     const itens = Object.entries(carrinho).map(([produtoId, item]) => ({produtoId, nome: item.nome, variante: item.variante, preco: item.preco, qtd: item.qtd}));
     const total = itens.reduce((s,i) => s + i.preco*i.qtd, 0);
@@ -281,36 +474,35 @@
     const pedido = {
       id: 'local-' + Date.now(),
       vendedora: vendedoraAtual,
-      nome_cliente: nomeCliente,
-      itens,
-      total,
+      nome_cliente: clienteSelecionado.nome,
+      cliente_inscricao_id: clienteSelecionado.id,
+      numero_inscricao: clienteSelecionado.numero_inscricao,
+      numero_cadastro_bioflora: clienteSelecionado.numero_cadastro_bioflora,
+      itens, total,
       observacao: document.getElementById('observacao').value.trim(),
       quer_entrega: querEntrega,
       endereco: querEntrega ? endereco : '',
       criado_em: new Date().toISOString(),
       sincronizado: false
     };
-    fila.push(pedido);
-    salvarFila();
+    filaPedidos.push(pedido);
+    salvarFilaPedidos();
 
-    alert(`✅ Pedido salvo: ${nomeCliente} — R$ ${total.toFixed(2)}`);
+    alert(`✅ Pedido salvo: ${pedido.nome_cliente} — R$ ${total.toFixed(2)}`);
     carrinho = {};
-    document.getElementById('nome-cliente').value = '';
     document.getElementById('observacao').value = '';
     document.getElementById('quer-entrega').checked = false;
     document.getElementById('endereco').value = '';
     toggleEndereco();
+    resetClienteArea();
     renderCarrinho();
     tentarSincronizar();
   }
 
   function renderHistorico(){
     const box = document.getElementById('lista-historico');
-    if(!fila.length){
-      box.innerHTML = '<p style="color:rgba(245,236,224,.6);">Nenhum pedido salvo ainda.</p>';
-      return;
-    }
-    box.innerHTML = fila.slice().reverse().map(p => `
+    if(!filaPedidos.length){ box.innerHTML = '<p style="color:rgba(245,236,224,.6);">Nenhum pedido salvo ainda.</p>'; return; }
+    box.innerHTML = filaPedidos.slice().reverse().map(p => `
       <div class="pedido-item">
         <span class="nome">${escapeHtml(p.nome_cliente)}</span> — R$ ${p.total.toFixed(2)}
         ${p.sincronizado ? '✅' : '⏳'} <span style="color:rgba(245,236,224,.5);">(${escapeHtml(p.vendedora || '—')})</span>
@@ -321,10 +513,37 @@
     `).join('');
   }
 
+  // ---------- SINCRONIZAÇÃO ----------
   async function tentarSincronizar(){
     if(!navigator.onLine) { atualizarStatus(); return; }
+
+    // Sincroniza cadastros novos primeiro (feitos direto no app de pedidos)
+    for(const item of filaInscricoes){
+      if(item.sincronizado) continue;
+      try{
+        if(item.novo){
+          const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_inscricoes`, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+              'apikey': CONFIG.SUPABASE_ANON_KEY,
+              'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+              'Prefer': 'return=minimal'
+            },
+            body: JSON.stringify({
+              nome: item.nome, cpf: item.cpf, whatsapp: item.whatsapp, email: item.email || null,
+              aceite_lgpd: true, status_pagamento: 'confirmado', presente: true,
+              criado_em: new Date().toISOString()
+            })
+          });
+          if(resp.ok) item.sincronizado = true;
+        }
+      }catch(err){ console.warn('Falhou sincronizar cadastro novo:', err); }
+    }
+    salvarFilaInscricoes();
+
     let houveMudanca = false;
-    for(const pedido of fila){
+    for(const pedido of filaPedidos){
       if(pedido.sincronizado) continue;
       try{
         const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_pedidos`, {
@@ -338,6 +557,8 @@
           body: JSON.stringify({
             nome_cliente: pedido.nome_cliente,
             vendedora: pedido.vendedora,
+            numero_inscricao: pedido.numero_inscricao,
+            numero_cadastro_bioflora: pedido.numero_cadastro_bioflora,
             itens: pedido.itens,
             total: pedido.total,
             observacao: pedido.observacao,
@@ -352,10 +573,7 @@
           for(const item of pedido.itens){
             try{
               const prodResp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_produtos?id=eq.${item.produtoId}&select=estoque_atual`, {
-                headers: {
-                  'apikey': CONFIG.SUPABASE_ANON_KEY,
-                  'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-                }
+                headers: { 'apikey': CONFIG.SUPABASE_ANON_KEY, 'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}` }
               });
               const prodAtual = await prodResp.json();
               if(prodAtual && prodAtual[0]){
@@ -374,38 +592,10 @@
             }catch(e){ console.warn('Falhou atualizar estoque remoto', e); }
           }
         }
-      }catch(err){
-        console.warn('Falhou sincronizar pedido, tenta de novo depois.', err);
-      }
+      }catch(err){ console.warn('Falhou sincronizar pedido:', err); }
     }
-    if(houveMudanca) salvarFila();
+    if(houveMudanca) salvarFilaPedidos();
     atualizarStatus();
-  }
-
-  function exportarCSVLocal(){
-    if(!fila.length){ alert('Nenhum pedido salvo ainda.'); return; }
-    const linhas = [['Vendedora','Nome','Itens','Total','Observação','Entrega','Endereço','Criado em','Sincronizado']];
-    fila.forEach(p => {
-      linhas.push([
-        p.vendedora || '',
-        p.nome_cliente,
-        p.itens.map(i => `${i.qtd}x ${i.nome}${i.variante ? ' ('+i.variante+')' : ''}`).join(' | '),
-        p.total.toFixed(2),
-        p.observacao || '',
-        p.quer_entrega ? 'sim' : 'não',
-        p.endereco || '',
-        p.criado_em,
-        p.sincronizado ? 'sim' : 'não'
-      ]);
-    });
-    const csv = linhas.map(l => l.map(v => `"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
-    const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `chama-acesa-pedidos-${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
   }
 
   function escapeHtml(str){
@@ -413,16 +603,19 @@
     div.textContent = str ?? '';
     return div.innerHTML;
   }
+  function escapeAttr(str){ return String(str).replace(/'/g, "\\'"); }
 
   window.addEventListener('online', () => { atualizarStatus(); tentarSincronizar(); });
   window.addEventListener('offline', atualizarStatus);
   setInterval(tentarSincronizar, 15000);
+  setInterval(carregarInscricoes, 30000);
 
   renderProdutos();
   renderCarrinho();
   atualizarStatus();
   renderHistorico();
   carregarProdutos();
+  carregarInscricoes();
   tentarSincronizar();
 </script>
 </body>
