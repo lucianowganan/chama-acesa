@@ -81,34 +81,72 @@
 </div>
 
 <div class="wrap" id="painel-view" style="display:none;">
-  <h1>🔥 Chama Acesa — Painel de inscrições</h1>
+  <h1>🔥 Chama Acesa — Painel</h1>
   <p class="sub">Confirme o pagamento assim que o comprovante chegar pelo WhatsApp.</p>
 
-  <div class="stats">
-    <div class="stat-card"><div class="num" id="stat-confirmadas">—</div><div class="label">Vagas confirmadas / 40</div></div>
-    <div class="stat-card"><div class="num" id="stat-pendentes">—</div><div class="label">Aguardando confirmação</div></div>
-    <div class="stat-card"><div class="num" id="stat-espera">—</div><div class="label">Lista de espera</div></div>
+  <div class="filtros" style="margin-bottom:22px;">
+    <button class="ativo" data-aba="inscricoes" onclick="mudarAba('inscricoes', this)">📋 Inscrições</button>
+    <button data-aba="estoque" onclick="mudarAba('estoque', this)">📦 Estoque</button>
+    <button data-aba="pedidos" onclick="mudarAba('pedidos', this)">🛍️ Pedidos</button>
   </div>
 
-  <div class="refresh">
-    <button class="btn" onclick="carregarInscricoes()">🔄 Atualizar lista</button>
-    <button class="btn" onclick="exportarCSV()" style="margin-left:8px;">⬇️ Exportar CSV</button>
+  <!-- ================= ABA INSCRIÇÕES ================= -->
+  <div id="aba-inscricoes">
+    <div class="stats">
+      <div class="stat-card"><div class="num" id="stat-confirmadas">—</div><div class="label">Vagas confirmadas / 40</div></div>
+      <div class="stat-card"><div class="num" id="stat-pendentes">—</div><div class="label">Aguardando confirmação</div></div>
+      <div class="stat-card"><div class="num" id="stat-espera">—</div><div class="label">Lista de espera</div></div>
+    </div>
+
+    <div class="refresh">
+      <button class="btn" onclick="carregarInscricoes()">🔄 Atualizar lista</button>
+      <button class="btn" onclick="exportarCSV()" style="margin-left:8px;">⬇️ Exportar CSV</button>
+    </div>
+
+    <div class="filtros">
+      <button class="ativo" data-filtro="todos" onclick="filtrar('todos', this)">Todos</button>
+      <button data-filtro="pendente" onclick="filtrar('pendente', this)">Pendentes</button>
+      <button data-filtro="confirmado" onclick="filtrar('confirmado', this)">Confirmados</button>
+      <button data-filtro="lista_espera" onclick="filtrar('lista_espera', this)">Lista de espera</button>
+    </div>
+
+    <table>
+      <thead>
+        <tr><th>Nº</th><th>Nome</th><th>CPF</th><th>WhatsApp</th><th>E-mail</th><th>Status</th><th>Ação</th></tr>
+      </thead>
+      <tbody id="tabela-corpo"></tbody>
+    </table>
+    <div class="vazio" id="vazio-msg" style="display:none;">Nenhuma inscrição nesse filtro.</div>
   </div>
 
-  <div class="filtros">
-    <button class="ativo" data-filtro="todos" onclick="filtrar('todos', this)">Todos</button>
-    <button data-filtro="pendente" onclick="filtrar('pendente', this)">Pendentes</button>
-    <button data-filtro="confirmado" onclick="filtrar('confirmado', this)">Confirmados</button>
-    <button data-filtro="lista_espera" onclick="filtrar('lista_espera', this)">Lista de espera</button>
+  <!-- ================= ABA ESTOQUE ================= -->
+  <div id="aba-estoque" style="display:none;">
+    <div class="refresh">
+      <button class="btn" onclick="carregarProdutos()">🔄 Atualizar estoque</button>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Produto</th><th>Variante</th><th>Preço (R$)</th><th>Estoque atual</th><th>Inicial</th><th>Ação</th></tr>
+      </thead>
+      <tbody id="tabela-estoque"></tbody>
+    </table>
+    <div class="vazio" id="vazio-estoque" style="display:none;">Nenhum produto carregado.</div>
   </div>
 
-  <table>
-    <thead>
-      <tr><th>Nº</th><th>Nome</th><th>CPF</th><th>WhatsApp</th><th>E-mail</th><th>Status</th><th>Ação</th></tr>
-    </thead>
-    <tbody id="tabela-corpo"></tbody>
-  </table>
-  <div class="vazio" id="vazio-msg" style="display:none;">Nenhuma inscrição nesse filtro.</div>
+  <!-- ================= ABA PEDIDOS ================= -->
+  <div id="aba-pedidos" style="display:none;">
+    <div class="refresh">
+      <button class="btn" onclick="carregarPedidos()">🔄 Atualizar pedidos</button>
+      <button class="btn" onclick="exportarPedidosCSV()" style="margin-left:8px;">⬇️ Exportar CSV</button>
+    </div>
+    <table>
+      <thead>
+        <tr><th>Vendedora</th><th>Cliente</th><th>Itens</th><th>Total</th><th>Obs.</th><th>Entrega</th></tr>
+      </thead>
+      <tbody id="tabela-pedidos"></tbody>
+    </table>
+    <div class="vazio" id="vazio-pedidos" style="display:none;">Nenhum pedido registrado ainda.</div>
+  </div>
 </div>
 
 <script>
@@ -261,6 +299,118 @@
     const a = document.createElement('a');
     a.href = url;
     a.download = `chama-acesa-inscricoes-${new Date().toISOString().slice(0,10)}.csv`;
+    a.click();
+    URL.revokeObjectURL(url);
+  }
+
+  // ---------- ABAS ----------
+  function mudarAba(aba, btn){
+    document.querySelectorAll('#painel-view > .filtros button[data-aba]').forEach(b => b.classList.remove('ativo'));
+    btn.classList.add('ativo');
+    ['inscricoes','estoque','pedidos'].forEach(a => {
+      document.getElementById('aba-' + a).style.display = (a === aba) ? 'block' : 'none';
+    });
+    if(aba === 'estoque') carregarProdutos();
+    if(aba === 'pedidos') carregarPedidos();
+  }
+
+  // ---------- ESTOQUE ----------
+  async function carregarProdutos(){
+    try{
+      const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_produtos?select=*&order=nome.asc`, {
+        headers: {
+          'apikey': CONFIG.SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+        }
+      });
+      const produtos = await resp.json();
+      renderEstoque(produtos);
+    }catch(err){
+      console.error('Erro ao carregar produtos:', err);
+    }
+  }
+
+  function renderEstoque(produtos){
+    const corpo = document.getElementById('tabela-estoque');
+    document.getElementById('vazio-estoque').style.display = produtos.length ? 'none' : 'block';
+    corpo.innerHTML = produtos.map(p => `
+      <tr>
+        <td data-label="Produto">${p.cor_hex ? `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${p.cor_hex};margin-right:6px;"></span>` : ''}${escapeHtml(p.nome)}</td>
+        <td data-label="Variante">${escapeHtml(p.variante || '—')}</td>
+        <td data-label="Preço"><input type="number" step="0.01" value="${p.preco}" style="width:80px; background:rgba(0,0,0,.2); color:#f5ece0; border:1px solid rgba(217,171,95,.4); border-radius:6px; padding:4px 6px;" onchange="atualizarProduto('${p.id}','preco',this.value)"></td>
+        <td data-label="Estoque atual"><input type="number" value="${p.estoque_atual}" style="width:60px; background:rgba(0,0,0,.2); color:#f5ece0; border:1px solid rgba(217,171,95,.4); border-radius:6px; padding:4px 6px;" onchange="atualizarProduto('${p.id}','estoque_atual',this.value)"></td>
+        <td data-label="Inicial">${p.estoque_inicial}</td>
+        <td data-label="Ação"><button class="acao-btn" onclick="carregarProdutos()">Salvo automático</button></td>
+      </tr>
+    `).join('');
+  }
+
+  async function atualizarProduto(id, campo, valor){
+    try{
+      await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_produtos?id=eq.${id}`, {
+        method: 'PATCH',
+        headers: {
+          'Content-Type': 'application/json',
+          'apikey': CONFIG.SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
+          'Prefer': 'return=minimal'
+        },
+        body: JSON.stringify({ [campo]: parseFloat(valor) })
+      });
+    }catch(err){
+      console.error('Erro ao atualizar produto:', err);
+      alert('Erro ao salvar. Veja o console.');
+    }
+  }
+
+  // ---------- PEDIDOS ----------
+  let pedidosAtuais = [];
+  async function carregarPedidos(){
+    try{
+      const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_pedidos?select=*&order=criado_em.desc`, {
+        headers: {
+          'apikey': CONFIG.SUPABASE_ANON_KEY,
+          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+        }
+      });
+      pedidosAtuais = await resp.json();
+      renderPedidos();
+    }catch(err){
+      console.error('Erro ao carregar pedidos:', err);
+    }
+  }
+
+  function renderPedidos(){
+    const corpo = document.getElementById('tabela-pedidos');
+    document.getElementById('vazio-pedidos').style.display = pedidosAtuais.length ? 'none' : 'block';
+    corpo.innerHTML = pedidosAtuais.map(p => `
+      <tr>
+        <td data-label="Vendedora">${escapeHtml(p.vendedora || '—')}</td>
+        <td data-label="Cliente">${escapeHtml(p.nome_cliente)}</td>
+        <td data-label="Itens">${(p.itens || []).map(i => `${i.qtd}x ${escapeHtml(i.nome)}${i.variante ? ' ('+escapeHtml(i.variante)+')' : ''}`).join(', ')}</td>
+        <td data-label="Total">R$ ${Number(p.total).toFixed(2)}</td>
+        <td data-label="Obs.">${escapeHtml(p.observacao || '—')}</td>
+        <td data-label="Entrega">${p.quer_entrega ? '📦 ' + escapeHtml(p.endereco || '') : '—'}</td>
+      </tr>
+    `).join('');
+  }
+
+  function exportarPedidosCSV(){
+    if(!pedidosAtuais.length){ alert('Nenhum pedido carregado.'); return; }
+    const linhas = [['Vendedora','Cliente','Itens','Total','Observação','Entrega','Endereço','Criado em']];
+    pedidosAtuais.forEach(p => {
+      linhas.push([
+        p.vendedora || '', p.nome_cliente,
+        (p.itens || []).map(i => `${i.qtd}x ${i.nome}${i.variante ? ' ('+i.variante+')' : ''}`).join(' | '),
+        Number(p.total).toFixed(2), p.observacao || '', p.quer_entrega ? 'sim' : 'não', p.endereco || '', p.criado_em
+      ]);
+    });
+    const csv = linhas.map(l => l.map(v => `"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
+    const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = `chama-acesa-pedidos-admin-${new Date().toISOString().slice(0,10)}.csv`;
     a.click();
     URL.revokeObjectURL(url);
   }
