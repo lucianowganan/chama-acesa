@@ -3,423 +3,417 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Admin — Chama Acesa</title>
+<meta name="robots" content="noindex, nofollow">
+<title>Painel — Chama Acesa</title>
+<link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
 <style>
+  @font-face{font-family:'Cal Sans SB';src:url('assets/fonts/CalSans-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
   :root{
-    --vinho:#3a0d1a; --dourado:#d9ab5f; --dourado-claro:#f2c98a;
-    --texto:#f5ece0; --erro:#e15c5c; --ok:#6fbf73;
+    --bg:#120403; --surface:#1c0807; --surface2:#260c0b; --line:rgba(217,171,95,.14); --line2:rgba(217,171,95,.28);
+    --txt:#f7ece1; --txt2:#c9b2a4; --muted:#8f7a6f;
+    --brasa:#e2561a; --brasa2:#f2711c; --dourado:#d9ab5f; --douc:#f4dfae; --vinho:#560f11;
+    --ok:#5fb37a; --warn:#e0a63a; --err:#e05a4f;
+    --sans:'Montserrat',system-ui,sans-serif; --serif:'Newsreader',Georgia,serif; --display:'Cal Sans SB','Montserrat',sans-serif;
   }
-  *{box-sizing:border-box;}
-  body{
-    margin:0; font-family:'Segoe UI',system-ui,sans-serif; background:var(--vinho); color:var(--texto);
-    min-height:100vh; padding:24px;
-  }
-  .wrap{max-width:800px; margin:0 auto;}
-  h1{font-size:1.6rem; color:var(--dourado-claro); margin-bottom:4px;}
-  .sub{color:rgba(245,236,224,0.7); margin-bottom:24px; font-size:0.95rem;}
-  .login-box{
-    max-width:340px; margin:80px auto; background:rgba(255,255,255,0.05);
-    border:1px solid rgba(217,171,95,0.3); border-radius:14px; padding:28px; text-align:center;
-  }
-  .login-box input{
-    width:100%; padding:12px; margin:16px 0; border-radius:8px; border:1px solid rgba(217,171,95,0.4);
-    background:rgba(0,0,0,0.2); color:var(--texto); font-size:1rem;
-  }
-  .login-box button, .btn{
-    background:var(--dourado); color:#2a0a13; border:none; padding:12px 18px; border-radius:8px;
-    font-weight:600; cursor:pointer; font-size:0.95rem;
-  }
-  .login-box button:hover, .btn:hover{background:var(--dourado-claro);}
-  .erro{color:var(--erro); font-size:0.85rem; margin-top:8px; display:none;}
-  .stats{
-    display:flex; gap:16px; margin-bottom:24px; flex-wrap:wrap;
-  }
-  .stat-card{
-    background:rgba(255,255,255,0.05); border:1px solid rgba(217,171,95,0.25);
-    border-radius:12px; padding:16px 20px; flex:1; min-width:140px;
-  }
-  .stat-card .num{font-size:1.8rem; font-weight:700; color:var(--dourado-claro);}
-  .stat-card .label{font-size:0.8rem; color:rgba(245,236,224,0.7);}
-  .filtros{display:flex; gap:8px; margin-bottom:16px; flex-wrap:wrap;}
-  .filtros button{
-    background:rgba(255,255,255,0.05); color:var(--texto); border:1px solid rgba(217,171,95,0.3);
-    padding:8px 14px; border-radius:999px; cursor:pointer; font-size:0.85rem;
-  }
-  .filtros button.ativo{background:var(--dourado); color:#2a0a13; font-weight:600;}
-  table{width:100%; border-collapse:collapse; background:rgba(255,255,255,0.04); border-radius:12px; overflow:hidden;}
-  th, td{padding:10px 12px; text-align:left; font-size:0.85rem; border-bottom:1px solid rgba(255,255,255,0.08);}
-  th{background:rgba(0,0,0,0.2); color:var(--dourado-claro); font-weight:600;}
-  .badge{padding:4px 10px; border-radius:999px; font-size:0.75rem; font-weight:600;}
-  .badge.pendente{background:rgba(217,171,95,0.2); color:var(--dourado-claro);}
-  .badge.confirmado{background:rgba(111,191,115,0.2); color:var(--ok);}
-  .badge.lista_espera{background:rgba(150,150,150,0.2); color:#ccc;}
-  .acao-btn{
-    background:var(--ok); color:#0a2a0d; border:none; padding:6px 12px; border-radius:6px;
-    cursor:pointer; font-size:0.8rem; font-weight:600;
-  }
-  .acao-btn:disabled{opacity:0.5; cursor:default;}
-  .excluir-btn{background:var(--erro); color:#fff; margin-left:6px;}
-  .excluir-btn:hover{background:#c94848;}
-  .refresh{margin-bottom:16px;}
-  .vazio{text-align:center; padding:40px; color:rgba(245,236,224,0.6);}
-  @media (max-width:640px){
-    table, thead, tbody, th, td, tr{display:block;}
-    thead{display:none;}
-    tr{margin-bottom:12px; border:1px solid rgba(217,171,95,0.25); border-radius:10px; padding:10px;}
-    td{border:none; padding:6px 4px;}
-    td:before{content:attr(data-label); font-weight:600; color:var(--dourado-claro); display:inline-block; width:110px;}
-  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--sans);background:var(--bg);color:var(--txt);min-height:100vh;font-size:14px;line-height:1.5}
+  body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 55% 40% at 0% 0%,rgba(211,72,15,.18),transparent 70%),radial-gradient(ellipse 40% 35% at 100% 0%,rgba(217,171,95,.08),transparent 70%)}
+  button,input,select{font:inherit;color:inherit}
+  a{color:var(--douc)}
+  .hide{display:none!important}
+
+  /* login */
+  .login{min-height:100vh;display:flex;align-items:center;justify-content:center;padding:24px}
+  .login form{width:100%;max-width:360px;background:var(--surface);border:1px solid var(--line2);border-radius:20px;padding:34px 28px;text-align:center}
+  .login h1{font-family:var(--serif);font-weight:400;font-size:1.7rem;margin:14px 0 4px}
+  .login p{color:var(--txt2);font-size:.85rem;margin-bottom:22px}
+  .field{width:100%;padding:13px 14px;margin-bottom:12px;border-radius:12px;border:1px solid var(--line2);background:rgba(0,0,0,.25);outline:none}
+  .field:focus{border-color:var(--dourado)}
+  .btn{display:inline-flex;align-items:center;justify-content:center;gap:8px;padding:11px 18px;border-radius:12px;border:1px solid var(--line2);background:var(--surface2);cursor:pointer;font-weight:500;font-size:.85rem;white-space:nowrap}
+  .btn:hover{border-color:var(--dourado)}
+  .btn.primary{background:linear-gradient(135deg,var(--brasa2),var(--brasa));border-color:transparent;color:#fff8f0;font-weight:600}
+  .btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round}
+  .login .btn{width:100%;padding:14px}
+  .msg-err{color:var(--err);font-size:.82rem;margin-top:10px;min-height:1em}
+
+  /* layout */
+  header{position:sticky;top:0;z-index:10;display:flex;align-items:center;justify-content:space-between;gap:16px;padding:14px 28px;background:rgba(18,4,3,.82);backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+  .brand{display:flex;align-items:center;gap:12px}
+  .brand svg{width:26px;fill:var(--brasa2)}
+  .brand b{font-weight:300;font-size:1.1rem}.brand b i{font-family:var(--serif);font-style:normal;letter-spacing:.12em;color:var(--dourado);margin-left:.2em}
+  .brand small{display:block;color:var(--muted);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase}
+  .tabs{display:flex;gap:4px;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:4px}
+  .tabs button{border:0;background:transparent;padding:8px 16px;border-radius:9px;cursor:pointer;color:var(--txt2);font-weight:500}
+  .tabs button.on{background:var(--surface2);color:var(--txt);box-shadow:inset 0 0 0 1px var(--line2)}
+  .hright{display:flex;align-items:center;gap:10px}
+  .who{color:var(--muted);font-size:.78rem}
+  main{max-width:1240px;margin:0 auto;padding:28px}
+  .pagehead{display:flex;align-items:flex-end;justify-content:space-between;gap:16px;margin-bottom:22px;flex-wrap:wrap}
+  .pagehead h2{font-family:var(--serif);font-weight:400;font-size:2rem;line-height:1.1}
+  .pagehead p{color:var(--txt2);margin-top:4px}
+  .countdown{display:flex;align-items:center;gap:14px;padding:12px 18px;border-radius:14px;background:linear-gradient(135deg,rgba(226,86,26,.18),rgba(86,15,17,.35));border:1px solid rgba(242,113,28,.35)}
+  .countdown .n{font-family:var(--display);font-size:2rem;line-height:1;color:var(--douc)}
+  .countdown span{font-size:.78rem;color:var(--txt2);line-height:1.3}
+
+  /* tiles */
+  .tiles{display:grid;grid-template-columns:repeat(5,1fr);gap:14px;margin-bottom:18px}
+  .tile{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:18px 18px 16px}
+  .tile .k{font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted)}
+  .tile .v{font-family:var(--display);font-size:2.1rem;line-height:1.1;margin-top:8px}
+  .tile .s{font-size:.78rem;color:var(--txt2);margin-top:4px}
+  .tile.hero{background:linear-gradient(160deg,var(--vinho),var(--surface) 75%);border-color:rgba(217,171,95,.3)}
+  .tile.hero .v{color:var(--douc)}
+
+  /* cards / charts */
+  .grid{display:grid;grid-template-columns:1.6fr 1fr;gap:14px;margin-bottom:18px}
+  .card{background:var(--surface);border:1px solid var(--line);border-radius:16px;padding:20px}
+  .card h3{font-family:var(--display);font-weight:600;font-size:.95rem;margin-bottom:2px}
+  .card .cap{color:var(--muted);font-size:.78rem;margin-bottom:16px}
+  .chart{position:relative}
+  .chart svg{display:block;width:100%;overflow:visible}
+  .axis text{fill:var(--muted);font-size:10px;font-family:var(--sans)}
+  .gridline{stroke:rgba(247,236,225,.07)}
+  .bar{fill:var(--brasa2)}
+  .bar.dim{fill:rgba(242,113,28,.35)}
+  .hit{fill:transparent;cursor:default}
+  .tip{position:absolute;pointer-events:none;background:#2b0f0d;border:1px solid var(--line2);border-radius:10px;padding:8px 11px;font-size:.78rem;white-space:nowrap;transform:translate(-50%,-110%);box-shadow:0 8px 24px rgba(0,0,0,.4);opacity:0;transition:opacity .12s}
+  .tip b{font-family:var(--display);font-weight:600;color:var(--douc);font-size:.95rem}
+  .hbars{display:flex;flex-direction:column;gap:12px}
+  .hrow .lab{display:flex;justify-content:space-between;font-size:.82rem;margin-bottom:5px}
+  .hrow .lab span:last-child{color:var(--txt2);font-variant-numeric:tabular-nums}
+  .track{height:10px;border-radius:6px;background:rgba(247,236,225,.06);overflow:hidden}
+  .fill{height:100%;border-radius:0 4px 4px 0;background:var(--dourado)}
+  .funnel .fill{background:var(--brasa2)}
+  .empty{color:var(--muted);font-size:.85rem;padding:30px 0;text-align:center}
+
+  /* table */
+  .toolbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}
+  .toolbar .field{margin:0;max-width:280px;padding:10px 12px}
+  .toolbar select.field{max-width:200px}
+  .toolbar .grow{flex:1}
+  .tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:14px}
+  table{width:100%;border-collapse:collapse;min-width:860px}
+  th{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:500;text-align:left;padding:12px 14px;background:var(--surface2);border-bottom:1px solid var(--line)}
+  td{white-space:nowrap;padding:12px 14px;border-bottom:1px solid var(--line);vertical-align:middle;font-size:.84rem}
+  tr:last-child td{border-bottom:0}
+  tbody tr:hover td{background:rgba(247,236,225,.025)}
+  .code{font-family:var(--display);color:var(--douc);letter-spacing:.04em}
+  .wa{display:inline-flex;align-items:center;gap:6px;text-decoration:none;color:var(--txt)}
+  .wa svg{width:15px;height:15px;fill:#5fb37a}
+  .pill{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.72rem;border:1px solid var(--line2);color:var(--txt2)}
+  .etapa{padding:6px 8px;border-radius:9px;border:1px solid var(--line2);background:var(--surface2);font-size:.78rem;cursor:pointer}
+  .etapa[data-v="confirmou_whatsapp"]{border-color:rgba(224,166,58,.6)}
+  .etapa[data-v="inscrita"],.etapa[data-v="pagou"]{border-color:rgba(95,179,122,.7)}
+  .etapa[data-v="sem_resposta"]{opacity:.65}
+  .muted{color:var(--muted)}
+  .foot{color:var(--muted);font-size:.75rem;margin-top:10px}
+
+  @media(max-width:1000px){.tiles{grid-template-columns:repeat(2,1fr)}.tile.hero{grid-column:span 2}.grid{grid-template-columns:1fr}header{padding:12px 16px;flex-wrap:wrap}main{padding:18px 16px}}
 </style>
 </head>
 <body>
 
-<div id="login-view" class="login-box">
-  <h1 style="font-size:1.3rem;">🔒 Admin Chama Acesa</h1>
-  <input type="password" id="senha-input" placeholder="Senha de acesso">
-  <button onclick="tentarLogin()">Entrar</button>
-  <div class="erro" id="erro-login">Senha incorreta.</div>
+<!-- LOGIN -->
+<section class="login" id="vLogin">
+  <form id="fLogin" autocomplete="on">
+    <svg viewBox="395 285 240 270" width="38" style="fill:#f2711c" aria-hidden="true"><path d="M457.02,546.87c-29.05-6.09-48.55-32.55-51.82-61.09-.71-6.19-.55-12.48-.04-18.68,1.85-22.51,12.16-41.7,26.06-59.11l18.67-23.38c19.66-24.61,30.67-50.17,30.54-82.45,7.56,14.58,10.76,30.45,11.6,46.71.66,12.83-1.55,24.82-7.1,36.39-4,8.01-8.63,15.33-14.1,22.47l-16.59,21.66c-5.82,7.59-10.75,15.36-14.74,24.06-15.04,32.84-1.14,64.64,17.51,93.41Z"/><path d="M497.79,546.68c-17.15-11.36-27.01-29.72-28.7-50.03-.84-10.04.15-19.28,5.08-28.29,3.85-7.53,8.62-14.3,13.78-21.1l17.43-23.03c16.71-23.42,27.38-46.61,27.56-75.48,9.04,16.85,12.93,35.36,11.19,54.16-1.01,10.83-5.04,20.29-10.29,29.58-9.16,15.05-21.08,27.66-29.75,42.95-7.98,14.04-11.82,29.39-10.75,45.6.52,8.72,2.12,16.59,4.45,25.64Z"/><path d="M538.78,546.83c-4.53-3.73-7.690-8.57-9.48-14.15-6.49-20.24,1.59-37.34,14.39-53.17l15.63-19.33c15.66-19.58,19.61-40.55,19.85-66.11,8.08,12.33,14.68,26.73,15.950,40.7,1.06,11.67-3.19,20.97-9.94,30.64-3.67,5.27-8.58,11.32-12.67,16.32l-13.13,17.55c-11.26,13.43-15.44,30.28-20.61,47.54Z"/></svg>
+    <h1>Painel Chama Acesa</h1>
+    <p>Entre com seu login do Hub Bioflora</p>
+    <input class="field" type="email" id="email" placeholder="E-mail" required autocomplete="username">
+    <input class="field" type="password" id="senha" placeholder="Senha" required autocomplete="current-password">
+    <button class="btn primary" type="submit">Entrar</button>
+    <div class="msg-err" id="loginErr"></div>
+  </form>
+</section>
+
+<!-- APP -->
+<div id="vApp" class="hide">
+  <header>
+    <div class="brand">
+      <svg viewBox="395 285 240 270" width="26" height="29" aria-hidden="true"><use href="#flame"/></svg>
+      <div><b>Chama<i>ACESA</i></b><small>Painel</small></div>
+    </div>
+    <nav class="tabs">
+      <button class="on" data-tab="vip">Lista VIP · 25/11</button>
+      <button data-tab="ed1">1ª edição</button>
+    </nav>
+    <div class="hright">
+      <span class="who" id="who"></span>
+      <button class="btn" id="btnRefresh" title="Atualizar"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg></button>
+      <button class="btn" id="btnSair">Sair</button>
+    </div>
+  </header>
+
+  <main>
+    <!-- ============ LISTA VIP ============ -->
+    <section id="tab-vip">
+      <div class="pagehead">
+        <div><h2>Lista VIP da próxima edição</h2><p>Cadastros da landing page, interesses e acompanhamento até a inscrição.</p></div>
+        <div class="countdown"><div class="n" id="dias">—</div><span>dias para o<br>Chama Acesa · 25/11</span></div>
+      </div>
+
+      <div class="tiles">
+        <div class="tile hero"><div class="k">Na lista</div><div class="v" id="kTotal">—</div><div class="s" id="kTotalS">&nbsp;</div></div>
+        <div class="tile"><div class="k">Hoje</div><div class="v" id="kHoje">—</div><div class="s" id="kHojeS">&nbsp;</div></div>
+        <div class="tile"><div class="k">Últimos 7 dias</div><div class="v" id="k7">—</div><div class="s" id="k7S">&nbsp;</div></div>
+        <div class="tile"><div class="k">Confirmaram no WhatsApp</div><div class="v" id="kWa">—</div><div class="s" id="kWaS">&nbsp;</div></div>
+        <div class="tile"><div class="k">Inscritas / pagas</div><div class="v" id="kPag">—</div><div class="s" id="kPagS">&nbsp;</div></div>
+      </div>
+
+      <div class="grid">
+        <div class="card">
+          <h3>Cadastros por dia</h3><div class="cap">Últimos 30 dias</div>
+          <div class="chart" id="chDias"></div>
+        </div>
+        <div class="card">
+          <h3>Acompanhamento</h3><div class="cap">Onde cada pessoa está no caminho até a vaga</div>
+          <div class="hbars funnel" id="chFunil"></div>
+        </div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="card">
+          <h3>O que querem encontrar</h3><div class="cap">Interesse escolhido no formulário</div>
+          <div class="hbars" id="chInteresse"></div>
+        </div>
+        <div class="card">
+          <h3>De onde vieram</h3><div class="cap">Origem do cadastro</div>
+          <div class="hbars" id="chOrigem"></div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="toolbar">
+          <h3 class="grow">Pessoas na lista</h3>
+          <input class="field" id="busca" placeholder="Buscar nome, WhatsApp, e-mail ou CA-…">
+          <select class="field" id="fEtapa"><option value="">Todas as etapas</option></select>
+          <button class="btn" id="btnCsv"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>CSV</button>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Nº</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Interesse</th><th>Origem</th><th>Cadastro</th><th>Etapa</th></tr></thead>
+          <tbody id="tbVip"></tbody>
+        </table></div>
+        <div class="foot" id="vipFoot"></div>
+      </div>
+    </section>
+
+    <!-- ============ 1ª EDIÇÃO ============ -->
+    <section id="tab-ed1" class="hide">
+      <div class="pagehead">
+        <div><h2>1ª edição · histórico</h2><p>Inscrições, presença e vendas da noite de agosto. Somente leitura.</p></div>
+      </div>
+      <div class="tiles">
+        <div class="tile hero"><div class="k">Confirmadas</div><div class="v" id="eConf">—</div><div class="s" id="eConfS">&nbsp;</div></div>
+        <div class="tile"><div class="k">Check-in feito</div><div class="v" id="ePres">—</div><div class="s">marcado no check-in</div></div>
+        <div class="tile"><div class="k">Pedidos</div><div class="v" id="ePed">—</div><div class="s" id="ePedS">&nbsp;</div></div>
+        <div class="tile"><div class="k">Vendido</div><div class="v" id="eTot">—</div><div class="s" id="eTotS">&nbsp;</div></div>
+        <div class="tile"><div class="k">Ticket médio</div><div class="v" id="eTic">—</div><div class="s">por pedido</div></div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1fr">
+        <div class="card"><h3>Produtos mais vendidos</h3><div class="cap">Unidades na noite do evento</div><div class="hbars" id="chProd"></div></div>
+        <div class="card"><h3>Vendas por vendedora</h3><div class="cap">Total em R$</div><div class="hbars" id="chVend"></div></div>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <h3 class="grow">Participantes da 1ª edição</h3>
+          <input class="field" id="busca1" placeholder="Buscar nome ou WhatsApp">
+          <button class="btn" id="btnCsv1"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>CSV</button>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Nº</th><th>Nome</th><th>WhatsApp</th><th>E-mail</th><th>Status</th><th>Check-in</th><th>Na Lista VIP?</th></tr></thead>
+          <tbody id="tbEd1"></tbody>
+        </table></div>
+      </div>
+    </section>
+  </main>
 </div>
 
-<div class="wrap" id="painel-view" style="display:none;">
-  <h1>🔥 Chama Acesa — Painel</h1>
-  <p class="sub">Confirme o pagamento assim que o comprovante chegar pelo WhatsApp.</p>
+<svg width="0" height="0" style="position:absolute"><symbol id="flame" viewBox="395 285 240 270"><path d="M457.02,546.87c-29.05-6.09-48.55-32.55-51.82-61.09-.71-6.19-.55-12.48-.04-18.68,1.85-22.51,12.16-41.7,26.06-59.11l18.67-23.38c19.66-24.61,30.67-50.17,30.54-82.45,7.56,14.58,10.76,30.45,11.6,46.71.66,12.83-1.55,24.82-7.1,36.39-4,8.01-8.63,15.33-14.1,22.47l-16.59,21.66c-5.82,7.59-10.75,15.36-14.74,24.06-15.04,32.84-1.14,64.64,17.51,93.41Z"/><path d="M497.79,546.68c-17.15-11.36-27.01-29.72-28.7-50.03-.84-10.04.15-19.28,5.08-28.29,3.85-7.53,8.62-14.3,13.78-21.1l17.43-23.03c16.71-23.42,27.38-46.61,27.56-75.48,9.04,16.85,12.93,35.36,11.19,54.16-1.01,10.83-5.04,20.29-10.29,29.58-9.16,15.05-21.08,27.66-29.75,42.95-7.98,14.04-11.82,29.39-10.75,45.6.52,8.72,2.12,16.59,4.45,25.64Z"/><path d="M538.78,546.83c-4.53-3.73-7.69-8.57-9.48-14.15-6.49-20.24,1.59-37.34,14.39-53.17l15.63-19.33c15.66-19.58,19.61-40.55,19.85-66.11,8.08,12.33,14.68,26.73,15.95,40.7,1.06,11.67-3.19,20.97-9.94,30.64-3.67,5.27-8.58,11.32-12.67,16.32l-13.13,17.55c-11.26,13.43-15.44,30.28-20.61,47.54Z"/></symbol></svg>
 
-  <div class="filtros" style="margin-bottom:22px;">
-    <button class="ativo" data-aba="inscricoes" onclick="mudarAba('inscricoes', this)">📋 Inscrições</button>
-    <button data-aba="estoque" onclick="mudarAba('estoque', this)">📦 Estoque</button>
-    <button data-aba="pedidos" onclick="mudarAba('pedidos', this)">🛍️ Pedidos</button>
-  </div>
-
-  <!-- ================= ABA INSCRIÇÕES ================= -->
-  <div id="aba-inscricoes">
-    <div class="stats">
-      <div class="stat-card"><div class="num" id="stat-confirmadas">—</div><div class="label">Vagas confirmadas / 40</div></div>
-      <div class="stat-card"><div class="num" id="stat-pendentes">—</div><div class="label">Aguardando confirmação</div></div>
-      <div class="stat-card"><div class="num" id="stat-espera">—</div><div class="label">Lista de espera</div></div>
-    </div>
-
-    <div class="refresh">
-      <button class="btn" onclick="carregarInscricoes()">🔄 Atualizar lista</button>
-      <button class="btn" onclick="exportarCSV()" style="margin-left:8px;">⬇️ Exportar CSV</button>
-    </div>
-
-    <div class="filtros">
-      <button class="ativo" data-filtro="todos" onclick="filtrar('todos', this)">Todos</button>
-      <button data-filtro="pendente" onclick="filtrar('pendente', this)">Pendentes</button>
-      <button data-filtro="confirmado" onclick="filtrar('confirmado', this)">Confirmados</button>
-      <button data-filtro="lista_espera" onclick="filtrar('lista_espera', this)">Lista de espera</button>
-    </div>
-
-    <table>
-      <thead>
-        <tr><th>Nº</th><th>Nome</th><th>CPF</th><th>WhatsApp</th><th>E-mail</th><th>Status</th><th>Ação</th></tr>
-      </thead>
-      <tbody id="tabela-corpo"></tbody>
-    </table>
-    <div class="vazio" id="vazio-msg" style="display:none;">Nenhuma inscrição nesse filtro.</div>
-  </div>
-
-  <!-- ================= ABA ESTOQUE ================= -->
-  <div id="aba-estoque" style="display:none;">
-    <div class="refresh">
-      <button class="btn" onclick="carregarProdutos()">🔄 Atualizar estoque</button>
-    </div>
-    <table>
-      <thead>
-        <tr><th>Produto</th><th>Variante</th><th>Preço (R$)</th><th>Estoque atual</th><th>Inicial</th><th>Ação</th></tr>
-      </thead>
-      <tbody id="tabela-estoque"></tbody>
-    </table>
-    <div class="vazio" id="vazio-estoque" style="display:none;">Nenhum produto carregado.</div>
-  </div>
-
-  <!-- ================= ABA PEDIDOS ================= -->
-  <div id="aba-pedidos" style="display:none;">
-    <div class="refresh">
-      <button class="btn" onclick="carregarPedidos()">🔄 Atualizar pedidos</button>
-      <button class="btn" onclick="exportarPedidosCSV()" style="margin-left:8px;">⬇️ Exportar CSV</button>
-    </div>
-    <table>
-      <thead>
-        <tr><th>Vendedora</th><th>Cliente</th><th>Itens</th><th>Total</th><th>Obs.</th><th>Entrega</th></tr>
-      </thead>
-      <tbody id="tabela-pedidos"></tbody>
-    </table>
-    <div class="vazio" id="vazio-pedidos" style="display:none;">Nenhum pedido registrado ainda.</div>
-  </div>
-</div>
-
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
 <script>
-  const CONFIG = {
-    SUPABASE_URL: "https://gbbjpltqmbhlfluqhrmg.supabase.co",
-    SUPABASE_ANON_KEY: "sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP",
-    SENHA_ADMIN: "Bioflora26"
-  };
+// Painel Chama Acesa. Acesso por login do Supabase (hub-bioflora); os dados só abrem para usuário autenticado.
+const sb = supabase.createClient('https://gbbjpltqmbhlfluqhrmg.supabase.co', 'sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP');
+const EVENTO = new Date('2026-11-25T19:00:00-03:00');
+const ETAPAS = { novo:'Novo', confirmou_whatsapp:'Confirmou no WhatsApp', inscrita:'Inscrita', pagou:'Pagou', sem_resposta:'Sem resposta' };
+const ORIGENS = { 'lp-proxima-edicao':'Landing page', 'lista-espera-1a-edicao':'Lista de espera da 1ª edição' };
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const code = (id) => 'CA-' + String(id).padStart(4, '0');
+const brl = (n) => n.toLocaleString('pt-BR', { style:'currency', currency:'BRL', maximumFractionDigits:0 });
+const fone = (w) => { const d = String(w||'').replace(/\D/g,''); return d.length >= 10 ? `(${d.slice(-11,-9)||d.slice(0,2)}) ${d.slice(-9,-4)}-${d.slice(-4)}` : w; };
+const dia = (d) => new Date(d).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
+const waIcon = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>';
 
-  let dadosAtuais = [];
-  let filtroAtual = 'todos';
+let VIP = [], INSC = [], PED = [];
 
-  function tentarLogin(){
-    const val = document.getElementById('senha-input').value;
-    if(val === CONFIG.SENHA_ADMIN){
-      document.getElementById('login-view').style.display = 'none';
-      document.getElementById('painel-view').style.display = 'block';
-      carregarInscricoes();
-    }else{
-      document.getElementById('erro-login').style.display = 'block';
-    }
-  }
-  document.getElementById('senha-input').addEventListener('keydown', e => {
-    if(e.key === 'Enter') tentarLogin();
+/* ---------- auth ---------- */
+$('fLogin').onsubmit = async (e) => {
+  e.preventDefault(); $('loginErr').textContent = '';
+  const { error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('senha').value });
+  if (error) { $('loginErr').textContent = 'E-mail ou senha incorretos.'; return; }
+  start();
+};
+$('btnSair').onclick = async () => { await sb.auth.signOut(); location.reload(); };
+sb.auth.getSession().then(({ data }) => { if (data.session) start(); });
+
+async function start() {
+  const { data } = await sb.auth.getUser();
+  $('who').textContent = data.user?.email || '';
+  $('vLogin').classList.add('hide'); $('vApp').classList.remove('hide');
+  await load();
+}
+$('btnRefresh').onclick = () => load();
+
+/* ---------- tabs ---------- */
+document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
+  $('tab-vip').classList.toggle('hide', b.dataset.tab !== 'vip');
+  $('tab-ed1').classList.toggle('hide', b.dataset.tab !== 'ed1');
+});
+
+/* ---------- dados ---------- */
+async function load() {
+  const [v, i, p] = await Promise.all([
+    sb.from('chama_acesa_lista_espera').select('*').order('id', { ascending:false }),
+    sb.from('chama_acesa_inscricoes').select('numero_inscricao,nome,whatsapp,email,status_pagamento,presente,criado_em').order('numero_inscricao'),
+    sb.from('chama_acesa_pedidos').select('itens,total,vendedora,nome_cliente,criado_em'),
+  ]);
+  if (v.error) { alert('Sem permissão para ler a lista. Faça login novamente.'); return; }
+  VIP = v.data; INSC = i.data || []; PED = p.data || [];
+  renderVip(); renderEd1();
+}
+
+/* ---------- gráficos ---------- */
+// Barras verticais por dia (uma série, uma cor), com tooltip por barra.
+function barsByDay(el, rows, days = 30) {
+  const today = new Date(); today.setHours(0,0,0,0);
+  const buckets = [...Array(days)].map((_, k) => { const d = new Date(today); d.setDate(d.getDate() - (days - 1 - k)); return { d, n: 0 }; });
+  rows.forEach(r => { const d = new Date(r.criado_em); d.setHours(0,0,0,0); const b = buckets.find(x => +x.d === +d); if (b) b.n++; });
+  const max = Math.max(4, ...buckets.map(b => b.n));
+  const step = Math.ceil(max / 4); const top = step * 4;
+  const W = 640, H = 200, L = 28, B = 22, cw = (W - L) / days, bw = Math.max(4, cw - 4);
+  const y = (n) => (H - B) - (n / top) * (H - B - 8);
+  let s = `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Cadastros por dia"><g class="axis">`;
+  for (let t = 0; t <= top; t += step) s += `<line class="gridline" x1="${L}" x2="${W}" y1="${y(t)}" y2="${y(t)}"/><text x="${L - 8}" y="${y(t) + 3}" text-anchor="end">${t}</text>`;
+  buckets.forEach((b, k) => { if (k % 5 === 0 || k === days - 1) s += `<text x="${L + k * cw + cw / 2}" y="${H - 6}" text-anchor="middle">${dia(b.d)}</text>`; });
+  s += '</g>';
+  buckets.forEach((b, k) => {
+    const x = L + k * cw + (cw - bw) / 2, h = (H - B) - y(b.n);
+    if (b.n) s += `<path class="bar" d="M${x},${H - B} v${-(h - 3)} q0,-3 3,-3 h${bw - 6} q3,0 3,3 v${h - 3} z"/>`;
+    s += `<rect class="hit" x="${L + k * cw}" y="0" width="${cw}" height="${H - B}" data-k="${k}"/>`;
   });
+  el.innerHTML = s + '</svg><div class="tip"></div>';
+  const tip = el.querySelector('.tip'), svg = el.querySelector('svg');
+  el.querySelectorAll('.hit').forEach(r => {
+    r.onmouseenter = () => {
+      const b = buckets[r.dataset.k], box = svg.getBoundingClientRect(), sc = box.width / W;
+      tip.innerHTML = `<b>${b.n}</b> cadastro${b.n === 1 ? '' : 's'}<br><span class="muted">${b.d.toLocaleDateString('pt-BR', { weekday:'short', day:'2-digit', month:'short' })}</span>`;
+      tip.style.left = ((+r.getAttribute('x') + cw / 2) * sc) + 'px'; tip.style.top = (y(b.n) * sc) + 'px'; tip.style.opacity = 1;
+    };
+    r.onmouseleave = () => tip.style.opacity = 0;
+  });
+}
+// Barras horizontais de magnitude (uma cor). items: [[rótulo, valor, textoValor?]]
+function hbars(el, items, emptyMsg = 'Ainda sem dados') {
+  const tot = items.reduce((a, [, n]) => a + n, 0);
+  if (!tot) { el.innerHTML = `<div class="empty">${emptyMsg}</div>`; return; }
+  const max = Math.max(...items.map(([, n]) => n));
+  el.innerHTML = items.map(([l, n, t]) => `<div class="hrow"><div class="lab"><span>${esc(l)}</span><span>${t ?? `${n} · ${Math.round(n / tot * 100)}%`}</span></div><div class="track"><div class="fill" style="width:${max ? n / max * 100 : 0}%"></div></div></div>`).join('');
+}
+const countBy = (rows, f) => { const m = {}; rows.forEach(r => { const k = f(r); m[k] = (m[k] || 0) + 1; }); return Object.entries(m).sort((a, b) => b[1] - a[1]); };
 
-  async function carregarInscricoes(){
-    try{
-      const resp = await fetch(
-        `${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_inscricoes?select=*&order=criado_em.asc`,
-        {
-          headers: {
-            'apikey': CONFIG.SUPABASE_ANON_KEY,
-            'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-          }
-        }
-      );
-      dadosAtuais = await resp.json();
-      atualizarStats();
-      renderizarTabela();
-    }catch(err){
-      console.error('Erro ao carregar inscrições:', err);
-      alert('Erro ao carregar inscrições. Veja o console.');
-    }
-  }
+/* ---------- Lista VIP ---------- */
+function renderVip() {
+  const now = new Date(), d0 = new Date(); d0.setHours(0,0,0,0);
+  const d7 = new Date(d0); d7.setDate(d7.getDate() - 6); const d14 = new Date(d0); d14.setDate(d14.getDate() - 13);
+  const hoje = VIP.filter(r => new Date(r.criado_em) >= d0).length;
+  const s7 = VIP.filter(r => new Date(r.criado_em) >= d7).length;
+  const p7 = VIP.filter(r => { const d = new Date(r.criado_em); return d >= d14 && d < d7; }).length;
+  const wa = VIP.filter(r => r.etapa !== 'novo' && r.etapa !== 'sem_resposta').length;
+  const pag = VIP.filter(r => ['inscrita','pagou'].includes(r.etapa)).length;
+  const pct = (n) => VIP.length ? Math.round(n / VIP.length * 100) + '% da lista' : '—';
+  $('dias').textContent = Math.max(0, Math.ceil((EVENTO - now) / 864e5));
+  $('kTotal').textContent = VIP.length; $('kTotalS').textContent = 'pessoas com prioridade';
+  $('kHoje').textContent = hoje; $('kHojeS').textContent = now.toLocaleDateString('pt-BR', { weekday:'long' });
+  $('k7').textContent = s7; $('k7S').textContent = p7 ? `${s7 >= p7 ? '▲' : '▼'} ${Math.abs(Math.round((s7 - p7) / p7 * 100))}% vs 7 dias antes` : 'semana anterior: 0';
+  $('kWa').textContent = wa; $('kWaS').textContent = pct(wa);
+  $('kPag').textContent = pag; $('kPagS').textContent = pct(pag);
 
-  function atualizarStats(){
-    const confirmadas = dadosAtuais.filter(d => d.status_pagamento === 'confirmado').length;
-    const pendentes = dadosAtuais.filter(d => d.status_pagamento === 'pendente').length;
-    const espera = dadosAtuais.filter(d => d.status_pagamento === 'lista_espera').length;
-    document.getElementById('stat-confirmadas').textContent = confirmadas;
-    document.getElementById('stat-pendentes').textContent = pendentes;
-    document.getElementById('stat-espera').textContent = espera;
-  }
+  barsByDay($('chDias'), VIP);
+  hbars($('chFunil'), Object.keys(ETAPAS).map(k => [ETAPAS[k], VIP.filter(r => r.etapa === k).length]));
+  hbars($('chInteresse'), countBy(VIP, r => r.interesse || 'Não informou'));
+  hbars($('chOrigem'), countBy(VIP, r => ORIGENS[r.origem] || r.origem || '—'));
+  if (!$('fEtapa').options.length || $('fEtapa').options.length === 1) $('fEtapa').insertAdjacentHTML('beforeend', Object.entries(ETAPAS).map(([k, v]) => `<option value="${k}">${v}</option>`).join(''));
+  renderVipTable();
+}
+function vipFiltered() {
+  const q = $('busca').value.trim().toLowerCase(), qd = q.replace(/\D/g, ''), e = $('fEtapa').value;
+  return VIP.filter(r => (!e || r.etapa === e) && (!q || r.nome.toLowerCase().includes(q) || r.email.toLowerCase().includes(q) || code(r.id).toLowerCase().includes(q) || (qd && r.whatsapp.includes(qd))));
+}
+function renderVipTable() {
+  const rows = vipFiltered();
+  $('tbVip').innerHTML = rows.length ? rows.map(r => {
+    const msg = encodeURIComponent(`Oi, ${r.nome.split(' ')[0]}! Aqui é do Chama Acesa 🔥 Sua inscrição na Lista VIP é a ${code(r.id)}.`);
+    return `<tr>
+      <td class="code">${code(r.id)}</td>
+      <td>${esc(r.nome)}</td>
+      <td><a class="wa" href="https://wa.me/55${r.whatsapp.replace(/^55/, '')}?text=${msg}" target="_blank" rel="noopener">${waIcon}${esc(fone(r.whatsapp))}</a></td>
+      <td class="muted">${esc(r.email)}</td>
+      <td>${r.interesse ? `<span class="pill">${esc(r.interesse)}</span>` : '<span class="muted">—</span>'}</td>
+      <td class="muted">${esc(ORIGENS[r.origem] || r.origem)}</td>
+      <td class="muted">${new Date(r.criado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</td>
+      <td><select class="etapa" data-id="${r.id}" data-v="${r.etapa}">${Object.entries(ETAPAS).map(([k, v]) => `<option value="${k}"${k === r.etapa ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="8" class="empty">${VIP.length ? 'Nenhum resultado para esse filtro.' : 'A lista ainda está vazia. Os cadastros da landing page aparecem aqui na hora.'}</td></tr>`;
+  $('vipFoot').textContent = `${rows.length} de ${VIP.length} pessoas`;
+}
+$('busca').oninput = renderVipTable; $('fEtapa').onchange = renderVipTable;
+$('tbVip').onchange = async (e) => {
+  const s = e.target.closest('select.etapa'); if (!s) return;
+  const { error } = await sb.from('chama_acesa_lista_espera').update({ etapa: s.value }).eq('id', s.dataset.id);
+  if (error) { alert('Não foi possível salvar a etapa.'); return; }
+  VIP.find(r => r.id == s.dataset.id).etapa = s.value; s.dataset.v = s.value; renderVip();
+};
 
-  function filtrar(status, btn){
-    filtroAtual = status;
-    document.querySelectorAll('.filtros button').forEach(b => b.classList.remove('ativo'));
-    btn.classList.add('ativo');
-    renderizarTabela();
-  }
+/* ---------- 1ª edição ---------- */
+function renderEd1() {
+  const conf = INSC.filter(r => r.status_pagamento === 'confirmado');
+  const tot = PED.reduce((a, p) => a + Number(p.total || 0), 0);
+  $('eConf').textContent = conf.length; $('eConfS').textContent = `${INSC.length - conf.length} ficaram na lista de espera`;
+  $('ePres').textContent = INSC.filter(r => r.presente).length;
+  $('ePed').textContent = PED.length; $('ePedS').textContent = conf.length ? `${Math.round(new Set(PED.map(p => p.nome_cliente)).size / conf.length * 100) || '—'}% das participantes` : '';
+  $('eTot').textContent = brl(tot); $('eTotS').textContent = 'em produtos na noite';
+  $('eTic').textContent = PED.length ? brl(tot / PED.length) : '—';
+  const prod = {}; PED.forEach(p => (p.itens || []).forEach(i => { const k = i.nome; prod[k] = (prod[k] || 0) + Number(i.qtd || 0); }));
+  hbars($('chProd'), Object.entries(prod).sort((a, b) => b[1] - a[1]).slice(0, 8).map(([k, n]) => [k, n, `${n} un.`]));
+  const vend = {}; PED.forEach(p => { const k = p.vendedora || 'Não informada'; vend[k] = (vend[k] || 0) + Number(p.total || 0); });
+  hbars($('chVend'), Object.entries(vend).sort((a, b) => b[1] - a[1]).map(([k, n]) => [k, n, brl(n)]));
+  renderEd1Table();
+}
+function renderEd1Table() {
+  const q = $('busca1').value.trim().toLowerCase(), qd = q.replace(/\D/g, '');
+  const vipWa = new Set(VIP.map(r => r.whatsapp.replace(/\D/g, '')));
+  const rows = INSC.filter(r => !q || r.nome.toLowerCase().includes(q) || (qd && String(r.whatsapp).includes(qd)));
+  $('tbEd1').innerHTML = rows.map(r => `<tr>
+    <td class="code">${r.numero_inscricao ?? '—'}</td><td>${esc(r.nome)}</td><td>${esc(fone(r.whatsapp))}</td><td class="muted">${esc(r.email)}</td>
+    <td><span class="pill">${r.status_pagamento === 'confirmado' ? 'Confirmada' : 'Lista de espera'}</span></td>
+    <td>${r.presente ? 'Sim' : '<span class="muted">—</span>'}</td>
+    <td>${vipWa.has(String(r.whatsapp).replace(/\D/g, '')) ? '<span class="pill" style="border-color:rgba(95,179,122,.7)">Sim</span>' : '<span class="muted">Não</span>'}</td></tr>`).join('');
+}
+$('busca1').oninput = renderEd1Table;
 
-  function renderizarTabela(){
-    const corpo = document.getElementById('tabela-corpo');
-    const lista = filtroAtual === 'todos'
-      ? dadosAtuais
-      : dadosAtuais.filter(d => d.status_pagamento === filtroAtual);
-
-    corpo.innerHTML = '';
-    document.getElementById('vazio-msg').style.display = lista.length ? 'none' : 'block';
-
-    lista.forEach(item => {
-      const tr = document.createElement('tr');
-      const statusLabel = item.status_pagamento === 'lista_espera' ? 'Lista de espera'
-        : item.status_pagamento === 'confirmado' ? 'Confirmado' : 'Pendente';
-
-      tr.innerHTML = `
-        <td data-label="Nº">${item.numero_inscricao ?? '—'}</td>
-        <td data-label="Nome">${escapeHtml(item.nome)}</td>
-        <td data-label="CPF">${escapeHtml(item.cpf)}</td>
-        <td data-label="WhatsApp">${escapeHtml(item.whatsapp)}</td>
-        <td data-label="E-mail">${escapeHtml(item.email)}</td>
-        <td data-label="Status"><span class="badge ${item.status_pagamento}">${statusLabel}</span></td>
-        <td data-label="Ação">
-          ${item.status_pagamento !== 'confirmado'
-            ? `<button class="acao-btn" onclick="confirmarPagamento('${item.id}')">Confirmar pagamento</button>`
-            : ''}
-          <button class="acao-btn excluir-btn" onclick="cancelarInscricao('${item.id}', '${escapeHtml(item.nome)}')">Cancelar / apagar</button>
-        </td>
-      `;
-      corpo.appendChild(tr);
-    });
-  }
-
-  async function confirmarPagamento(id){
-    try{
-      await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_inscricoes?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': CONFIG.SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ status_pagamento: 'confirmado' })
-      });
-      await carregarInscricoes();
-    }catch(err){
-      console.error('Erro ao confirmar pagamento:', err);
-      alert('Erro ao confirmar pagamento. Veja o console.');
-    }
-  }
-
-  async function cancelarInscricao(id, nome){
-    const confirmar = confirm(`Tem certeza que deseja apagar a inscrição de "${nome}"? Essa ação não pode ser desfeita.`);
-    if(!confirmar) return;
-
-    try{
-      await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_inscricoes?id=eq.${id}`, {
-        method: 'DELETE',
-        headers: {
-          'apikey': CONFIG.SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
-          'Prefer': 'return=minimal'
-        }
-      });
-      await carregarInscricoes();
-    }catch(err){
-      console.error('Erro ao apagar inscrição:', err);
-      alert('Erro ao apagar inscrição. Veja o console.');
-    }
-  }
-
-  function exportarCSV(){
-    if(!dadosAtuais.length){
-      alert('Nenhum dado carregado ainda.');
-      return;
-    }
-    const colunas = ['numero_inscricao','nome','cpf','whatsapp','email','status_pagamento','criado_em'];
-    const cabecalho = ['Numero','Nome','CPF','WhatsApp','Email','Status','Criado em'];
-    const linhas = dadosAtuais.map(item =>
-      colunas.map(col => {
-        const valor = item[col] ?? '';
-        return `"${String(valor).replace(/"/g, '""')}"`;
-      }).join(';')
-    );
-    const csv = [cabecalho.join(';'), ...linhas].join('\n');
-    const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `chama-acesa-inscricoes-${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  // ---------- ABAS ----------
-  function mudarAba(aba, btn){
-    document.querySelectorAll('#painel-view > .filtros button[data-aba]').forEach(b => b.classList.remove('ativo'));
-    btn.classList.add('ativo');
-    ['inscricoes','estoque','pedidos'].forEach(a => {
-      document.getElementById('aba-' + a).style.display = (a === aba) ? 'block' : 'none';
-    });
-    if(aba === 'estoque') carregarProdutos();
-    if(aba === 'pedidos') carregarPedidos();
-  }
-
-  // ---------- ESTOQUE ----------
-  async function carregarProdutos(){
-    try{
-      const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_produtos?select=*&order=nome.asc`, {
-        headers: {
-          'apikey': CONFIG.SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-        }
-      });
-      const produtos = await resp.json();
-      renderEstoque(produtos);
-    }catch(err){
-      console.error('Erro ao carregar produtos:', err);
-    }
-  }
-
-  function renderEstoque(produtos){
-    const corpo = document.getElementById('tabela-estoque');
-    document.getElementById('vazio-estoque').style.display = produtos.length ? 'none' : 'block';
-    corpo.innerHTML = produtos.map(p => `
-      <tr>
-        <td data-label="Produto">${p.cor_hex ? `<span style="display:inline-block;width:12px;height:12px;border-radius:50%;background:${p.cor_hex};margin-right:6px;"></span>` : ''}${escapeHtml(p.nome)}</td>
-        <td data-label="Variante">${escapeHtml(p.variante || '—')}</td>
-        <td data-label="Preço"><input type="number" step="0.01" value="${p.preco}" style="width:80px; background:rgba(0,0,0,.2); color:#f5ece0; border:1px solid rgba(217,171,95,.4); border-radius:6px; padding:4px 6px;" onchange="atualizarProduto('${p.id}','preco',this.value)"></td>
-        <td data-label="Estoque atual"><input type="number" value="${p.estoque_atual}" style="width:60px; background:rgba(0,0,0,.2); color:#f5ece0; border:1px solid rgba(217,171,95,.4); border-radius:6px; padding:4px 6px;" onchange="atualizarProduto('${p.id}','estoque_atual',this.value)"></td>
-        <td data-label="Inicial">${p.estoque_inicial}</td>
-        <td data-label="Ação"><button class="acao-btn" onclick="carregarProdutos()">Salvo automático</button></td>
-      </tr>
-    `).join('');
-  }
-
-  async function atualizarProduto(id, campo, valor){
-    try{
-      await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_produtos?id=eq.${id}`, {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json',
-          'apikey': CONFIG.SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`,
-          'Prefer': 'return=minimal'
-        },
-        body: JSON.stringify({ [campo]: parseFloat(valor) })
-      });
-    }catch(err){
-      console.error('Erro ao atualizar produto:', err);
-      alert('Erro ao salvar. Veja o console.');
-    }
-  }
-
-  // ---------- PEDIDOS ----------
-  let pedidosAtuais = [];
-  async function carregarPedidos(){
-    try{
-      const resp = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/chama_acesa_pedidos?select=*&order=criado_em.desc`, {
-        headers: {
-          'apikey': CONFIG.SUPABASE_ANON_KEY,
-          'Authorization': `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-        }
-      });
-      pedidosAtuais = await resp.json();
-      renderPedidos();
-    }catch(err){
-      console.error('Erro ao carregar pedidos:', err);
-    }
-  }
-
-  function renderPedidos(){
-    const corpo = document.getElementById('tabela-pedidos');
-    document.getElementById('vazio-pedidos').style.display = pedidosAtuais.length ? 'none' : 'block';
-    corpo.innerHTML = pedidosAtuais.map(p => `
-      <tr>
-        <td data-label="Vendedora">${escapeHtml(p.vendedora || '—')}</td>
-        <td data-label="Cliente">${escapeHtml(p.nome_cliente)}</td>
-        <td data-label="Itens">${(p.itens || []).map(i => `${i.qtd}x ${escapeHtml(i.nome)}${i.variante ? ' ('+escapeHtml(i.variante)+')' : ''}`).join(', ')}</td>
-        <td data-label="Total">R$ ${Number(p.total).toFixed(2)}</td>
-        <td data-label="Obs.">${escapeHtml(p.observacao || '—')}</td>
-        <td data-label="Entrega">${p.quer_entrega ? '📦 ' + escapeHtml(p.endereco || '') : '—'}</td>
-      </tr>
-    `).join('');
-  }
-
-  function exportarPedidosCSV(){
-    if(!pedidosAtuais.length){ alert('Nenhum pedido carregado.'); return; }
-    const linhas = [['Vendedora','Cliente','Itens','Total','Observação','Entrega','Endereço','Criado em']];
-    pedidosAtuais.forEach(p => {
-      linhas.push([
-        p.vendedora || '', p.nome_cliente,
-        (p.itens || []).map(i => `${i.qtd}x ${i.nome}${i.variante ? ' ('+i.variante+')' : ''}`).join(' | '),
-        Number(p.total).toFixed(2), p.observacao || '', p.quer_entrega ? 'sim' : 'não', p.endereco || '', p.criado_em
-      ]);
-    });
-    const csv = linhas.map(l => l.map(v => `"${String(v).replace(/"/g,'""')}"`).join(';')).join('\n');
-    const blob = new Blob(['\uFEFF' + csv], {type:'text/csv;charset=utf-8;'});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = `chama-acesa-pedidos-admin-${new Date().toISOString().slice(0,10)}.csv`;
-    a.click();
-    URL.revokeObjectURL(url);
-  }
-
-  function escapeHtml(str){
-    const div = document.createElement('div');
-    div.textContent = str ?? '';
-    return div.innerHTML;
-  }
+/* ---------- CSV ---------- */
+function csv(name, head, rows) {
+  const body = [head, ...rows].map(l => l.map(v => `"${String(v ?? '').replace(/"/g, '""')}"`).join(';')).join('\n');
+  const a = Object.assign(document.createElement('a'), { href: URL.createObjectURL(new Blob(['﻿' + body], { type:'text/csv' })), download: `${name}-${new Date().toISOString().slice(0, 10)}.csv` });
+  a.click(); URL.revokeObjectURL(a.href);
+}
+$('btnCsv').onclick = () => csv('chama-lista-vip', ['Inscricao','Nome','WhatsApp','Email','Interesse','Origem','Etapa','Cadastro'],
+  vipFiltered().map(r => [code(r.id), r.nome, r.whatsapp, r.email, r.interesse, ORIGENS[r.origem] || r.origem, ETAPAS[r.etapa], new Date(r.criado_em).toLocaleString('pt-BR')]));
+$('btnCsv1').onclick = () => csv('chama-1a-edicao', ['Numero','Nome','WhatsApp','Email','Status','Check-in'],
+  INSC.map(r => [r.numero_inscricao, r.nome, r.whatsapp, r.email, r.status_pagamento, r.presente ? 'sim' : 'não']));
 </script>
 </body>
 </html>
