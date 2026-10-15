@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Palestras da 1ª edição — Chama Acesa</title>
+<link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/vip.css">
+<script src="assets/js/tracking.js"></script>
+</head>
+<body>
+<div class="wrap">
+  <div class="top">
+    <a class="logo" href="index.html"><svg viewBox="395 285 240 270"><use href="#of-flame"/></svg><b>Chama<i>ACESA</i></b></a>
+    <span class="pill">Lista VIP</span>
+  </div>
+
+  <section class="hero">
+    <span class="eyebrow">Seu presente da Lista VIP</span>
+    <h1>As conversas da <em>1ª edição</em>, para assistir quando quiser</h1>
+    <p>As palestras completas da noite de agosto. Assista com calma, salve esta página e volte sempre que precisar.</p>
+  </section>
+
+  <div id="talks"></div>
+
+  <section class="talk" style="text-align:center">
+    <h2 class="sec">Ofertas especiais da Lista VIP</h2>
+    <p class="talk-sum" style="margin:10px auto 18px">Produtos da Farmácia Bioflora com condição exclusiva até 25/11.</p>
+    <a class="of-btn" style="display:inline-block;padding:14px 28px" href="ofertas.html">Ver todas as ofertas</a>
+  </section>
+
+  <footer><a href="politica.html">Política de Privacidade</a> · Chama Acesa é uma iniciativa da Farmácia Bioflora.</footer>
+</div>
+
+<script src="assets/js/ofertas.js"></script>
+<script>
+  // youtube: ID do video "nao listado" (ex.: "dQw4w9WgXcQ"). Vazio = "em breve".
+  const TALKS = [
+    { nome: 'Rebeca', role: 'Mentora de liderança', foto: 'rebeca.jpg', tema: 'Autoliderança: qual mulher você obedece?', youtube: '',
+      resumo: 'Como as nossas decisões guiam a chama da vida, as muitas vozes que existem dentro de nós e o exercício de separar fato, emoção e razão.',
+      ofertas: ['bem_estar', 'pele_beleza'] },
+    { nome: 'Dra. Patrícia', role: 'Ginecologista', foto: 'patricia.jpg', tema: 'Libido, hormônios e relacionamento', youtube: '',
+      resumo: 'Sexo e relacionamento, desconexão do casal, a libido da vida e a libido sexual, e por que conversar mais muda tudo.',
+      ofertas: ['libido_hormonios'] },
+    { nome: 'Eriádiny', role: 'Fisioterapeuta pélvica', foto: 'eriadiny.jpg', tema: 'Saúde íntima e assoalho pélvico', youtube: '',
+      resumo: 'Em breve.', ofertas: ['libido_hormonios', 'bem_estar'] },
+  ];
+  const play = '<svg viewBox="0 0 24 24"><path d="M7 4.5v15l13-7.5z"/></svg>';
+  const box = document.getElementById('talks');
+  box.innerHTML = TALKS.map((t, i) => `
+    <section class="talk">
+      <div class="talk-head"><img src="${t.foto}" alt="${t.nome}"><div><h2>${t.nome}</h2><div class="role">${t.role} · ${t.tema}</div></div></div>
+      <div class="yt" data-id="${t.youtube}">${t.youtube
+        ? `<img src="https://i.ytimg.com/vi/${t.youtube}/maxresdefault.jpg" alt=""><button aria-label="Assistir"><span>${play}</span></button>`
+        : `<div class="soon"><b>Em edição</b><span>A gravação desta palestra chega em breve, aqui e no seu WhatsApp.</span></div>`}</div>
+      <p class="talk-sum">${t.resumo}</p>
+      <div class="ups-title"><h3>Indicados para este tema</h3><span>Oferta Lista VIP · até 25/11</span></div>
+      <div class="of-row" id="ups${i}"></div>
+    </section>`).join('');
+  TALKS.forEach((t, i) => renderOfertas(document.getElementById('ups' + i), t.ofertas));
+  // carrega o player so no clique (pagina leve no celular)
+  document.querySelectorAll('.yt button').forEach(b => b.onclick = () => {
+    const yt = b.closest('.yt');
+    yt.innerHTML = `<iframe src="https://www.youtube-nocookie.com/embed/${yt.dataset.id}?autoplay=1&rel=0" allow="autoplay; encrypted-media; picture-in-picture" allowfullscreen></iframe>`;
+    if (window.track) track('ViewContent', { content_name: 'palestra', video: yt.dataset.id });
+  });
+</script>
+</body>
+</html>

@@ -1,0 +1,67 @@
+/* Paginas da Lista VIP (palestras.html, ofertas.html) */
+@font-face{font-family:'Cal Sans SB';src:url('../fonts/CalSans-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+:root{--v1:#170504;--v2:#33090a;--v3:#560f11;--brasa:#d3480f;--brasa2:#f2711c;--dou:#d9ab5f;--douc:#f4dfae;--txt:#f7ece1;--soft:#e4c9b7;--creme:#fbf3ea;
+  --serif:'Newsreader',Georgia,serif;--sans:'Montserrat',system-ui,sans-serif;--display:'Cal Sans SB','Montserrat',sans-serif}
+*{margin:0;padding:0;box-sizing:border-box}
+body{font-family:var(--sans);font-weight:300;background:var(--v1);color:var(--txt);line-height:1.6;overflow-x:hidden}
+body::before{content:"";position:fixed;inset:0;z-index:-1;pointer-events:none;background:radial-gradient(ellipse 60% 40% at 10% 0%,rgba(211,72,15,.32),transparent 70%),radial-gradient(ellipse 50% 40% at 95% 30%,rgba(217,171,95,.1),transparent 70%)}
+a{color:var(--douc)}
+.wrap{max-width:1080px;margin:0 auto;padding:0 20px}
+.top{display:flex;align-items:center;justify-content:space-between;padding:22px 0}
+.logo{display:flex;align-items:center;gap:10px;text-decoration:none;color:var(--txt)}
+.logo svg{width:24px;height:27px;color:var(--douc)}
+.logo b{font-weight:300;font-size:1.05rem}.logo b i{font-family:var(--serif);font-style:normal;letter-spacing:.12em;color:var(--dou);margin-left:.2em}
+.pill{font-family:var(--display);font-weight:600;font-size:.72rem;letter-spacing:.12em;text-transform:uppercase;color:var(--douc);border:1px solid rgba(217,171,95,.4);border-radius:999px;padding:6px 14px}
+.hero{padding:40px 0 30px;text-align:center}
+.hero h1{font-family:var(--serif);font-weight:400;font-size:clamp(2.1rem,6vw,3.4rem);line-height:1.1;text-wrap:balance}
+.hero h1 em{color:var(--douc)}
+.hero p{color:var(--soft);max-width:600px;margin:14px auto 0;text-wrap:balance}
+.badge{display:inline-flex;gap:8px;align-items:center;margin-top:18px;padding:8px 16px;border-radius:12px;background:rgba(211,72,15,.15);border:1px solid rgba(242,113,28,.35);font-size:.85rem;color:var(--douc)}
+h2.sec{font-family:var(--serif);font-weight:400;font-size:clamp(1.6rem,4vw,2.2rem);line-height:1.15;text-wrap:balance}
+.eyebrow{font-family:var(--display);font-weight:600;font-size:.72rem;letter-spacing:.14em;text-transform:uppercase;color:var(--dou)}
+
+/* palestras */
+.talk{padding:50px 0;border-top:1px solid rgba(217,171,95,.14)}
+.talk-head{display:flex;gap:18px;align-items:center;margin-bottom:20px}
+.talk-head img{width:64px;height:64px;border-radius:50%;object-fit:cover;border:2px solid rgba(217,171,95,.5)}
+.talk-head h2{font-family:var(--serif);font-weight:400;font-size:1.7rem;line-height:1.15}
+.talk-head .role{color:var(--soft);font-size:.9rem}
+.yt{position:relative;aspect-ratio:16/9;border-radius:18px;overflow:hidden;background:#000;box-shadow:0 30px 70px rgba(0,0,0,.45)}
+.yt iframe,.yt img{position:absolute;inset:0;width:100%;height:100%;border:0;object-fit:cover}
+.yt button{position:absolute;inset:0;border:0;background:linear-gradient(180deg,transparent 50%,rgba(23,5,4,.7));cursor:pointer;display:flex;align-items:center;justify-content:center}
+.yt button span{width:78px;height:78px;border-radius:50%;background:rgba(211,72,15,.95);display:flex;align-items:center;justify-content:center;box-shadow:0 10px 30px rgba(0,0,0,.4)}
+.yt button svg{width:30px;fill:#fff;margin-left:4px}
+.yt .soon{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center;padding:20px;background:linear-gradient(135deg,var(--v3),var(--v2))}
+.yt .soon b{font-family:var(--display);font-weight:600;color:var(--douc)}
+.talk-sum{color:var(--soft);margin:16px 0 26px;max-width:760px}
+.ups-title{display:flex;align-items:baseline;justify-content:space-between;gap:12px;margin-bottom:14px}
+.ups-title h3{font-family:var(--display);font-weight:600;font-size:1rem}
+.ups-title span{font-size:.8rem;color:var(--soft)}
+
+/* cards de oferta */
+.of-row{display:flex;gap:14px;overflow-x:auto;scroll-snap-type:x mandatory;padding-bottom:12px;scrollbar-width:none;margin:0 -20px;padding-left:20px;padding-right:20px}
+.of-row::-webkit-scrollbar{display:none}
+.of-row .of-card{flex:0 0 min(70vw,240px);scroll-snap-align:start}
+.of-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(220px,1fr));gap:16px}
+.of-card{background:linear-gradient(170deg,rgba(86,15,17,.45),rgba(23,5,4,.9));border:1px solid rgba(217,171,95,.2);border-radius:18px;overflow:hidden;display:flex;flex-direction:column}
+.of-img{aspect-ratio:1;background:#fbf3ea;display:flex;align-items:center;justify-content:center}
+.of-img img{width:100%;height:100%;object-fit:cover}
+.of-img svg{width:44px;height:50px;color:var(--brasa2)}
+.of-body{padding:14px 14px 16px;display:flex;flex-direction:column;gap:6px;flex:1}
+.of-tema{font-size:.66rem;letter-spacing:.12em;text-transform:uppercase;color:var(--dou)}
+.of-body h4{font-family:var(--display);font-weight:600;font-size:1rem;line-height:1.2}
+.of-desc{font-size:.8rem;color:var(--soft)}
+.of-var{display:flex;flex-wrap:wrap;gap:6px}
+.of-var button{display:inline-flex;align-items:center;gap:5px;padding:4px 9px;border-radius:999px;border:1px solid rgba(217,171,95,.35);background:transparent;color:var(--soft);font:inherit;font-size:.72rem;cursor:pointer}
+.of-var button.on{border-color:var(--brasa2);color:var(--txt)}
+.of-var i{width:9px;height:9px;border-radius:50%}
+.of-preco{margin-top:auto;display:flex;align-items:baseline;gap:8px}
+.of-preco s{font-size:.8rem;color:var(--soft);opacity:.7}
+.of-preco b{font-family:var(--display);font-weight:600;font-size:1.3rem;color:var(--douc)}
+.of-btn{display:block;text-align:center;padding:11px;border-radius:12px;background:linear-gradient(135deg,var(--brasa2),var(--brasa));color:#fff;text-decoration:none;font-weight:500;font-size:.88rem;letter-spacing:.04em;text-transform:uppercase}
+.of-btn:active{transform:scale(.98)}
+.of-loading{color:var(--soft);padding:30px 0;font-size:.9rem}
+.tabs{display:flex;gap:8px;flex-wrap:wrap;justify-content:center;margin:0 0 26px}
+.tabs button{padding:9px 16px;border-radius:999px;border:1px solid rgba(217,171,95,.35);background:transparent;color:var(--soft);font:inherit;font-size:.85rem;cursor:pointer}
+.tabs button.on{background:var(--brasa);border-color:var(--brasa);color:#fff}
+footer{padding:40px 0 60px;text-align:center;color:var(--soft);font-size:.8rem;border-top:1px solid rgba(217,171,95,.12);margin-top:40px}
