@@ -107,6 +107,19 @@
   .etapa[data-v="confirmou_whatsapp"]{border-color:rgba(224,166,58,.6)}
   .etapa[data-v="inscrita"],.etapa[data-v="pagou"]{border-color:rgba(95,179,122,.7)}
   .etapa[data-v="sem_resposta"]{opacity:.65}
+  .st{display:inline-block;padding:3px 10px;border-radius:999px;font-size:.72rem;border:1px solid var(--line2)}
+  .st.pago{border-color:rgba(95,179,122,.7);color:#9fdcb2}
+  .st.reservado{border-color:rgba(224,166,58,.7);color:#f0c674}
+  .st.expirado{border-color:rgba(224,90,79,.6);color:#f0948c}
+  .st.cancelado{opacity:.55}
+  .lotes{display:flex;flex-direction:column;gap:14px}
+  .lote-row .lab{display:flex;justify-content:space-between;align-items:center;gap:10px;font-size:.84rem;margin-bottom:6px}
+  .lote-row .lab b{font-family:var(--display);font-weight:600}
+  .lote-row input{width:64px;padding:5px 8px;border-radius:8px;border:1px solid var(--line2);background:rgba(0,0,0,.25);text-align:center}
+  .track2{height:12px;border-radius:6px;background:rgba(247,236,225,.06);overflow:hidden;display:flex}
+  .track2 .p{background:var(--ok)}.track2 .r{background:rgba(224,166,58,.7)}
+  .legend{display:flex;gap:16px;font-size:.75rem;color:var(--txt2);margin-top:4px}
+  .legend i{display:inline-block;width:9px;height:9px;border-radius:2px;margin-right:6px;vertical-align:middle}
   .muted{color:var(--muted)}
   .foot{color:var(--muted);font-size:.75rem;margin-top:10px}
 
@@ -136,7 +149,8 @@
       <div><b>Chama<i>ACESA</i></b><small>Painel</small></div>
     </div>
     <nav class="tabs">
-      <button class="on" data-tab="vip">Lista VIP · 25/11</button>
+      <button class="on" data-tab="ing">Ingressos · 25/11</button>
+      <button data-tab="vip">Lista VIP</button>
       <button data-tab="ed1">1ª edição</button>
     </nav>
     <div class="hright">
@@ -147,8 +161,47 @@
   </header>
 
   <main>
+    <!-- ============ INGRESSOS 25/11 ============ -->
+    <section id="tab-ing">
+      <div class="pagehead">
+        <div><h2>Ingressos da 2ª edição</h2><p>Reservas da landing page e do link do grupo (/lote0). Marque "Pago" quando o comprovante chegar.</p></div>
+        <div class="countdown"><div class="n" id="dias2">—</div><span>dias para o<br>Chama Acesa · 25/11</span></div>
+      </div>
+      <div class="tiles">
+        <div class="tile hero"><div class="k">Pagas</div><div class="v" id="iPagas">—</div><div class="s" id="iPagasS">&nbsp;</div></div>
+        <div class="tile"><div class="k">Receita confirmada</div><div class="v" id="iRec">—</div><div class="s" id="iRecS">&nbsp;</div></div>
+        <div class="tile"><div class="k">Aguardando pagamento</div><div class="v" id="iRes">—</div><div class="s">reservas dentro das 24h</div></div>
+        <div class="tile"><div class="k">Reservas vencidas</div><div class="v" id="iExp">—</div><div class="s">chamar no WhatsApp</div></div>
+        <div class="tile"><div class="k">Lote em venda</div><div class="v" id="iLote" style="font-size:1.5rem">—</div><div class="s" id="iLoteS">&nbsp;</div></div>
+      </div>
+      <div class="grid" style="grid-template-columns:1fr 1.6fr">
+        <div class="card">
+          <h3>Lotes</h3><div class="cap">Pagas e reservadas por lote. Para liberar +5 no Lote 0, mude as vagas (10 → 15) e tire 5 do Lote 1.</div>
+          <div class="lotes" id="lotes"></div>
+          <div class="legend"><span><i style="background:var(--ok)"></i>Pagas</span><span><i style="background:rgba(224,166,58,.7)"></i>Reservadas</span></div>
+        </div>
+        <div class="card">
+          <h3>Reservas por dia</h3><div class="cap">Últimos 30 dias</div>
+          <div class="chart" id="chIng"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="toolbar">
+          <h3 class="grow">Inscritas</h3>
+          <input class="field" id="buscaI" placeholder="Buscar nome, CPF, WhatsApp ou CA2-…">
+          <select class="field" id="fSt"><option value="">Todas</option><option value="pago">Pagas</option><option value="reservado">Aguardando</option><option value="expirado">Vencidas</option><option value="cancelado">Canceladas</option></select>
+          <button class="btn" id="btnCsvI"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>CSV</button>
+        </div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Inscrição</th><th>Nome</th><th>CPF</th><th>WhatsApp</th><th>Lote</th><th>Valor</th><th>Situação</th><th>Reserva</th><th>Ação</th></tr></thead>
+          <tbody id="tbIng"></tbody>
+        </table></div>
+        <div class="foot" id="ingFoot"></div>
+      </div>
+    </section>
+
     <!-- ============ LISTA VIP ============ -->
-    <section id="tab-vip">
+    <section id="tab-vip" class="hide">
       <div class="pagehead">
         <div><h2>Lista VIP da próxima edição</h2><p>Cadastros da landing page, interesses e acompanhamento até a inscrição.</p></div>
         <div class="countdown"><div class="n" id="dias">—</div><span>dias para o<br>Chama Acesa · 25/11</span></div>
@@ -246,7 +299,7 @@ const fone = (w) => { const d = String(w||'').replace(/\D/g,''); return d.length
 const dia = (d) => new Date(d).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
 const waIcon = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>';
 
-let VIP = [], INSC = [], PED = [];
+let VIP = [], INSC = [], PED = [], ING = [], LOTES = [];
 
 /* ---------- auth ---------- */
 $('fLogin').onsubmit = async (e) => {
@@ -269,20 +322,21 @@ $('btnRefresh').onclick = () => load();
 /* ---------- tabs ---------- */
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
-  $('tab-vip').classList.toggle('hide', b.dataset.tab !== 'vip');
-  $('tab-ed1').classList.toggle('hide', b.dataset.tab !== 'ed1');
+  ['ing', 'vip', 'ed1'].forEach(t => $('tab-' + t).classList.toggle('hide', b.dataset.tab !== t));
 });
 
 /* ---------- dados ---------- */
 async function load() {
-  const [v, i, p] = await Promise.all([
+  const [v, i, p, g, l] = await Promise.all([
     sb.from('chama_acesa_lista_espera').select('*').order('id', { ascending:false }),
     sb.from('chama_acesa_inscricoes').select('numero_inscricao,nome,whatsapp,email,status_pagamento,presente,criado_em').order('numero_inscricao'),
     sb.from('chama_acesa_pedidos').select('itens,total,vendedora,nome_cliente,criado_em'),
+    sb.from('chama_ingressos').select('*').order('id', { ascending:false }),
+    sb.from('chama_lotes').select('*').order('ordem'),
   ]);
   if (v.error) { alert('Sem permissão para ler a lista. Faça login novamente.'); return; }
-  VIP = v.data; INSC = i.data || []; PED = p.data || [];
-  renderVip(); renderEd1();
+  VIP = v.data; INSC = i.data || []; PED = p.data || []; ING = g.data || []; LOTES = l.data || [];
+  renderIng(); renderVip(); renderEd1();
 }
 
 /* ---------- gráficos ---------- */
@@ -323,6 +377,79 @@ function hbars(el, items, emptyMsg = 'Ainda sem dados') {
   el.innerHTML = items.map(([l, n, t]) => `<div class="hrow"><div class="lab"><span>${esc(l)}</span><span>${t ?? `${n} · ${Math.round(n / tot * 100)}%`}</span></div><div class="track"><div class="fill" style="width:${max ? n / max * 100 : 0}%"></div></div></div>`).join('');
 }
 const countBy = (rows, f) => { const m = {}; rows.forEach(r => { const k = f(r); m[k] = (m[k] || 0) + 1; }); return Object.entries(m).sort((a, b) => b[1] - a[1]); };
+
+/* ---------- Ingressos 2a edicao ---------- */
+const ST = { pago:'Pago', reservado:'Aguardando', expirado:'Vencida', cancelado:'Cancelada' };
+const situacao = (r) => r.status === 'reservado' && new Date(r.expira_em) <= new Date() ? 'expirado' : r.status;
+const brl2 = (n) => Number(n).toLocaleString('pt-BR', { style:'currency', currency:'BRL' });
+const cpfFmt = (c) => String(c || '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
+const loteNome = (id) => (LOTES.find(l => l.id === id) || {}).nome || id;
+function renderIng() {
+  const pagas = ING.filter(r => r.status === 'pago'), res = ING.filter(r => situacao(r) === 'reservado'), exp = ING.filter(r => situacao(r) === 'expirado');
+  const vagasTot = LOTES.reduce((a, l) => a + l.vagas, 0) || 1;
+  const rec = pagas.reduce((a, r) => a + Number(r.valor), 0);
+  $('dias2').textContent = Math.max(0, Math.ceil((EVENTO - new Date()) / 864e5));
+  $('iPagas').textContent = pagas.length; $('iPagasS').textContent = `de ${vagasTot} vagas · ${Math.round(pagas.length / vagasTot * 100)}%`;
+  $('iRec').textContent = brl(rec); $('iRecS').textContent = pagas.length ? `média ${brl2(rec / pagas.length)}` : 'meta: média R$ 199,90';
+  $('iRes').textContent = res.length; $('iExp').textContent = exp.length;
+  const ocup = (id) => ING.filter(r => r.lote_id === id && (r.status === 'pago' || situacao(r) === 'reservado')).length;
+  const atual = LOTES.find(l => l.publico && ocup(l.id) < l.vagas);
+  $('iLote').textContent = atual ? atual.nome : 'Esgotado';
+  $('iLoteS').textContent = atual ? `${brl2(atual.preco)} · restam ${atual.vagas - ocup(atual.id)}` : 'todas as vagas públicas ocupadas';
+  $('lotes').innerHTML = LOTES.map(l => {
+    const p = ING.filter(r => r.lote_id === l.id && r.status === 'pago').length, rr = ING.filter(r => r.lote_id === l.id && situacao(r) === 'reservado').length;
+    return `<div class="lote-row"><div class="lab"><span><b>${esc(l.nome)}</b> · ${brl2(l.preco)}${l.publico ? '' : ' · link /lote0'}</span>
+      <span>${p} pagas · ${rr} res. · vagas <input type="number" min="0" value="${l.vagas}" data-lote="${l.id}"></span></div>
+      <div class="track2"><div class="p" style="width:${p / l.vagas * 100}%"></div><div class="r" style="width:${rr / l.vagas * 100}%"></div></div></div>`;
+  }).join('');
+  barsByDay($('chIng'), ING.map(r => ({ criado_em: r.reservado_em })));
+  renderIngTable();
+}
+function ingFiltered() {
+  const q = $('buscaI').value.trim().toLowerCase(), qd = q.replace(/\D/g, ''), f = $('fSt').value;
+  return ING.filter(r => (!f || situacao(r) === f) && (!q || r.nome.toLowerCase().includes(q) || r.codigo.toLowerCase().includes(q) || (qd && (r.whatsapp.includes(qd) || r.cpf.includes(qd)))));
+}
+function msgIng(r) {
+  const n = r.nome.split(' ')[0], s = situacao(r);
+  if (s === 'pago') return `Oi, ${n}! Aqui é do Chama Acesa 🔥 Pagamento confirmado! Sua inscrição ${r.codigo} está garantida. Nos vemos dia 25/11, às 19h, no Restaurante Shitake.`;
+  if (s === 'expirado') return `Oi, ${n}! Aqui é do Chama Acesa 🔥 Vi que sua reserva ${r.codigo} venceu antes do pagamento. Ainda dá tempo de garantir sua vaga: chamaacesa.farmaciabioflora.com.br. Posso te ajudar?`;
+  return `Oi, ${n}! Aqui é do Chama Acesa 🔥 Sua vaga ${r.codigo} (${loteNome(r.lote_id)}, ${brl2(r.valor)}) está reservada. Conseguiu fazer o Pix? Se preferir cartão, te mando o link.`;
+}
+function renderIngTable() {
+  const rows = ingFiltered();
+  $('tbIng').innerHTML = rows.length ? rows.map(r => {
+    const s = situacao(r), sel = r.status === 'pago' ? (r.forma === 'cartao' ? 'pago_cartao' : 'pago_pix') : r.status;
+    return `<tr>
+      <td class="code">${r.codigo}</td><td>${esc(r.nome)}</td><td class="muted">${cpfFmt(r.cpf)}</td>
+      <td><a class="wa" href="https://wa.me/55${r.whatsapp.replace(/^55/, '')}?text=${encodeURIComponent(msgIng(r))}" target="_blank" rel="noopener">${waIcon}${esc(fone(r.whatsapp))}</a></td>
+      <td>${esc(loteNome(r.lote_id))}</td><td>${brl2(r.valor)}</td>
+      <td><span class="st ${s}">${ST[s]}${r.status === 'pago' && r.forma ? ' · ' + (r.forma === 'cartao' ? 'cartão' : 'Pix') : ''}</span></td>
+      <td class="muted">${new Date(r.reservado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</td>
+      <td><select class="etapa" data-id="${r.id}">${[['reservado','Aguardando'],['pago_pix','Pago · Pix'],['pago_cartao','Pago · cartão'],['cancelado','Cancelar']].map(([k, v]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
+    </tr>`;
+  }).join('') : `<tr><td colspan="9" class="empty">${ING.length ? 'Nenhum resultado para esse filtro.' : 'Nenhuma inscrição ainda. As reservas da landing page aparecem aqui na hora.'}</td></tr>`;
+  $('ingFoot').textContent = `${rows.length} de ${ING.length} inscrições`;
+}
+$('buscaI').oninput = renderIngTable; $('fSt').onchange = renderIngTable;
+$('tbIng').onchange = async (e) => {
+  const s = e.target.closest('select.etapa'); if (!s) return;
+  const v = s.value, r = ING.find(x => x.id == s.dataset.id);
+  const upd = v.startsWith('pago') ? { status:'pago', forma: v === 'pago_cartao' ? 'cartao' : 'pix', pago_em: new Date().toISOString() }
+    : v === 'cancelado' ? { status:'cancelado' }
+    : { status:'reservado', forma:null, pago_em:null, expira_em: new Date(Date.now() + 864e5).toISOString() };
+  if (v === 'cancelado' && !confirm(`Cancelar a inscrição ${r.codigo} de ${r.nome}? A vaga volta para o lote.`)) { renderIngTable(); return; }
+  const { error } = await sb.from('chama_ingressos').update(upd).eq('id', r.id);
+  if (error) { alert('Não foi possível salvar.'); renderIngTable(); return; }
+  Object.assign(r, upd); renderIng();
+};
+$('lotes').onchange = async (e) => {
+  const i = e.target.closest('input[data-lote]'); if (!i) return;
+  const { error } = await sb.from('chama_lotes').update({ vagas: Number(i.value) }).eq('id', i.dataset.lote);
+  if (error) { alert('Não foi possível alterar as vagas.'); return; }
+  LOTES.find(l => l.id === i.dataset.lote).vagas = Number(i.value); renderIng();
+};
+$('btnCsvI').onclick = () => csv('chama-ingressos', ['Inscricao','Nome','CPF','WhatsApp','Email','Lote','Valor','Situacao','Forma','Reserva','Pago em'],
+  ingFiltered().map(r => [r.codigo, r.nome, cpfFmt(r.cpf), r.whatsapp, r.email, loteNome(r.lote_id), String(r.valor).replace('.', ','), ST[situacao(r)], r.forma, new Date(r.reservado_em).toLocaleString('pt-BR'), r.pago_em ? new Date(r.pago_em).toLocaleString('pt-BR') : '']));
 
 /* ---------- Lista VIP ---------- */
 function renderVip() {
