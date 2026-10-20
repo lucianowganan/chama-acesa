@@ -193,7 +193,7 @@
           <button class="btn" id="btnCsvI"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>CSV</button>
         </div>
         <div class="tbl-wrap"><table>
-          <thead><tr><th>Inscrição</th><th>Nome</th><th>CPF</th><th>WhatsApp</th><th>Lote</th><th>Valor</th><th>Situação</th><th>Reserva</th><th>Ação</th></tr></thead>
+          <thead><tr><th>Inscrição</th><th>Ingresso</th><th>Nome</th><th>CPF</th><th>WhatsApp</th><th>Lote</th><th>Valor</th><th>Situação</th><th>Reserva</th><th>Convite</th><th>Ação</th></tr></thead>
           <tbody id="tbIng"></tbody>
         </table></div>
         <div class="foot" id="ingFoot"></div>
@@ -420,14 +420,15 @@ function renderIngTable() {
   $('tbIng').innerHTML = rows.length ? rows.map(r => {
     const s = situacao(r), sel = r.status === 'pago' ? (r.forma === 'cartao' ? 'pago_cartao' : 'pago_pix') : r.status;
     return `<tr>
-      <td class="code">${r.codigo}</td><td>${esc(r.nome)}</td><td class="muted">${cpfFmt(r.cpf)}</td>
+      <td class="code">${r.codigo}</td><td>${r.status === 'pago' ? `<a class="code" href="ingresso.html?t=${r.ticket}" target="_blank" rel="noopener">${r.ticket}</a>` : '<span class="muted">—</span>'}${r.presente ? ' <span class="st pago">presente</span>' : ''}</td><td>${esc(r.nome)}</td><td class="muted">${cpfFmt(r.cpf)}</td>
       <td><a class="wa" href="https://wa.me/55${r.whatsapp.replace(/^55/, '')}?text=${encodeURIComponent(msgIng(r))}" target="_blank" rel="noopener">${waIcon}${esc(fone(r.whatsapp))}</a></td>
       <td>${esc(loteNome(r.lote_id))}</td><td>${brl2(r.valor)}</td>
       <td><span class="st ${s}">${ST[s]}${r.status === 'pago' && r.forma ? ' · ' + (r.forma === 'cartao' ? 'cartão' : 'Pix') : ''}</span></td>
       <td class="muted">${new Date(r.reservado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</td>
+      <td>${r.status !== 'pago' ? '<span class="muted">—</span>' : `<button class="btn mail" data-mail="${r.id}" title="${r.email ? esc(r.email) : 'sem e-mail'}">${r.email_enviado_em ? 'Reenviar' : 'Enviar'}</button>`}</td>
       <td><select class="etapa" data-id="${r.id}">${[['reservado','Aguardando'],['pago_pix','Pago · Pix'],['pago_cartao','Pago · cartão'],['cancelado','Cancelar']].map(([k, v]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
     </tr>`;
-  }).join('') : `<tr><td colspan="9" class="empty">${ING.length ? 'Nenhum resultado para esse filtro.' : 'Nenhuma inscrição ainda. As reservas da landing page aparecem aqui na hora.'}</td></tr>`;
+  }).join('') : `<tr><td colspan="11" class="empty">${ING.length ? 'Nenhum resultado para esse filtro.' : 'Nenhuma inscrição ainda. As reservas da landing page aparecem aqui na hora.'}</td></tr>`;
   $('ingFoot').textContent = `${rows.length} de ${ING.length} inscrições`;
 }
 $('buscaI').oninput = renderIngTable; $('fSt').onchange = renderIngTable;
@@ -436,12 +437,23 @@ $('tbIng').onchange = async (e) => {
   const v = s.value, r = ING.find(x => x.id == s.dataset.id);
   const upd = v.startsWith('pago') ? { status:'pago', forma: v === 'pago_cartao' ? 'cartao' : 'pix', pago_em: new Date().toISOString() }
     : v === 'cancelado' ? { status:'cancelado' }
-    : { status:'reservado', forma:null, pago_em:null, expira_em: new Date(Date.now() + 864e5).toISOString() };
+    : { status:'reservado', forma:null, pago_em:null, expira_em: new Date(Date.now() + 864e5).toISOString(), pagarme_link_id:null, pagarme_link_url:null };
   if (v === 'cancelado' && !confirm(`Cancelar a inscrição ${r.codigo} de ${r.nome}? A vaga volta para o lote.`)) { renderIngTable(); return; }
   const { error } = await sb.from('chama_ingressos').update(upd).eq('id', r.id);
   if (error) { alert('Não foi possível salvar.'); renderIngTable(); return; }
   Object.assign(r, upd); renderIng();
+  if (upd.status === 'pago' && confirm(`Enviar agora o convite com QR para ${r.email || 'esta inscrita (sem e-mail cadastrado)'}?`)) enviarConvite(r.id);
 };
+async function enviarConvite(id) {
+  const { data: { session } } = await sb.auth.getSession();
+  const resp = await fetch('https://gbbjpltqmbhlfluqhrmg.supabase.co/functions/v1/chama-enviar-confirmacao', {
+    method: 'POST', headers: { Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify({ id }),
+  });
+  const j = await resp.json().catch(() => ({}));
+  if (!j.ok) { alert('Convite não enviado: ' + (j.motivo || j.erro || resp.status)); return; }
+  const r = ING.find(x => x.id == id); r.email_enviado_em = new Date().toISOString(); renderIngTable();
+}
+$('tbIng').onclick = (e) => { const b = e.target.closest('button[data-mail]'); if (b) { b.disabled = true; b.textContent = 'Enviando...'; enviarConvite(b.dataset.mail); } };
 $('lotes').onchange = async (e) => {
   const i = e.target.closest('input[data-lote]'); if (!i) return;
   const { error } = await sb.from('chama_lotes').update({ vagas: Number(i.value) }).eq('id', i.dataset.lote);

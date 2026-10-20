@@ -52,3 +52,15 @@
 .palestrante{padding:20px 18px; border-radius:14px; background:rgba(211,72,15,.08); border:1px solid rgba(217,171,95,.2); text-align:center;}
 .palestrante h3{font-family:var(--font-serif); font-style:italic; font-weight:400; font-size:1.35rem; color:var(--creme); margin-bottom:4px;}
 .palestrante p{font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dourado-claro);}
+.pay-metodos{margin-top:10px; font-size:.86rem; color:var(--dourado-claro);}
+
+/* ---------- Paginas avulsas (pagamento.html, ingresso.html) ---------- */
+.solo{max-width:480px; margin:0 auto; padding:44px 16px 56px; text-align:center;}
+.solo .card{background:rgba(255,255,255,.035); border:1px solid rgba(217,171,95,.2); border-radius:20px; padding:30px 20px;}
+.solo h1{font-family:var(--font-heading); font-weight:600; font-size:clamp(1.6rem,6vw,2.1rem); line-height:1.15; color:var(--creme); margin:10px 0 10px;}
+.solo p{color:var(--texto-suave);}
+.ticket-code{font-family:var(--font-heading); font-size:2rem; letter-spacing:.3em; color:var(--dourado-claro); margin-top:14px; padding-left:.3em;}
+.spinner{width:42px; height:42px; margin:18px auto; border-radius:50%; border:3px solid rgba(217,171,95,.25); border-top-color:var(--brasa-2); animation:gira 1s linear infinite;}
+@keyframes gira{to{transform:rotate(360deg)}}
+.ingresso-qr{display:inline-block; margin-top:20px; padding:16px; background:#fff; border-radius:16px; line-height:0;}
+.ingresso-qr img, .ingresso-qr canvas{width:min(240px, 62vw) !important; height:auto !important; aspect-ratio:1;}

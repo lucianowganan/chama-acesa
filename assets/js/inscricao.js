@@ -127,6 +127,50 @@
     document.getElementById('payCard').addEventListener('click', () => t('Contact', { content_name: 'cartao', codigo: r.codigo }));
   }
 
+  /* ---------- Pagamento pela Pagar.me (Pix + cartao ate 3x) ---------- */
+  // Devolve a URL do link de pagamento, ou null se a Pagar.me estiver desligada/fora (cai no Pix manual).
+  async function linkPagarme(r, whatsapp) {
+    try {
+      const resp = await fetch(CFG.supabaseUrl + '/functions/v1/chama-checkout', {
+        method: 'POST',
+        headers: { apikey: CFG.supabaseKey, 'Content-Type': 'application/json' },
+        body: JSON.stringify({ codigo: r.codigo, whatsapp }),
+      });
+      const j = await resp.json();
+      return j.url || null;
+    } catch (e) {
+      console.error(e);
+      return null;
+    }
+  }
+  function mostrarCheckout(box, r, nome, url) {
+    const expira = new Date(r.expira_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
+    const primeiro = (nome || '').split(' ')[0];
+    box.innerHTML = `
+      <div class="pay">
+        <p class="pay-eyebrow">Vaga reservada por 24 horas</p>
+        <h2>Falta só o pagamento${primeiro ? ', ' + primeiro : ''}!</h2>
+        <div class="pay-code">Sua inscrição <strong>${r.codigo}</strong> · ${r.lote_nome}</div>
+        <div class="pay-valor">${brl(r.valor)}</div>
+        <a class="btn btn-primary" id="payGo" href="${url}">Pagar agora</a>
+        <p class="pay-metodos">Pix ou cartão de crédito em até ${Number(r.valor) >= 150 ? '3x' : Number(r.valor) >= 100 ? '2x' : '1x'} sem juros</p>
+        <ol class="pay-steps">
+          <li>Você vai para o ambiente seguro da Pagar.me (Stone).</li>
+          <li>Assim que o pagamento é aprovado, sua vaga é confirmada e o convite chega no seu e-mail.</li>
+        </ol>
+        <a class="pay-card" id="payManual" href="#">Prefiro pagar com Pix direto para a Bioflora</a>
+        <p class="pay-note">Reserva válida até ${expira}. Sem o pagamento nesse prazo, a vaga volta para o lote.</p>
+      </div>`;
+    document.getElementById('payGo').addEventListener('click', () => t('AddPaymentInfo', { content_name: r.lote_id, value: Number(r.valor), currency: 'BRL', codigo: r.codigo }));
+    document.getElementById('payManual').onclick = (e) => { e.preventDefault(); mostrarPagamento(box, r, nome); };
+  }
+  async function abrirPagamento(box, r, nome, whatsapp) {
+    if (r.status === 'pago') return mostrarPagamento(box, r, nome);
+    const url = await linkPagarme(r, whatsapp);
+    if (url) mostrarCheckout(box, r, nome, url);
+    else mostrarPagamento(box, r, nome);
+  }
+
   /* ---------- Formulario ---------- */
   function montarFormulario({ form, box, lote }) {
     const q = (id) => form.querySelector('#' + id);
@@ -141,7 +185,7 @@
     // quem ja reservou neste aparelho volta direto para o pagamento
     try {
       const salvo = JSON.parse(localStorage.getItem(CFG.storageKey) || 'null');
-      if (salvo && (salvo.r.status === 'pago' || new Date(salvo.r.expira_em) > new Date())) mostrarPagamento(box, salvo.r, salvo.nome);
+      if (salvo && (salvo.r.status === 'pago' || new Date(salvo.r.expira_em) > new Date())) abrirPagamento(box, salvo.r, salvo.nome, salvo.whatsapp);
     } catch (e) {}
 
     form.addEventListener('submit', async (e) => {
@@ -161,9 +205,10 @@
         const r = await rpc('chama_ingresso_reservar', {
           p_nome: nome, p_cpf: cpf, p_whatsapp: whatsapp, p_email: q('email').value.trim(), p_aceite: true, p_lote: lote || null,
         });
-        try { localStorage.setItem(CFG.storageKey, JSON.stringify({ r, nome })); } catch (e2) {}
+        try { localStorage.setItem(CFG.storageKey, JSON.stringify({ r, nome, whatsapp })); } catch (e2) {}
         t('InitiateCheckout', { content_name: r.lote_id, value: Number(r.valor), currency: 'BRL', codigo: r.codigo });
-        mostrarPagamento(box, r, nome);
+        btn.textContent = 'Preparando o pagamento...';
+        await abrirPagamento(box, r, nome, whatsapp);
         box.scrollIntoView({ behavior: 'smooth', block: 'start' });
         carregarLote(lote);
       } catch (e3) {

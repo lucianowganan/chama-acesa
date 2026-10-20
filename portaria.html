@@ -1,0 +1,121 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="robots" content="noindex, nofollow">
+<title>Portaria — Chama Acesa</title>
+<link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#120403">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  @font-face{font-family:'Cal Sans SB';src:url('assets/fonts/CalSans-SemiBold.woff2') format('woff2');font-weight:600;font-display:swap}
+  :root{--bg:#120403;--surface:#1c0807;--surface2:#260c0b;--line2:rgba(217,171,95,.28);--txt:#f7ece1;--txt2:#c9b2a4;--muted:#8f7a6f;
+    --brasa:#e2561a;--brasa2:#f2711c;--douc:#f4dfae;--ok:#5fb37a;--warn:#e0a63a;--err:#e05a4f;--display:'Cal Sans SB','Montserrat',sans-serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Montserrat',system-ui,sans-serif;background:var(--bg);color:var(--txt);min-height:100vh;font-size:15px}
+  button,input{font:inherit;color:inherit}
+  .hide{display:none!important}
+  main{max-width:480px;margin:0 auto;padding:18px 16px 40px}
+  h1{font-family:var(--display);font-weight:600;font-size:1.3rem}
+  .top{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+  .count{font-family:var(--display);color:var(--douc)}
+  .field{width:100%;padding:13px 14px;border-radius:12px;border:1px solid var(--line2);background:rgba(0,0,0,.25);outline:none}
+  .btn{display:block;width:100%;padding:14px;border-radius:12px;border:1px solid var(--line2);background:var(--surface2);cursor:pointer;font-weight:600;margin-top:10px}
+  .btn.primary{background:linear-gradient(135deg,var(--brasa2),var(--brasa));border-color:transparent;color:#fff8f0}
+  #leitor{border-radius:16px;overflow:hidden;background:#000;min-height:260px}
+  .res{margin-top:14px;padding:18px;border-radius:16px;background:var(--surface);border:2px solid var(--line2);text-align:center}
+  .res.ok{border-color:var(--ok)}.res.warn{border-color:var(--warn)}.res.err{border-color:var(--err)}
+  .res .nome{font-family:var(--display);font-size:1.6rem;margin:6px 0}
+  .res .st{font-size:.85rem;color:var(--txt2)}
+  .row{display:flex;gap:8px;margin-top:12px}.row .field{flex:1}.row .btn{width:auto;margin:0;padding:0 18px}
+  .lista{margin-top:10px}.lista button{display:flex;justify-content:space-between;width:100%;text-align:left;padding:12px;border:0;border-bottom:1px solid var(--line2);background:transparent;cursor:pointer}
+  .muted{color:var(--muted)}
+  .login{max-width:340px;margin:12vh auto 0;text-align:center}.login .field{margin-top:10px}
+</style>
+</head>
+<body>
+<section class="login" id="vLogin">
+  <h1>Portaria · Chama Acesa</h1>
+  <p class="muted" style="margin-top:6px">Entre com o login do Hub Bioflora</p>
+  <form id="fLogin">
+    <input class="field" type="email" id="email" placeholder="E-mail" required autocomplete="username">
+    <input class="field" type="password" id="senha" placeholder="Senha" required autocomplete="current-password">
+    <button class="btn primary" type="submit">Entrar</button>
+    <p id="loginErr" style="color:var(--err);margin-top:8px;font-size:.85rem"></p>
+  </form>
+</section>
+
+<main id="vApp" class="hide">
+  <div class="top"><h1>Portaria · 25/11</h1><span class="count" id="count">—</span></div>
+  <div id="leitor"></div>
+  <div class="res hide" id="res"></div>
+  <div class="row">
+    <input class="field" id="codigo" placeholder="Código ou nome" autocomplete="off" autocapitalize="characters">
+    <button class="btn" id="btnBuscar">Buscar</button>
+  </div>
+  <div class="lista" id="lista"></div>
+</main>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html5-qrcode/2.3.8/html5-qrcode.min.js"></script>
+<script>
+// Portaria da 2a edicao: le o QR do convite (codigo do ingresso), mostra quem e e confirma a entrada.
+const sb = supabase.createClient('https://gbbjpltqmbhlfluqhrmg.supabase.co', 'sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP');
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s ?? '').replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const hora = (d) => new Date(d).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' });
+let PAGAS = [], scanner, ultimo = '', ultimoEm = 0;
+
+$('fLogin').onsubmit = async (e) => {
+  e.preventDefault();
+  const { error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('senha').value });
+  if (error) { $('loginErr').textContent = 'E-mail ou senha incorretos.'; return; }
+  start();
+};
+sb.auth.getSession().then(({ data }) => { if (data.session) start(); });
+
+async function start() {
+  $('vLogin').classList.add('hide'); $('vApp').classList.remove('hide');
+  await carregar();
+  scanner = new Html5Qrcode('leitor');
+  scanner.start({ facingMode: 'environment' }, { fps: 10, qrbox: 220 }, (txt) => {
+    const t = txt.trim().toUpperCase();
+    if (t === ultimo && Date.now() - ultimoEm < 4000) return; // evita ler o mesmo QR varias vezes seguidas
+    ultimo = t; ultimoEm = Date.now(); verificar(t);
+  }).catch(() => { $('leitor').innerHTML = '<p class="muted" style="padding:20px;text-align:center">Câmera indisponível. Use a busca por código ou nome.</p>'; });
+}
+async function carregar() {
+  const { data } = await sb.from('chama_ingressos').select('id,ticket,codigo,nome,lote_id,presente,checkin_em').eq('status', 'pago').order('nome');
+  PAGAS = data || [];
+  $('count').textContent = `${PAGAS.filter(r => r.presente).length} / ${PAGAS.length} presentes`;
+}
+function mostrar(tipo, html) { const r = $('res'); r.className = 'res ' + tipo; r.innerHTML = html; }
+async function verificar(ticket) {
+  const { data: i } = await sb.from('chama_ingressos').select('id,ticket,codigo,nome,status,presente,checkin_em,chama_lotes(nome)').eq('ticket', ticket).maybeSingle();
+  if (navigator.vibrate) navigator.vibrate(80);
+  if (!i) return mostrar('err', `<div class="nome">Não encontrado</div><div class="st">Código ${esc(ticket)} não existe.</div>`);
+  if (i.status !== 'pago') return mostrar('err', `<div class="nome">${esc(i.nome)}</div><div class="st">Pagamento não confirmado (${esc(i.status)}). Encaminhe para a equipe.</div>`);
+  if (i.presente) return mostrar('warn', `<div class="nome">${esc(i.nome)}</div><div class="st">Já entrou às ${hora(i.checkin_em)} · ${esc(i.codigo)}</div>`);
+  mostrar('ok', `<div class="st">${esc(i.chama_lotes?.nome)} · ${esc(i.codigo)}</div><div class="nome">${esc(i.nome)}</div><button class="btn primary" id="btnEntrar">Confirmar entrada</button>`);
+  $('btnEntrar').onclick = async () => {
+    const { error } = await sb.from('chama_ingressos').update({ presente: true, checkin_em: new Date().toISOString() }).eq('id', i.id);
+    if (error) { alert('Não foi possível salvar. Tente de novo.'); return; }
+    mostrar('ok', `<div class="nome">✓ ${esc(i.nome.split(' ')[0])} entrou</div><div class="st">Boa noite!</div>`);
+    carregar();
+  };
+}
+function buscar() {
+  const q = $('codigo').value.trim(); if (!q) return;
+  if (/^[A-Z0-9]{6}$/i.test(q)) { $('lista').innerHTML = ''; return verificar(q.toUpperCase()); }
+  const n = q.toLowerCase();
+  const rows = PAGAS.filter(r => r.nome.toLowerCase().includes(n)).slice(0, 12);
+  $('lista').innerHTML = rows.length ? rows.map(r => `<button data-t="${r.ticket}"><span>${esc(r.nome)}</span><span class="muted">${r.presente ? 'presente' : r.ticket}</span></button>`).join('') : '<p class="muted" style="padding:10px">Ninguém com esse nome entre as pagas.</p>';
+}
+$('btnBuscar').onclick = buscar;
+$('codigo').onkeydown = (e) => { if (e.key === 'Enter') buscar(); };
+$('lista').onclick = (e) => { const b = e.target.closest('button[data-t]'); if (b) { $('lista').innerHTML = ''; verificar(b.dataset.t); } };
+</script>
+</body>
+</html>

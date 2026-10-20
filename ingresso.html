@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chama Acesa — Meu ingresso</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#170504">
+<script src="assets/js/tracking.js"></script>
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/css/inscricao.css">
+<style>
+  @font-face{font-family:'Cal Sans SB'; src:url('assets/fonts/CalSans-SemiBold.woff2') format('woff2'); font-weight:600; font-display:swap;}
+  :root{
+    --vinho-1:#170504; --vinho-2:#33090a; --vinho-3:#560f11;
+    --brasa:#d3480f; --brasa-2:#f2711c; --dourado:#d9ab5f; --dourado-claro:#f4dfae;
+    --texto:#f7ece1; --texto-suave:#e4c9b7; --creme:#fbf3ea;
+    --font-body:'Montserrat', -apple-system, sans-serif;
+    --font-heading:'Cal Sans SB', -apple-system, sans-serif;
+    --font-serif:'Newsreader', Georgia, serif;
+  }
+  *{box-sizing:border-box; margin:0; padding:0;}
+  body{font-family:var(--font-body); color:var(--texto); line-height:1.6; min-height:100vh;
+    background:radial-gradient(ellipse at 50% 0%, var(--vinho-3), var(--vinho-1) 60%) fixed, var(--vinho-1);}
+  .logo{display:flex; align-items:center; justify-content:center; gap:10px; margin-bottom:24px;}
+  .logo svg{width:34px; height:38px; fill:var(--dourado-claro);}
+  .logo span{font-size:1.3rem; color:var(--creme);}
+  .logo b{font-family:var(--font-serif); font-weight:400; letter-spacing:.12em; color:var(--dourado); margin-left:.25em;}
+  .eyebrow{font-size:.74rem; letter-spacing:.18em; text-transform:uppercase; color:var(--dourado-claro);}
+  .btn{display:inline-block; margin-top:22px; text-decoration:none; font-weight:600; padding:15px 28px; border-radius:99px; color:var(--creme); background:linear-gradient(135deg, var(--brasa), var(--brasa-2));}
+  .info{margin-top:22px; text-align:left; background:rgba(51,9,10,.7); border-radius:14px; padding:14px 18px; font-size:.92rem; line-height:1.8; color:var(--texto);}
+  .info b{color:var(--dourado-claro);}
+  .hide{display:none;}
+</style>
+</head>
+<body>
+<main class="solo">
+  <div class="logo"><svg viewBox="395 285 240 270" aria-hidden="true"><path d="M457.02,546.87c-29.05-6.09-48.55-32.55-51.82-61.09-.71-6.19-.55-12.48-.04-18.68,1.85-22.51,12.16-41.7,26.06-59.11l18.67-23.38c19.66-24.61,30.67-50.17,30.54-82.45,7.56,14.58,10.76,30.45,11.6,46.71.66,12.83-1.55,24.82-7.1,36.39-4,8.01-8.63,15.33-14.1,22.47l-16.59,21.66c-5.82,7.59-10.75,15.36-14.74,24.06-15.04,32.84-1.14,64.64,17.51,93.41Z"/><path d="M497.79,546.68c-17.15-11.36-27.01-29.72-28.7-50.03-.84-10.04.15-19.28,5.08-28.29,3.85-7.53,8.62-14.3,13.78-21.1l17.43-23.03c16.71-23.42,27.38-46.61,27.56-75.48,9.04,16.85,12.93,35.36,11.19,54.16-1.01,10.83-5.04,20.29-10.29,29.58-9.16,15.05-21.08,27.66-29.75,42.95-7.98,14.04-11.82,29.39-10.75,45.6.52,8.72,2.12,16.59,4.45,25.64Z"/><path d="M538.78,546.83c-4.53-3.73-7.69-8.57-9.48-14.15-6.49-20.24,1.59-37.34,14.39-53.17l15.63-19.33c15.66-19.58,19.61-40.55,19.85-66.11,8.08,12.33,14.68,26.73,15.95,40.7,1.06,11.67-3.19,20.97-9.94,30.64-3.67,5.27-8.58,11.32-12.67,16.32l-13.13,17.55c-11.26,13.43-15.44,30.28-20.61,47.54Z"/></svg><span>Chama<b>ACESA</b></span></div>
+  <div class="card">
+    <div id="carregando" data-estado><div class="spinner"></div></div>
+    <div id="ok" data-estado class="hide">
+      <p class="eyebrow">Ingresso · 2ª edição</p>
+      <h1 id="ola"></h1>
+      <p>Apresente este QR Code na entrada.</p>
+      <div class="ingresso-qr" id="qr"></div>
+      <div class="ticket-code" id="tk"></div>
+      <p style="font-size:.8rem;margin-top:4px" id="sub"></p>
+      <div class="info"><b>Quando:</b> quarta, 25 de novembro, às 19h<br><b>Onde:</b> Restaurante Shitake, Itajubá (MG)<br><b>Incluso:</b> rodízio japonês com bebidas, palestras e brindes</div>
+    </div>
+    <div id="nao" data-estado class="hide">
+      <h1>Ingresso não encontrado</h1>
+      <p>Confira o link do seu e-mail. Se o pagamento foi feito agora, aguarde alguns minutos.</p>
+      <a class="btn" href="https://wa.me/5535984493997" target="_blank" rel="noopener">Falar no WhatsApp</a>
+    </div>
+  </div>
+</main>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
+<script>
+  const SUPA = 'https://gbbjpltqmbhlfluqhrmg.supabase.co', KEY = 'sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP';
+  const rpc = (fn, body) => fetch(SUPA + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then((r) => r.json()).then((j) => (Array.isArray(j) ? j[0] : j));
+  const $ = (id) => document.getElementById(id);
+  const show = (id) => { document.querySelectorAll('[data-estado]').forEach((e) => e.classList.toggle('hide', e.id !== id)); };
+
+  const t = (new URLSearchParams(location.search).get('t') || '').toUpperCase().trim();
+  (async () => {
+    const i = t ? await rpc('chama_ingresso_publico', { p_ticket: t }).catch(() => null) : null;
+    if (!i || !i.codigo) return show('nao');
+    $('ola').textContent = 'Te esperamos, ' + i.primeiro_nome + '!';
+    $('tk').textContent = t;
+    $('sub').textContent = 'Inscrição ' + i.codigo + ' · ' + i.lote_nome + (i.presente ? ' · check-in feito' : '');
+    new QRCode($('qr'), { text: t, width: 240, height: 240, colorDark: '#170504', correctLevel: QRCode.CorrectLevel.M });
+    show('ok');
+  })();
+</script>
+</body>
+</html>
