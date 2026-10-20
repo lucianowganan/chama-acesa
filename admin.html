@@ -437,7 +437,7 @@ $('tbIng').onchange = async (e) => {
   const v = s.value, r = ING.find(x => x.id == s.dataset.id);
   const upd = v.startsWith('pago') ? { status:'pago', forma: v === 'pago_cartao' ? 'cartao' : 'pix', pago_em: new Date().toISOString() }
     : v === 'cancelado' ? { status:'cancelado' }
-    : { status:'reservado', forma:null, pago_em:null, expira_em: new Date(Date.now() + 864e5).toISOString(), pagarme_link_id:null, pagarme_link_url:null };
+    : { status:'reservado', forma:null, pago_em:null, expira_em: new Date(Date.now() + 864e5).toISOString(), checkout_id:null, checkout_url:null };
   if (v === 'cancelado' && !confirm(`Cancelar a inscrição ${r.codigo} de ${r.nome}? A vaga volta para o lote.`)) { renderIngTable(); return; }
   const { error } = await sb.from('chama_ingressos').update(upd).eq('id', r.id);
   if (error) { alert('Não foi possível salvar.'); renderIngTable(); return; }
