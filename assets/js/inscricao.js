@@ -127,6 +127,9 @@
     document.getElementById('payCard').addEventListener('click', () => t('Contact', { content_name: 'cartao', codigo: r.codigo }));
   }
 
+  /* ---------- Jornada (CRM do painel): registra passos da inscrita, sem bloquear a tela ---------- */
+  const evento = (r, whatsapp, tipo) => { if (r && whatsapp) rpc('chama_evento', { p_codigo: r.codigo, p_whatsapp: whatsapp, p_tipo: tipo }).catch(() => {}); };
+
   /* ---------- Pagamento pela Pagar.me (Pix + cartao ate 3x) ---------- */
   // Devolve a URL do link de pagamento, ou null se a Pagar.me estiver desligada/fora (cai no Pix manual).
   async function linkPagarme(r, whatsapp) {
@@ -143,7 +146,7 @@
       return null;
     }
   }
-  function mostrarCheckout(box, r, nome, url) {
+  function mostrarCheckout(box, r, nome, url, whatsapp) {
     const expira = new Date(r.expira_em).toLocaleString('pt-BR', { day: '2-digit', month: '2-digit', hour: '2-digit', minute: '2-digit' });
     const primeiro = (nome || '').split(' ')[0];
     box.innerHTML = `
@@ -161,12 +164,12 @@
         </ol>
         <p class="pay-note">Reserva válida até ${expira}. Sem o pagamento nesse prazo, a vaga volta para o lote.</p>
       </div>`;
-    document.getElementById('payGo').addEventListener('click', () => t('AddPaymentInfo', { content_name: r.lote_id, value: Number(r.valor), currency: 'BRL', codigo: r.codigo }));
+    document.getElementById('payGo').addEventListener('click', () => { evento(r, whatsapp, 'clicou_pagar'); t('AddPaymentInfo', { content_name: r.lote_id, value: Number(r.valor), currency: 'BRL', codigo: r.codigo }); });
   }
   async function abrirPagamento(box, r, nome, whatsapp) {
     if (r.status === 'pago') return mostrarPagamento(box, r, nome);
     const url = await linkPagarme(r, whatsapp);
-    if (url) mostrarCheckout(box, r, nome, url);
+    if (url) mostrarCheckout(box, r, nome, url, whatsapp);
     else mostrarPagamento(box, r, nome);
   }
 
@@ -184,7 +187,7 @@
     // quem ja reservou neste aparelho volta direto para o pagamento
     try {
       const salvo = JSON.parse(localStorage.getItem(CFG.storageKey) || 'null');
-      if (salvo && (salvo.r.status === 'pago' || new Date(salvo.r.expira_em) > new Date())) abrirPagamento(box, salvo.r, salvo.nome, salvo.whatsapp);
+      if (salvo && (salvo.r.status === 'pago' || new Date(salvo.r.expira_em) > new Date())) { evento(salvo.r, salvo.whatsapp, 'voltou_site'); abrirPagamento(box, salvo.r, salvo.nome, salvo.whatsapp); }
     } catch (e) {}
 
     form.addEventListener('submit', async (e) => {

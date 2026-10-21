@@ -123,6 +123,24 @@
   .muted{color:var(--muted)}
   .foot{color:var(--muted);font-size:.75rem;margin-top:10px}
 
+  /* CRM */
+  .etapas{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .etapas button{border:1px solid var(--line2);background:var(--surface);border-radius:12px;padding:10px 14px;cursor:pointer;text-align:left;min-width:120px}
+  .etapas button.on{border-color:var(--brasa2);background:var(--surface2)}
+  .etapas b{display:block;font-family:var(--display);font-size:1.5rem;line-height:1}
+  .etapas span{font-size:.74rem;color:var(--txt2)}
+  .fila{display:flex;flex-direction:column;gap:10px}
+  .tarefa{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center;background:var(--surface);border:1px solid var(--line);border-left:4px solid var(--warn);border-radius:14px;padding:14px 16px}
+  .tarefa.urg{border-left-color:var(--err)}.tarefa.ok{border-left-color:var(--ok)}
+  .tarefa .t1{font-weight:600}.tarefa .t2{font-size:.8rem;color:var(--txt2);margin-top:2px}
+  .tarefa .acoes{display:flex;gap:6px;flex-wrap:wrap;justify-content:flex-end}
+  .btn.wa{background:#1f6b3a;border-color:#2f8a4d;color:#eafff0}
+  .chip{display:inline-block;padding:2px 9px;border-radius:999px;font-size:.7rem;border:1px solid var(--line2);color:var(--txt2);white-space:nowrap}
+  .modal{position:fixed;inset:0;background:rgba(0,0,0,.6);display:flex;align-items:center;justify-content:center;z-index:50;padding:16px}
+  .modal .box{background:var(--surface);border:1px solid var(--line2);border-radius:18px;max-width:560px;width:100%;max-height:85vh;overflow:auto;padding:22px}
+  .modal textarea{width:100%;min-height:150px;padding:12px;border-radius:12px;border:1px solid var(--line2);background:rgba(0,0,0,.25);font:inherit;font-size:.86rem;line-height:1.5}
+  .hist{margin-top:14px;border-top:1px solid var(--line);padding-top:10px;font-size:.8rem}
+  .hist div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line)}
   @media(max-width:1000px){.tiles{grid-template-columns:repeat(2,1fr)}.tile.hero{grid-column:span 2}.grid{grid-template-columns:1fr}header{padding:12px 16px;flex-wrap:wrap}main{padding:18px 16px}}
 </style>
 </head>
@@ -150,6 +168,7 @@
     </div>
     <nav class="tabs">
       <button class="on" data-tab="ing">Ingressos · 25/11</button>
+      <button data-tab="crm">CRM · acompanhamento</button>
       <button data-tab="vip">Lista VIP</button>
       <button data-tab="ed1">1ª edição</button>
     </nav>
@@ -199,6 +218,28 @@
         <div class="foot" id="ingFoot"></div>
       </div>
     </section>
+
+    <!-- ============ CRM ============ -->
+    <section id="tab-crm" class="hide">
+      <div class="pagehead">
+        <div><h2>CRM · acompanhamento</h2><p>Onde cada pessoa está e quem precisa de contato agora. Clique no WhatsApp: a mensagem já vai pronta e o contato fica registrado.</p></div>
+        <div class="countdown"><div class="n" id="nFila">—</div><span>contatos<br>para fazer agora</span></div>
+      </div>
+      <div class="etapas" id="crmEtapas"></div>
+      <div class="card" style="margin-bottom:18px">
+        <div class="toolbar"><h3 class="grow">Fila de hoje</h3><select class="field" id="crmFiltroFila"><option value="">Todas as etapas</option></select></div>
+        <div class="fila" id="crmFila"></div>
+      </div>
+      <div class="card">
+        <div class="toolbar"><h3 class="grow">Todas as pessoas</h3><input class="field" id="crmBusca" placeholder="Buscar nome, WhatsApp ou código"></div>
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>Pessoa</th><th>Etapa</th><th>Último sinal</th><th>Contatos</th><th>Próxima ação</th><th></th></tr></thead>
+          <tbody id="crmTabela"></tbody>
+        </table></div>
+        <div class="foot">Regras: reserva sem pagamento recebe contato após 1h; reserva que vence em menos de 4h recebe aviso; vencida recebe 1 contato de recuperação; paga recebe boas-vindas; todas as pagas recebem lembrete em 18/11 (falta 1 semana) e 24/11 (véspera); depois do evento, agradecimento. Lista VIP e 1ª edição sem inscrição entram como ativação.</div>
+      </div>
+    </section>
+    <div class="modal hide" id="crmModal"><div class="box" id="crmModalBox"></div></div>
 
     <!-- ============ LISTA VIP ============ -->
     <section id="tab-vip" class="hide">
@@ -299,7 +340,7 @@ const fone = (w) => { const d = String(w||'').replace(/\D/g,''); return d.length
 const dia = (d) => new Date(d).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
 const waIcon = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>';
 
-let VIP = [], INSC = [], PED = [], ING = [], LOTES = [];
+let VIP = [], INSC = [], PED = [], ING = [], LOTES = [], EVT = [], EU = '';
 
 /* ---------- auth ---------- */
 $('fLogin').onsubmit = async (e) => {
@@ -322,21 +363,23 @@ $('btnRefresh').onclick = () => load();
 /* ---------- tabs ---------- */
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
-  ['ing', 'vip', 'ed1'].forEach(t => $('tab-' + t).classList.toggle('hide', b.dataset.tab !== t));
+  ['ing', 'crm', 'vip', 'ed1'].forEach(t => $('tab-' + t).classList.toggle('hide', b.dataset.tab !== t));
 });
 
 /* ---------- dados ---------- */
 async function load() {
-  const [v, i, p, g, l] = await Promise.all([
+  const [v, i, p, g, l, ev] = await Promise.all([
     sb.from('chama_acesa_lista_espera').select('*').order('id', { ascending:false }),
     sb.from('chama_acesa_inscricoes').select('numero_inscricao,nome,whatsapp,email,status_pagamento,presente,criado_em').order('numero_inscricao'),
     sb.from('chama_acesa_pedidos').select('itens,total,vendedora,nome_cliente,criado_em'),
     sb.from('chama_ingressos').select('*').order('id', { ascending:false }),
     sb.from('chama_lotes').select('*').order('ordem'),
+    sb.from('chama_eventos').select('*').order('criado_em', { ascending:false }).limit(5000),
   ]);
   if (v.error) { alert('Sem permissão para ler a lista. Faça login novamente.'); return; }
-  VIP = v.data; INSC = i.data || []; PED = p.data || []; ING = g.data || []; LOTES = l.data || [];
-  renderIng(); renderVip(); renderEd1();
+  VIP = v.data; INSC = i.data || []; PED = p.data || []; ING = g.data || []; LOTES = l.data || []; EVT = ev.data || [];
+  EU = (await sb.auth.getUser()).data.user?.email || '';
+  renderIng(); renderCrm(); renderVip(); renderEd1();
 }
 
 /* ---------- gráficos ---------- */
@@ -462,6 +505,142 @@ $('lotes').onchange = async (e) => {
 };
 $('btnCsvI').onclick = () => csv('chama-ingressos', ['Inscricao','Nome','CPF','WhatsApp','Email','Lote','Valor','Situacao','Forma','Reserva','Pago em'],
   ingFiltered().map(r => [r.codigo, r.nome, cpfFmt(r.cpf), r.whatsapp, r.email, loteNome(r.lote_id), String(r.valor).replace('.', ','), ST[situacao(r)], r.forma, new Date(r.reservado_em).toLocaleString('pt-BR'), r.pago_em ? new Date(r.pago_em).toLocaleString('pt-BR') : '']));
+
+/* ---------- CRM: etapas, fila do dia e mensagens prontas ---------- */
+const SITE = 'https://chamaacesa.farmaciabioflora.com.br';
+const H = 36e5;
+const hora = (d) => new Date(d).toLocaleString('pt-BR', { weekday:'short', day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' });
+const desde = (d) => { const m = Math.round((Date.now() - new Date(d)) / 6e4); return m < 60 ? `há ${m} min` : m < 1440 ? `há ${Math.round(m / 60)}h` : `há ${Math.round(m / 1440)} dia${m >= 2880 ? 's' : ''}`; };
+const loteAtual = () => { const oc = (id) => ING.filter(r => r.lote_id === id && (r.status === 'pago' || (r.status === 'reservado' && new Date(r.expira_em) > new Date()))).length; return LOTES.find(l => l.publico && oc(l.id) < l.vagas); };
+// mensagens prontas por etapa ({nome}, {codigo}, {ticket}, {expira}, {hora}, {lote}, {preco}, {link}, {site}, {ingresso})
+const MSG = {
+  reservou: 'Oi, {nome}! Aqui é a Wanessa, do Chama Acesa 🔥 Vi que você reservou sua vaga ({codigo}) para o dia 25/11, que alegria! Ficou alguma dúvida sobre o pagamento? Pode ser Pix ou cartão em até 3x sem juros, por aqui: {link}\nSua vaga fica guardada até {expira}.',
+  no_pagamento: 'Oi, {nome}! Tudo bem? Vi que você chegou na página de pagamento do Chama Acesa mas não finalizou. Aconteceu alguma coisa? Se o Pix ou o cartão deu algum erro, me fala que eu te ajudo por aqui. Sua vaga ({codigo}) está guardada até {expira} 💛',
+  vencendo: '{nome}, passando para avisar que sua reserva no Chama Acesa vence hoje às {hora} ⏳ Depois disso a vaga volta para o lote e o valor pode mudar. Quer garantir agora? {link}',
+  vencida: 'Oi, {nome}! Sua reserva no Chama Acesa venceu, mas ainda temos vagas no {lote} por {preco} 🔥 Se ainda fizer sentido para você, é só refazer por aqui: {site}\nQualquer dúvida, estou por aqui!',
+  boas_vindas: '{nome}, que alegria ter você com a gente no Chama Acesa! 🔥 Seu ingresso ({ticket}) já está no seu e-mail, com o QR Code de entrada. Quarta, 25/11, às 19h, no Restaurante Shitake. Vou te adicionar no grupo das participantes, tá bom?',
+  lembrete_d7: '{nome}, falta uma semana para o Chama Acesa! 🔥 Quarta, 25/11, às 19h, no Restaurante Shitake. Seu QR Code de entrada está aqui: {ingresso}\nQuer trazer uma amiga? Ainda temos poucas vagas: {site}',
+  lembrete_d1: 'É amanhã, {nome}! 🔥 Quarta, 25/11, a partir das 19h, no Restaurante Shitake (Itajubá). Leve o QR Code do e-mail ou abra aqui: {ingresso}\nTe esperamos!',
+  pos_evento: '{nome}, obrigada por viver o Chama Acesa com a gente! 💛 Como presente, você vai receber as palestras completas em vídeo. Conta pra gente: o que mais te marcou na noite?',
+  ativacao_vip: 'Oi, {nome}! Aqui é a Wanessa, do Chama Acesa 🔥 Você entrou na nossa lista e, como prometido, está sabendo primeiro: as inscrições da 2ª edição abriram! Quarta, 25/11, às 19h, no Restaurante Shitake, com rodízio japonês, bebidas, palestras e brindes. Garanta a sua: {site}',
+  ativacao_ed1: 'Oi, {nome}! Aqui é a Wanessa 🔥 Você esteve na primeira noite do Chama Acesa e eu queria te contar antes de todo mundo: dia 25/11 tem a 2ª edição, no Restaurante Shitake, às 19h. Rodízio japonês com bebidas, palestras e brindes. Garanta a sua: {site}\nE traz aquela amiga que ficou de fora da primeira 😉',
+};
+const ETAPA = {
+  ativacao:     { nome:'Ativação',              d:'Lista VIP / 1ª edição sem inscrição' },
+  reservou:     { nome:'Reservou',              d:'ainda não foi ao pagamento' },
+  no_pagamento: { nome:'No pagamento',          d:'abriu o checkout e não pagou' },
+  vencendo:     { nome:'Reserva vencendo',      d:'menos de 4h para vencer' },
+  vencida:      { nome:'Reserva vencida',       d:'recuperação' },
+  boas_vindas:  { nome:'Pago · boas-vindas',    d:'dar as boas-vindas' },
+  confirmada:   { nome:'Confirmada',            d:'paga e acolhida' },
+  checkin:      { nome:'Check-in feito',        d:'esteve no evento' },
+  cancelada:    { nome:'Cancelada',             d:'' },
+};
+const evsDe = (alvo) => EVT.filter(e => alvo.id ? e.ingresso_id === alvo.id : e.lead === alvo.lead);
+const contatou = (evs, chave) => evs.some(e => e.tipo === 'contato' && e.etapa === chave);
+const ultimo = (evs) => evs.find(e => e.tipo !== 'contato' && e.tipo !== 'nota') || evs[0];
+const SINAL = { reservou:'reservou', voltou_site:'voltou ao site', clicou_pagar:'foi ao pagamento', pagou:'pagou', email_convite:'recebeu o convite', contato:'recebeu contato', checkin:'fez check-in', cancelou:'cancelou', viu_ingresso:'abriu o ingresso' };
+
+/** etapa atual + a tarefa (chave da mensagem) se houver contato a fazer agora */
+function etapaCrm(p) {
+  const evs = evsDe(p), agora = Date.now(), ev25 = new Date('2026-11-25T03:00:00Z').getTime();
+  if (p.lead) return { etapa:'ativacao', tarefa: contatou(evs, p.chave) ? null : p.chave, urg:false };
+  if (p.status === 'cancelado') return { etapa:'cancelada' };
+  if (p.presente) return { etapa:'checkin', tarefa: agora > ev25 + 24 * H && !contatou(evs, 'pos_evento') ? 'pos_evento' : null };
+  if (p.status === 'pago') {
+    if (!contatou(evs, 'boas_vindas')) return { etapa:'boas_vindas', tarefa:'boas_vindas', urg:false };
+    const tarefa = agora >= new Date('2026-11-24T09:00:00-03:00').getTime() && agora < ev25 + 24 * H && !contatou(evs, 'lembrete_d1') ? 'lembrete_d1'
+      : agora >= new Date('2026-11-18T09:00:00-03:00').getTime() && agora < ev25 && !contatou(evs, 'lembrete_d7') ? 'lembrete_d7'
+      : agora > ev25 + 24 * H && !contatou(evs, 'pos_evento') ? 'pos_evento' : null;
+    return { etapa:'confirmada', tarefa };
+  }
+  const resta = new Date(p.expira_em) - agora, idade = agora - new Date(p.reservado_em);
+  if (resta <= 0) return { etapa:'vencida', tarefa: contatou(evs, 'vencida') ? null : 'vencida', urg:false };
+  if (resta < 4 * H) return { etapa:'vencendo', tarefa: contatou(evs, 'vencendo') ? null : 'vencendo', urg:true };
+  const pagou = evs.find(e => e.tipo === 'clicou_pagar');
+  if (pagou) return { etapa:'no_pagamento', tarefa: agora - new Date(pagou.criado_em) >= H && !contatou(evs, 'no_pagamento') ? 'no_pagamento' : null };
+  return { etapa:'reservou', tarefa: idade >= H && !contatou(evs, 'reservou') ? 'reservou' : null };
+}
+function pessoasCrm() {
+  const wsIng = new Set(ING.map(r => r.whatsapp.replace(/\D/g, '').slice(-11)));
+  const leads = [];
+  VIP.forEach(v => { const w = String(v.whatsapp).replace(/\D/g, '').slice(-11); if (!wsIng.has(w)) leads.push({ lead:'vip:' + v.id, chave:'ativacao_vip', nome:v.nome, whatsapp:w, origem:'Lista VIP', desde:v.criado_em }); wsIng.add(w); });
+  INSC.forEach(e => { const w = String(e.whatsapp).replace(/\D/g, '').slice(-11); if (w && !wsIng.has(w)) leads.push({ lead:'ed1:' + e.numero_inscricao, chave:'ativacao_ed1', nome:e.nome, whatsapp:w, origem:'1ª edição', desde:e.criado_em }); wsIng.add(w); });
+  return [...ING, ...leads].map(p => ({ ...p, s: etapaCrm(p) }));
+}
+function mensagem(p, chave) {
+  const la = loteAtual(), first = String(p.nome || '').split(' ')[0];
+  const lt = LOTES.find(l => l.id === p.lote_id);
+  return (MSG[chave] || '').replace(/\{(\w+)\}/g, (_, k) => ({
+    nome: first, codigo: p.codigo || '', ticket: p.ticket || '', expira: p.expira_em ? hora(p.expira_em) : '', hora: p.expira_em ? new Date(p.expira_em).toLocaleTimeString('pt-BR', { hour:'2-digit', minute:'2-digit' }) : '',
+    lote: la?.nome || 'próximo lote', preco: la ? brl2(la.preco) : '', link: lt?.checkout_url || SITE, site: SITE, ingresso: p.ticket ? `${SITE}/ingresso.html?t=${p.ticket}` : SITE,
+  }[k] ?? ''));
+}
+const waNum = (w) => '55' + String(w).replace(/\D/g, '').slice(-11);
+let crmFiltro = '';
+function renderCrm() {
+  const P = pessoasCrm(), fila = P.filter(p => p.s.tarefa);
+  $('nFila').textContent = fila.length;
+  const ordem = Object.keys(ETAPA);
+  $('crmEtapas').innerHTML = `<button data-e="" class="${crmFiltro ? '' : 'on'}"><b>${P.length}</b><span>todas</span></button>` + ordem.map(k => `<button data-e="${k}" class="${crmFiltro === k ? 'on' : ''}" title="${ETAPA[k].d}"><b>${P.filter(p => p.s.etapa === k).length}</b><span>${ETAPA[k].nome}</span></button>`).join('');
+  if ($('crmFiltroFila').options.length === 1) $('crmFiltroFila').insertAdjacentHTML('beforeend', ordem.map(k => `<option value="${k}">${ETAPA[k].nome}</option>`).join(''));
+  const ff = $('crmFiltroFila').value;
+  const prio = { vencendo:0, no_pagamento:1, reservou:2, boas_vindas:3, vencida:4, confirmada:5, checkin:6, ativacao:7 };
+  const f2 = fila.filter(p => !ff || p.s.etapa === ff).sort((a, b) => (prio[a.s.etapa] ?? 9) - (prio[b.s.etapa] ?? 9));
+  $('crmFila').innerHTML = f2.length ? f2.map(p => {
+    const k = p.id ? 'i' + p.id : p.lead, sig = ultimo(evsDe(p));
+    return `<div class="tarefa ${p.s.urg ? 'urg' : ''}"><div><div class="t1">${esc(p.nome)} <span class="chip">${ETAPA[p.s.etapa].nome}</span></div>
+      <div class="t2">${p.lead ? esc(p.origem) : esc(p.codigo) + ' · ' + esc(loteNome(p.lote_id))}${sig ? ' · ' + (SINAL[sig.tipo] || sig.tipo) + ' ' + desde(sig.criado_em) : ''}${p.status === 'reservado' ? ' · vence ' + hora(p.expira_em) : ''}</div></div>
+      <div class="acoes"><button class="btn wa" data-wa="${k}" data-chave="${p.s.tarefa}">${waIcon} WhatsApp</button><button class="btn" data-ver="${k}">Ver / editar</button><button class="btn" data-feito="${k}" data-chave="${p.s.tarefa}" title="Já falei por outro canal">Feito</button></div></div>`;
+  }).join('') : '<div class="empty">Nenhum contato pendente agora. 🎉</div>';
+  const q = $('crmBusca').value.trim().toLowerCase(), qd = q.replace(/\D/g, '');
+  const T = P.filter(p => (!crmFiltro || p.s.etapa === crmFiltro) && (!q || String(p.nome).toLowerCase().includes(q) || (p.codigo || '').toLowerCase().includes(q) || (qd && String(p.whatsapp).includes(qd))));
+  $('crmTabela').innerHTML = T.map(p => {
+    const k = p.id ? 'i' + p.id : p.lead, evs = evsDe(p), sig = ultimo(evs), nCont = evs.filter(e => e.tipo === 'contato').length;
+    return `<tr><td>${esc(p.nome)}<div class="muted" style="font-size:.74rem">${p.lead ? esc(p.origem) : esc(p.codigo)} · ${esc(fone(p.whatsapp))}</div></td>
+      <td><span class="chip">${ETAPA[p.s.etapa].nome}</span></td>
+      <td class="muted">${sig ? (SINAL[sig.tipo] || sig.tipo) + ' ' + desde(sig.criado_em) : '—'}</td>
+      <td>${nCont || '<span class="muted">0</span>'}</td>
+      <td>${p.s.tarefa ? `<b style="color:var(--douc)">Contato: ${p.s.tarefa.replace('_', ' ')}</b>` : '<span class="muted">aguardar</span>'}</td>
+      <td><button class="btn" data-ver="${k}">Abrir</button></td></tr>`;
+  }).join('') || '<tr><td colspan="6" class="empty">Ninguém nesta etapa.</td></tr>';
+}
+const acharPessoa = (k) => pessoasCrm().find(p => (p.id ? 'i' + p.id : p.lead) === k);
+async function registrar(p, tipo, chave, detalhe) {
+  const row = { tipo, etapa: chave || null, detalhe: detalhe || null, por: EU, ...(p.id ? { ingresso_id: p.id } : { lead: p.lead }) };
+  const { data, error } = await sb.from('chama_eventos').insert(row).select('*').single();
+  if (error) { alert('Não foi possível registrar.'); return; }
+  EVT.unshift(data); renderCrm();
+}
+function abrirWa(p, chave, texto) {
+  window.open(`https://wa.me/${waNum(p.whatsapp)}?text=${encodeURIComponent(texto ?? mensagem(p, chave))}`, '_blank', 'noopener');
+  registrar(p, 'contato', chave, 'WhatsApp');
+}
+function abrirModal(p) {
+  const chave = p.s.tarefa || (p.lead ? p.chave : { reservou:'reservou', no_pagamento:'no_pagamento', vencendo:'vencendo', vencida:'vencida', boas_vindas:'boas_vindas', confirmada:'lembrete_d7', checkin:'pos_evento' }[p.s.etapa]);
+  const evs = evsDe(p);
+  $('crmModalBox').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h3 style="font-family:var(--display)">${esc(p.nome)}</h3><div class="muted" style="font-size:.8rem">${p.lead ? esc(p.origem) : esc(p.codigo) + ' · ' + esc(loteNome(p.lote_id))} · ${esc(fone(p.whatsapp))}</div></div><span class="chip">${ETAPA[p.s.etapa].nome}</span></div>
+    <label style="display:block;margin:14px 0 6px;font-size:.8rem;color:var(--txt2)">Mensagem (${chave ? chave.replace('_', ' ') : 'livre'}) — edite se quiser</label>
+    <select class="field" id="mChave" style="margin-bottom:8px">${Object.keys(MSG).map(c => `<option value="${c}"${c === chave ? ' selected' : ''}>${c.replace('_', ' ')}</option>`).join('')}</select>
+    <textarea id="mTexto">${esc(mensagem(p, chave))}</textarea>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn wa" id="mEnviar">${waIcon} Enviar no WhatsApp</button><button class="btn" id="mNota">Salvar como nota</button><button class="btn" id="mFechar">Fechar</button></div>
+    <div class="hist"><b>Histórico</b>${evs.length ? evs.map(e => `<div><span>${SINAL[e.tipo] || e.tipo}${e.etapa ? ' · ' + e.etapa.replace('_', ' ') : ''}${e.detalhe && e.tipo === 'nota' ? ': ' + esc(e.detalhe) : ''}${e.por ? ' <span class="muted">(' + esc(e.por.split('@')[0]) + ')</span>' : ''}</span><span class="muted">${hora(e.criado_em)}</span></div>`).join('') : '<div class="muted">Sem eventos ainda.</div>'}</div>`;
+  $('crmModal').classList.remove('hide');
+  $('mChave').onchange = () => { $('mTexto').value = mensagem(p, $('mChave').value); };
+  $('mEnviar').onclick = () => { abrirWa(p, $('mChave').value, $('mTexto').value); $('crmModal').classList.add('hide'); };
+  $('mNota').onclick = () => { const t = prompt('Nota sobre ' + p.nome.split(' ')[0] + ':'); if (t) { registrar(p, 'nota', null, t); $('crmModal').classList.add('hide'); } };
+  $('mFechar').onclick = () => $('crmModal').classList.add('hide');
+}
+$('crmModal').onclick = (e) => { if (e.target.id === 'crmModal') $('crmModal').classList.add('hide'); };
+$('crmEtapas').onclick = (e) => { const b = e.target.closest('button[data-e]'); if (b) { crmFiltro = b.dataset.e; renderCrm(); } };
+$('crmFiltroFila').onchange = renderCrm; $('crmBusca').oninput = renderCrm;
+document.getElementById('tab-crm').addEventListener('click', (e) => {
+  const w = e.target.closest('[data-wa]'), v = e.target.closest('[data-ver]'), f = e.target.closest('[data-feito]');
+  if (w) abrirWa(acharPessoa(w.dataset.wa), w.dataset.chave);
+  else if (v) abrirModal(acharPessoa(v.dataset.ver));
+  else if (f) registrar(acharPessoa(f.dataset.feito), 'contato', f.dataset.chave, 'outro canal');
+});
+setInterval(() => { if (!$('tab-crm').classList.contains('hide')) renderCrm(); }, 60000);
 
 /* ---------- Lista VIP ---------- */
 function renderVip() {
