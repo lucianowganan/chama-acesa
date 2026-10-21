@@ -50,6 +50,7 @@
 .palestrantes{display:grid; grid-template-columns:repeat(3,1fr); gap:14px; max-width:820px; margin:0 auto;}
 @media(max-width:700px){.palestrantes{grid-template-columns:1fr;}}
 .palestrante{padding:20px 18px; border-radius:14px; background:rgba(211,72,15,.08); border:1px solid rgba(217,171,95,.2); text-align:center;}
+.palestrante img{display:block;width:120px;height:120px;margin:0 auto 14px;border-radius:50%;object-fit:cover;border:2px solid rgba(217,171,95,.55);box-shadow:0 8px 30px rgba(211,72,15,.25);}
 .palestrante h3{font-family:var(--font-serif); font-style:italic; font-weight:400; font-size:1.35rem; color:var(--creme); margin-bottom:4px;}
 .palestrante p{font-size:.78rem; letter-spacing:.14em; text-transform:uppercase; color:var(--dourado-claro);}
 .pay-metodos{margin-top:10px; font-size:.86rem; color:var(--dourado-claro);}
