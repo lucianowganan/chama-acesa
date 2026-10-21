@@ -155,8 +155,9 @@
         <a class="btn btn-primary" id="payGo" href="${url}">Pagar agora</a>
         <p class="pay-metodos">Pix ou cartão de crédito em até ${Number(r.valor) >= 150 ? '3x' : Number(r.valor) >= 100 ? '2x' : '1x'} sem juros</p>
         <ol class="pay-steps">
-          <li>Você vai para o ambiente seguro da Pagar.me (Stone).</li>
-          <li>Assim que o pagamento é aprovado, sua vaga é confirmada e o convite chega no seu e-mail.</li>
+          <li>Você vai para o ambiente seguro de pagamento da Farmácia Bioflora.</li>
+          <li><strong>Use o mesmo CPF da inscrição</strong>: é por ele que sua vaga é confirmada.</li>
+          <li>Assim que o pagamento é aprovado, o convite com seu QR Code chega no seu e-mail.</li>
         </ol>
         <p class="pay-note">Reserva válida até ${expira}. Sem o pagamento nesse prazo, a vaga volta para o lote.</p>
       </div>`;
