@@ -158,11 +158,9 @@
           <li>Você vai para o ambiente seguro da Pagar.me (Stone).</li>
           <li>Assim que o pagamento é aprovado, sua vaga é confirmada e o convite chega no seu e-mail.</li>
         </ol>
-        <a class="pay-card" id="payManual" href="#">Prefiro pagar com Pix direto para a Bioflora</a>
         <p class="pay-note">Reserva válida até ${expira}. Sem o pagamento nesse prazo, a vaga volta para o lote.</p>
       </div>`;
     document.getElementById('payGo').addEventListener('click', () => t('AddPaymentInfo', { content_name: r.lote_id, value: Number(r.valor), currency: 'BRL', codigo: r.codigo }));
-    document.getElementById('payManual').onclick = (e) => { e.preventDefault(); mostrarPagamento(box, r, nome); };
   }
   async function abrirPagamento(box, r, nome, whatsapp) {
     if (r.status === 'pago') return mostrarPagamento(box, r, nome);
