@@ -102,8 +102,10 @@
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
 <script src="assets/js/inscricao.js"></script>
 <script>
-  ChamaInscricao.carregarLote('lote0');
-  ChamaInscricao.montarFormulario({ form: document.getElementById('inscricaoForm'), box: document.getElementById('formStep'), lote: 'lote0' });
+  // ?l=teste usa o lote interno de R$ 5 para testar o pagamento de ponta a ponta
+  const LOTE = new URLSearchParams(location.search).get('l') === 'teste' ? 'teste' : 'lote0';
+  ChamaInscricao.carregarLote(LOTE);
+  ChamaInscricao.montarFormulario({ form: document.getElementById('inscricaoForm'), box: document.getElementById('formStep'), lote: LOTE });
 </script>
 </body>
 </html>
