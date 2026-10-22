@@ -1,4 +1,4 @@
-// Ofertas da Lista VIP (palestras.html e ofertas.html).
+// Ofertas Chama Acesa (palestras.html e ofertas.html).
 // Catalogo vem da RPC publica chama_ofertas() (so produtos com oferta_ativa). Pedido fecha no WhatsApp.
 (function () {
   var SB = 'https://gbbjpltqmbhlfluqhrmg.supabase.co', KEY = 'sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP';
@@ -30,7 +30,7 @@
 
   function msg(prod, item) {
     var nome = prod.nome + (item.variante ? ' (' + item.variante + ')' : '');
-    return 'Oi! Quero aproveitar a oferta da Lista VIP do Chama Acesa: ' + nome + ' por ' + brl(item.preco_oferta) + '.' + (codigo ? ' Minha inscrição: ' + codigo + '.' : '');
+    return 'Oi! Quero aproveitar a oferta do Chama Acesa: ' + nome + ' por ' + brl(item.preco_oferta) + '.' + (codigo ? ' Minha inscrição: ' + codigo + '.' : '');
   }
 
   function card(prod) {

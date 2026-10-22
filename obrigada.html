@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="robots" content="noindex">
-<title>Você está na Lista Prioritária — Chama Acesa</title>
+<title>Obrigada — Chama Acesa</title>
 <link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
 <script src="assets/js/tracking.js"></script>
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -47,7 +47,7 @@
     <b>Chama<i>ACESA</i></b>
   </div>
 
-  <h1 id="title">Você está na <em>Lista Prioritária.</em></h1>
+  <h1 id="title">Que bom ter você <em>com a gente.</em></h1>
   <p class="lead">Falta só um passo rápido. Assista ao recado e confirme pelo WhatsApp.</p>
 
   <p class="step">1 · Um recado da Dra. Renata Duarte</p>
@@ -80,9 +80,9 @@
   const q = new URLSearchParams(location.search);
   const nome = (q.get('n') || '').trim();
   const codigo = /^CA-\d{4,7}$/.test(q.get('c') || '') ? q.get('c') : '';
-  if (nome) document.getElementById('title').innerHTML = nome.replace(/[<>&]/g,'') + ', você está na <em>Lista Prioritária.</em>';
+  if (nome) document.getElementById('title').innerHTML = nome.replace(/[<>&]/g,'') + ', que bom ter você <em>com a gente.</em>';
   document.getElementById('code').textContent = codigo || 'CA-——';
-  const msg = 'Oi! Me cadastrei na Lista VIP do Chama Acesa.' + (codigo ? ' Meu número de inscrição é ' + codigo + '.' : '');
+  const msg = 'Oi! Quero saber mais sobre o Chama Acesa de 25/11.' + (codigo ? ' Meu número de inscrição é ' + codigo + '.' : '');
   document.getElementById('wa').href = 'https://wa.me/' + WHATSAPP_NUMBER + '?text=' + encodeURIComponent(msg);
   track('CompleteRegistration', {content_name:'lista-prioritaria'});
   document.getElementById('wa').addEventListener('click', () => track('Contact', {content_name:'whatsapp-confirmacao', codigo}));

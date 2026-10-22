@@ -15,11 +15,11 @@
 <div class="wrap">
   <div class="top">
     <a class="logo" href="index.html"><svg viewBox="395 285 240 270"><use href="#of-flame"/></svg><b>Chama<i>ACESA</i></b></a>
-    <span class="pill">Lista VIP</span>
+    <span class="pill">2ª edição · 25/11</span>
   </div>
 
   <section class="hero">
-    <span class="eyebrow">Seu presente da Lista VIP</span>
+    <span class="eyebrow">Palestras completas da 1ª edição</span>
     <h1>As conversas da <em>1ª edição</em>, para assistir quando quiser</h1>
     <p>As palestras completas da noite de agosto. Assista com calma, salve esta página e volte sempre que precisar.</p>
   </section>
@@ -27,7 +27,7 @@
   <div id="talks"></div>
 
   <section class="talk" style="text-align:center">
-    <h2 class="sec">Ofertas especiais da Lista VIP</h2>
+    <h2 class="sec">Ofertas especiais Chama Acesa</h2>
     <p class="talk-sum" style="margin:10px auto 18px">Produtos da Farmácia Bioflora com condição exclusiva até 25/11.</p>
     <a class="of-btn" style="display:inline-block;padding:14px 28px" href="ofertas.html">Ver todas as ofertas</a>
   </section>
@@ -57,7 +57,7 @@
         ? `<img src="https://i.ytimg.com/vi/${t.youtube}/maxresdefault.jpg" alt=""><button aria-label="Assistir"><span>${play}</span></button>`
         : `<div class="soon"><b>Em edição</b><span>A gravação desta palestra chega em breve, aqui e no seu WhatsApp.</span></div>`}</div>
       <p class="talk-sum">${t.resumo}</p>
-      <div class="ups-title"><h3>Indicados para este tema</h3><span>Oferta Lista VIP · até 25/11</span></div>
+      <div class="ups-title"><h3>Indicados para este tema</h3><span>Oferta Chama Acesa · até 25/11</span></div>
       <div class="of-row" id="ups${i}"></div>
     </section>`).join('');
   TALKS.forEach((t, i) => renderOfertas(document.getElementById('ups' + i), t.ofertas));
