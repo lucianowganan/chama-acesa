@@ -428,8 +428,9 @@ const brl2 = (n) => Number(n).toLocaleString('pt-BR', { style:'currency', curren
 const cpfFmt = (c) => String(c || '').replace(/(\d{3})(\d{3})(\d{3})(\d{2})/, '$1.$2.$3-$4');
 const loteNome = (id) => (LOTES.find(l => l.id === id) || {}).nome || id;
 function renderIng() {
-  const pagas = ING.filter(r => r.status === 'pago'), res = ING.filter(r => situacao(r) === 'reservado'), exp = ING.filter(r => situacao(r) === 'expirado');
-  const vagasTot = LOTES.reduce((a, l) => a + l.vagas, 0) || 1;
+  const REAL = ING.filter(r => r.lote_id !== 'teste'); // lote interno de teste nao entra nos numeros
+  const pagas = REAL.filter(r => r.status === 'pago'), res = REAL.filter(r => situacao(r) === 'reservado'), exp = REAL.filter(r => situacao(r) === 'expirado');
+  const vagasTot = LOTES.filter(l => l.id !== 'teste').reduce((a, l) => a + l.vagas, 0) || 1;
   const rec = pagas.reduce((a, r) => a + Number(r.valor), 0);
   $('dias2').textContent = Math.max(0, Math.ceil((EVENTO - new Date()) / 864e5));
   $('iPagas').textContent = pagas.length; $('iPagasS').textContent = `de ${vagasTot} vagas · ${Math.round(pagas.length / vagasTot * 100)}%`;
@@ -439,7 +440,7 @@ function renderIng() {
   const atual = LOTES.find(l => l.publico && ocup(l.id) < l.vagas);
   $('iLote').textContent = atual ? atual.nome : 'Esgotado';
   $('iLoteS').textContent = atual ? `${brl2(atual.preco)} · restam ${atual.vagas - ocup(atual.id)}` : 'todas as vagas públicas ocupadas';
-  $('lotes').innerHTML = LOTES.map(l => {
+  $('lotes').innerHTML = LOTES.filter(l => l.id !== 'teste').map(l => {
     const p = ING.filter(r => r.lote_id === l.id && r.status === 'pago').length, rr = ING.filter(r => r.lote_id === l.id && situacao(r) === 'reservado').length;
     return `<div class="lote-row"><div class="lab"><span><b>${esc(l.nome)}</b> · ${brl2(l.preco)}${l.publico ? '' : ' · link /lote0'}</span>
       <span>${p} pagas · ${rr} res. · vagas <input type="number" min="0" value="${l.vagas}" data-lote="${l.id}"></span></div>
