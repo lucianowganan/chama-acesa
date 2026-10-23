@@ -70,6 +70,7 @@
       document.documentElement.classList.add('esgotado');
       set('[data-lote-nome]', 'Esgotado');
       set('[data-lote-restantes]', '0');
+      document.querySelectorAll('form.espera-ok button[type="submit"]').forEach((b) => (b.textContent = 'Entrar na lista de espera'));
       return;
     }
     const pct = Math.round(100 * (l.vagas - l.restantes) / l.vagas);
@@ -202,6 +203,25 @@
       if (!q('aceite').checked) return erro('Marque a autorização para continuar.');
       const label = btn.textContent;
       btn.disabled = true;
+      // esgotado: entra na lista de espera; so segue para a reserva se for a vez dela (ou se uma vaga abriu sem fila)
+      if (!lote && document.documentElement.classList.contains('esgotado')) {
+        btn.textContent = 'Entrando na lista...';
+        try {
+          const w = await rpc('chama_espera_entrar', { p_nome: nome, p_cpf: cpf, p_whatsapp: whatsapp, p_email: q('email').value.trim(), p_aceite: true });
+          if (w.status === 'aguardando') {
+            t('Lead', { content_name: 'lista_espera' });
+            box.innerHTML = `<div class="pay"><p class="pay-eyebrow">Lista de espera</p><h2>Você está na lista, ${nome.split(' ')[0]}!</h2>
+              <div class="pay-code">Sua posição: <strong>${w.posicao}º</strong></div>
+              <p class="pay-note">Se abrir uma vaga, você recebe um aviso por e-mail e WhatsApp e tem um prazo para garantir a sua (24 horas; 6 horas a partir de 21/11). Volte aqui e use o mesmo CPF. <a href="regras.html" style="color:var(--dourado-claro)">Ver regras</a>.</p></div>`;
+            box.scrollIntoView({ behavior: 'smooth', block: 'start' });
+            return;
+          }
+        } catch (e4) {
+          console.error(e4);
+          btn.disabled = false; btn.textContent = label;
+          return erro('Não conseguimos registrar agora. Confira os dados e tente de novo.');
+        }
+      }
       btn.textContent = 'Reservando sua vaga...';
       try {
         const r = await rpc('chama_ingresso_reservar', {
@@ -217,7 +237,7 @@
         console.error(e3);
         btn.disabled = false;
         btn.textContent = label;
-        if (String(e3.message).includes('esgotado')) { carregarLote(lote); return erro('As vagas deste lote acabaram de esgotar.'); }
+        if (String(e3.message).includes('esgotado')) { carregarLote(lote); return erro(lote ? 'As vagas deste lote acabaram de esgotar.' : 'As vagas acabaram de esgotar. Toque de novo para entrar na lista de espera.'); }
         erro('Não conseguimos reservar agora. Confira os dados e tente de novo.');
       }
     });

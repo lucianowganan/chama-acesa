@@ -41,6 +41,14 @@
   .recados figure{margin:0}
   .recados video{width:100%;aspect-ratio:9/16;object-fit:cover;border-radius:14px;background:#000;display:block}
   .recados figcaption{font-size:.72rem;color:var(--texto-suave);margin-top:6px;line-height:1.3}
+  .gerir{margin-top:26px;text-align:left}
+  .gerir details{background:rgba(51,9,10,.55);border:1px solid rgba(217,171,95,.2);border-radius:14px;padding:12px 16px;margin-top:10px}
+  .gerir summary{cursor:pointer;font-size:.9rem;color:var(--dourado-claro)}
+  .gerir p{font-size:.84rem;color:var(--texto-suave);margin:8px 0}
+  .gerir input{width:100%;margin-top:8px;padding:11px 13px;border-radius:10px;border:1px solid rgba(217,171,95,.3);background:rgba(23,5,4,.6);color:var(--creme);font:inherit;font-size:.9rem}
+  .gerir button{margin-top:10px;width:100%;padding:12px;border:0;border-radius:99px;font:inherit;font-weight:600;color:var(--creme);background:linear-gradient(135deg,var(--brasa),var(--brasa-2));cursor:pointer}
+  .gerir button.sec{background:transparent;border:1px solid rgba(217,171,95,.45)}
+  .gerir .msg{font-size:.84rem;margin-top:8px;color:var(--dourado-claro)}
 </style>
 </head>
 <body>
@@ -67,6 +75,23 @@
         <figure><video src="assets/video/leticia.mp4" poster="assets/images/dep/leticia.jpg" controls playsinline preload="none"></video><figcaption>Dra. Letícia Lopes · tricologista</figcaption></figure>
       </div>
       <div class="info"><b>Quando:</b> quarta, 25 de novembro, às 19h<br><b>Onde:</b> Restaurante Shitake, Itajubá (MG)<br><b>Incluso:</b> rodízio japonês com bebidas, palestras e brindes</div>
+      <div class="gerir">
+        <details id="gTransf" class="hide"><summary>Não vou poder ir: transferir para outra pessoa</summary>
+          <p>Você pode transferir uma vez, até 23/11. O seu QR Code deixa de valer e a nova titular recebe um convite novo por e-mail.</p>
+          <input id="tCpfAtual" placeholder="Seu CPF (confirmação)" inputmode="numeric">
+          <input id="tNome" placeholder="Nome completo da nova titular">
+          <input id="tCpf" placeholder="CPF da nova titular" inputmode="numeric">
+          <input id="tWa" placeholder="WhatsApp da nova titular" inputmode="tel">
+          <input id="tEmail" placeholder="E-mail da nova titular" type="email">
+          <button type="button" id="tBtn">Transferir ingresso</button><p class="msg" id="tMsg"></p>
+        </details>
+        <details id="gDesist" class="hide"><summary>Quero desistir e pedir reembolso</summary>
+          <p>O reembolso pode ser pedido até 13/11. Seu ingresso é cancelado, a vaga vai para a lista de espera e a nossa equipe faz o estorno pela mesma forma de pagamento.</p>
+          <input id="dCpf" placeholder="Seu CPF (confirmação)" inputmode="numeric">
+          <button type="button" class="sec" id="dBtn">Cancelar ingresso e pedir reembolso</button><p class="msg" id="dMsg"></p>
+        </details>
+        <p style="font-size:.78rem;margin-top:12px;opacity:.75">Veja as <a href="regras.html" style="color:var(--dourado-claro)">regras de ingressos</a>. Outros casos, fale com a gente no <a href="https://wa.me/5535984493997" target="_blank" rel="noopener" style="color:var(--dourado-claro)">WhatsApp</a>.</p>
+      </div>
     </div>
     <div id="nao" data-estado class="hide">
       <h1>Ingresso não encontrado</h1>
@@ -91,7 +116,29 @@
     $('sub').textContent = 'Inscrição ' + i.codigo + ' · ' + i.lote_nome + (i.presente ? ' · check-in feito' : '');
     new QRCode($('qr'), { text: t, width: 240, height: 240, colorDark: '#170504', correctLevel: QRCode.CorrectLevel.M });
     show('ok');
+    if (i.pode_transferir) $('gTransf').classList.remove('hide');
+    if (i.pode_desistir) $('gDesist').classList.remove('hide');
   })();
+  const dig = (id) => $(id).value.replace(/\D/g, '');
+  const ERROS = { nao_confere: 'O CPF não confere com o deste ingresso.', prazo_encerrado: 'O prazo para isso já terminou. Fale com a gente no WhatsApp.', ja_transferido: 'Este ingresso já foi transferido uma vez. Fale com a gente no WhatsApp.', mesmo_cpf: 'O CPF da nova titular é igual ao seu.', cpf_ja_inscrito: 'Esta pessoa já tem um ingresso.', dados_invalidos: 'Preencha todos os dados da nova titular.' };
+  const falha = (j) => { const m = String((j && (j.message || j.msg)) || ''); return ERROS[Object.keys(ERROS).find((k) => m.includes(k))] || 'Não deu certo agora. Tente de novo ou fale com a gente.'; };
+  const call = (fn, body) => fetch(SUPA + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) }).then(async (r) => ({ ok: r.ok, j: await r.json().catch(() => null) }));
+  $('tBtn').onclick = async () => {
+    if (!confirm('Confirma a transferência? Seu QR Code deixa de valer e isso só pode ser feito uma vez.')) return;
+    $('tBtn').disabled = true;
+    const r = await call('chama_ingresso_transferir', { p_ticket: t, p_cpf_atual: dig('tCpfAtual'), p_nome: $('tNome').value.trim(), p_cpf: dig('tCpf'), p_whatsapp: dig('tWa'), p_email: $('tEmail').value.trim() });
+    $('tBtn').disabled = false;
+    if (!r.ok) return ($('tMsg').textContent = falha(r.j));
+    document.querySelector('.card').innerHTML = '<h1>Ingresso transferido</h1><p>A nova titular vai receber o convite com o QR Code novo por e-mail em alguns minutos. Este ingresso não vale mais.</p>';
+  };
+  $('dBtn').onclick = async () => {
+    if (!confirm('Confirma o cancelamento? Seu ingresso deixa de valer e a vaga vai para a lista de espera.')) return;
+    $('dBtn').disabled = true;
+    const r = await call('chama_ingresso_desistir', { p_ticket: t, p_cpf: dig('dCpf') });
+    $('dBtn').disabled = false;
+    if (!r.ok) return ($('dMsg').textContent = falha(r.j));
+    document.querySelector('.card').innerHTML = '<h1>Pedido de reembolso recebido</h1><p>Seu ingresso foi cancelado. Nossa equipe vai fazer o estorno pela mesma forma de pagamento e te avisa pelo WhatsApp.</p>';
+  };
 </script>
 </body>
 </html>

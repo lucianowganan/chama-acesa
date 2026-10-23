@@ -16,6 +16,7 @@
 .esgotado .lote-preco, .esgotado .lote-por, .esgotado .lote-bar, .esgotado .lote-prox, .esgotado form{display:none;}
 .esgotado-msg{display:none; text-align:center; color:var(--texto-suave);}
 .esgotado .esgotado-msg{display:block;}
+.esgotado form.espera-ok{display:block;} .esgotado .lote-restam, .esgotado .form-seguro{display:none;}
 
 /* ---------- Formulario ---------- */
 .form-err{display:none; color:var(--brasa-2); font-size:.86rem; margin-top:12px; text-align:center;}

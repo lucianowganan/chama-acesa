@@ -168,6 +168,7 @@
     </div>
     <nav class="tabs">
       <button class="on" data-tab="ing">Ingressos · 25/11</button>
+      <button data-tab="esp">Lista de espera</button>
       <button data-tab="crm">CRM · acompanhamento</button>
       <button data-tab="vip">Lista VIP</button>
       <button data-tab="ed1">1ª edição</button>
@@ -216,6 +217,17 @@
           <tbody id="tbIng"></tbody>
         </table></div>
         <div class="foot" id="ingFoot"></div>
+      </div>
+    </section>
+
+    <!-- ============ LISTA DE ESPERA 25/11 ============ -->
+    <section id="tab-esp" class="hide">
+      <div class="pagehead"><div><h2>Lista de espera · 25/11</h2><p>Entra quando as vagas públicas esgotam. Quando abre uma vaga, o sistema chama a próxima automaticamente (24h para pagar; 6h a partir de 21/11) e envia e-mail. Avise também no WhatsApp.</p></div></div>
+      <div class="card">
+        <div class="tbl-wrap"><table>
+          <thead><tr><th>#</th><th>Nome</th><th>CPF</th><th>WhatsApp</th><th>Situação</th><th>Entrou</th><th>Prazo</th><th>Ação</th></tr></thead>
+          <tbody id="tbEsp"></tbody>
+        </table></div>
       </div>
     </section>
 
@@ -340,7 +352,7 @@ const fone = (w) => { const d = String(w||'').replace(/\D/g,''); return d.length
 const dia = (d) => new Date(d).toLocaleDateString('pt-BR', { day:'2-digit', month:'2-digit' });
 const waIcon = '<svg viewBox="0 0 24 24"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2z"/></svg>';
 
-let VIP = [], INSC = [], PED = [], ING = [], LOTES = [], EVT = [], EU = '';
+let VIP = [], INSC = [], PED = [], ING = [], LOTES = [], EVT = [], ESP = [], EU = '';
 
 /* ---------- auth ---------- */
 $('fLogin').onsubmit = async (e) => {
@@ -363,24 +375,43 @@ $('btnRefresh').onclick = () => load();
 /* ---------- tabs ---------- */
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
-  ['ing', 'crm', 'vip', 'ed1'].forEach(t => $('tab-' + t).classList.toggle('hide', b.dataset.tab !== t));
+  ['ing', 'esp', 'crm', 'vip', 'ed1'].forEach(t => $('tab-' + t).classList.toggle('hide', b.dataset.tab !== t));
 });
 
 /* ---------- dados ---------- */
 async function load() {
-  const [v, i, p, g, l, ev] = await Promise.all([
+  const [v, i, p, g, l, ev, es] = await Promise.all([
     sb.from('chama_acesa_lista_espera').select('*').order('id', { ascending:false }),
     sb.from('chama_acesa_inscricoes').select('numero_inscricao,nome,whatsapp,email,status_pagamento,presente,criado_em').order('numero_inscricao'),
     sb.from('chama_acesa_pedidos').select('itens,total,vendedora,nome_cliente,criado_em'),
     sb.from('chama_ingressos').select('*').order('id', { ascending:false }),
     sb.from('chama_lotes').select('*').order('ordem'),
     sb.from('chama_eventos').select('*').order('criado_em', { ascending:false }).limit(5000),
+    sb.from('chama_espera').select('*').order('id'),
   ]);
   if (v.error) { alert('Sem permissão para ler a lista. Faça login novamente.'); return; }
-  VIP = v.data; INSC = i.data || []; PED = p.data || []; ING = g.data || []; LOTES = l.data || []; EVT = ev.data || [];
+  VIP = v.data; INSC = i.data || []; PED = p.data || []; ING = g.data || []; LOTES = l.data || []; EVT = ev.data || []; ESP = es.data || [];
   EU = (await sb.auth.getUser()).data.user?.email || '';
-  renderIng(); renderCrm(); renderVip(); renderEd1();
+  renderIng(); renderEsp(); renderCrm(); renderVip(); renderEd1();
 }
+/* ---------- Lista de espera ---------- */
+const STE = { aguardando:'Na fila', chamada:'Chamada · pagar', reservou:'Reservou', pagou:'Pagou', expirou:'Não pagou', desistiu:'Removida' };
+function renderEsp() {
+  let pos = 0;
+  $('tbEsp').innerHTML = ESP.length ? ESP.map(e => {
+    const n = e.nome.split(' ')[0], prazo = e.expira_em ? new Date(e.expira_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' }) : '—';
+    const msg = e.status === 'chamada' ? `Oi, ${n}! Aqui é do Chama Acesa 🔥 Abriu uma vaga para você na lista de espera! Ela fica guardada até ${prazo}. Garanta aqui com o mesmo CPF: chamaacesa.farmaciabioflora.com.br/#form` : `Oi, ${n}! Aqui é do Chama Acesa 🔥 Você está na nossa lista de espera para 25/11. Se abrir uma vaga, te avisamos por aqui.`;
+    return `<tr><td>${e.status === 'aguardando' ? ++pos + 'º' : '—'}</td><td>${esc(e.nome)}</td><td class="muted">${cpfFmt(e.cpf)}</td>
+      <td><a class="wa" href="https://wa.me/55${e.whatsapp.replace(/^55/, '')}?text=${encodeURIComponent(msg)}" target="_blank" rel="noopener">${waIcon}${esc(fone(e.whatsapp))}</a></td>
+      <td>${STE[e.status] || e.status}</td><td class="muted">${new Date(e.criado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</td><td class="muted">${prazo}</td>
+      <td>${['aguardando', 'chamada'].includes(e.status) ? `<button class="btn" data-rm="${e.id}">Remover</button>` : ''}</td></tr>`;
+  }).join('') : '<tr><td colspan="8" class="empty">Ninguém na lista de espera ainda.</td></tr>';
+}
+$('tbEsp').onclick = async (ev) => {
+  const b = ev.target.closest('button[data-rm]'); if (!b || !confirm('Remover da lista de espera?')) return;
+  await sb.from('chama_espera').update({ status:'desistiu' }).eq('id', b.dataset.rm); load();
+};
+
 
 /* ---------- gráficos ---------- */
 // Barras verticais por dia (uma série, uma cor), com tooltip por barra.
@@ -464,13 +495,13 @@ function renderIngTable() {
   $('tbIng').innerHTML = rows.length ? rows.map(r => {
     const s = situacao(r), sel = r.status === 'pago' ? (r.forma === 'cartao' ? 'pago_cartao' : 'pago_pix') : r.status;
     return `<tr>
-      <td class="code">${r.codigo}</td><td>${r.status === 'pago' ? `<a class="code" href="ingresso.html?t=${r.ticket}" target="_blank" rel="noopener">${r.ticket}</a>` : '<span class="muted">—</span>'}${r.presente ? ' <span class="st pago">presente</span>' : ''}</td><td>${esc(r.nome)}</td><td class="muted">${cpfFmt(r.cpf)}</td>
+      <td class="code">${r.codigo}</td><td>${r.status === 'pago' ? `<a class="code" href="ingresso.html?t=${r.ticket}" target="_blank" rel="noopener">${r.ticket}</a>` : '<span class="muted">—</span>'}${r.presente ? ' <span class="st pago">presente</span>' : ''}</td><td>${esc(r.nome)}${r.transferido_de ? `<br><span class="muted" style="font-size:.75rem">transferido de ${esc(r.transferido_de.split(' · ')[0])}</span>` : ''}${/REEMBOLSAR/.test(r.observacao || '') ? '<br><span class="st expirado">reembolsar</span>' : ''}</td><td class="muted">${cpfFmt(r.cpf)}</td>
       <td><a class="wa" href="https://wa.me/55${r.whatsapp.replace(/^55/, '')}?text=${encodeURIComponent(msgIng(r))}" target="_blank" rel="noopener">${waIcon}${esc(fone(r.whatsapp))}</a></td>
       <td>${esc(loteNome(r.lote_id))}</td><td>${brl2(r.valor)}</td>
       <td><span class="st ${s}">${ST[s]}${r.status === 'pago' && r.forma ? ' · ' + (r.forma === 'cartao' ? 'cartão' : 'Pix') : ''}</span></td>
       <td class="muted">${new Date(r.reservado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</td>
       <td>${r.status !== 'pago' ? '<span class="muted">—</span>' : `<button class="btn mail" data-mail="${r.id}" title="${r.email ? esc(r.email) : 'sem e-mail'}">${r.email_enviado_em ? 'Reenviar' : 'Enviar'}</button>`}</td>
-      <td><select class="etapa" data-id="${r.id}">${[['reservado','Aguardando'],['pago_pix','Pago · Pix'],['pago_cartao','Pago · cartão'],['cancelado','Cancelar']].map(([k, v]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
+      <td><select class="etapa" data-id="${r.id}">${[['reservado','Aguardando'],['pago_pix','Pago · Pix'],['pago_cartao','Pago · cartão'],['cancelado','Cancelar'],...(r.status === 'pago' ? [['transferir','Transferir (exceção)']] : [])].map(([k, v]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
     </tr>`;
   }).join('') : `<tr><td colspan="11" class="empty">${ING.length ? 'Nenhum resultado para esse filtro.' : 'Nenhuma inscrição ainda. As reservas da landing page aparecem aqui na hora.'}</td></tr>`;
   $('ingFoot').textContent = `${rows.length} de ${ING.length} inscrições`;
@@ -479,6 +510,13 @@ $('buscaI').oninput = renderIngTable; $('fSt').onchange = renderIngTable;
 $('tbIng').onchange = async (e) => {
   const s = e.target.closest('select.etapa'); if (!s) return;
   const v = s.value, r = ING.find(x => x.id == s.dataset.id);
+  if (v === 'transferir') {
+    const nome = prompt('Nome completo da nova titular:'); const cpf = nome && prompt('CPF da nova titular:'); const wa = cpf && prompt('WhatsApp com DDD:'); const email = wa && prompt('E-mail (recebe o QR novo):');
+    if (!wa) { renderIngTable(); return; }
+    const { error } = await sb.rpc('chama_admin_transferir', { p_id: r.id, p_nome: nome, p_cpf: cpf, p_whatsapp: wa, p_email: email || '' });
+    if (error) alert('Não foi possível transferir: ' + error.message); else alert('Transferido. O convite com o QR novo sai por e-mail em até 1 minuto.');
+    load(); return;
+  }
   const upd = v.startsWith('pago') ? { status:'pago', forma: v === 'pago_cartao' ? 'cartao' : 'pix', pago_em: new Date().toISOString() }
     : v === 'cancelado' ? { status:'cancelado' }
     : { status:'reservado', forma:null, pago_em:null, expira_em: new Date(Date.now() + 864e5).toISOString(), checkout_id:null, checkout_url:null };
