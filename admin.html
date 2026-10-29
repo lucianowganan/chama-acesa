@@ -714,6 +714,7 @@ setInterval(() => { if (!$('tab-crm').classList.contains('hide')) renderCrm(); }
 // modelo -> [rótulo, público (filtro sobre as pessoas do CRM), dados extras por pessoa]
 const PUBLICO = {
   chama_bonus_palestras: ['Bônus das palestras', 'todas as pagas', p => p.status === 'pago'],
+  chama_conteudo_ofertas: ['Bônus das palestras', 'todas as pagas', p => p.status === 'pago'],
   chama_lembrete_evento: ['Lembrete da véspera', 'todas as pagas', p => p.status === 'pago'],
   chama_pos_evento: ['Pós-evento', 'quem fez check-in', p => p.presente],
   chama_ativacao_ed1: ['Convite · 1ª edição', 'participantes da 1ª edição sem inscrição', p => p.lead && p.chave === 'ativacao_ed1'],
