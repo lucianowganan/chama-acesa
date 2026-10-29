@@ -239,11 +239,11 @@
       </div>
       <div class="etapas" id="crmEtapas"></div>
       <div class="card" style="margin-bottom:18px">
-        <div class="toolbar"><h3 class="grow">Fila de hoje</h3><select class="field" id="crmFiltroFila"><option value="">Todas as etapas</option></select></div>
+        <div class="toolbar"><h3 class="grow" id="crmFilaTit">Fila de hoje</h3></div>
         <div class="fila" id="crmFila"></div>
       </div>
       <div class="card">
-        <div class="toolbar"><h3 class="grow">Todas as pessoas</h3><input class="field" id="crmBusca" placeholder="Buscar nome, WhatsApp ou código"></div>
+        <div class="toolbar" id="crmLista"><h3 class="grow" id="crmListaTit">Todas as pessoas</h3><input class="field" id="crmBusca" placeholder="Buscar nome, WhatsApp ou código"></div>
         <div class="tbl-wrap"><table>
           <thead><tr><th>Pessoa</th><th>Etapa</th><th>Último sinal</th><th>Contatos</th><th>Próxima ação</th><th></th></tr></thead>
           <tbody id="crmTabela"></tbody>
@@ -622,8 +622,10 @@ function renderCrm() {
   $('nFila').textContent = fila.length;
   const ordem = Object.keys(ETAPA);
   $('crmEtapas').innerHTML = `<button data-e="" class="${crmFiltro ? '' : 'on'}"><b>${P.length}</b><span>todas</span></button>` + ordem.map(k => `<button data-e="${k}" class="${crmFiltro === k ? 'on' : ''}" title="${ETAPA[k].d}"><b>${P.filter(p => p.s.etapa === k).length}</b><span>${ETAPA[k].nome}</span></button>`).join('');
-  if ($('crmFiltroFila').options.length === 1) $('crmFiltroFila').insertAdjacentHTML('beforeend', ordem.map(k => `<option value="${k}">${ETAPA[k].nome}</option>`).join(''));
-  const ff = $('crmFiltroFila').value;
+  // o contador clicado filtra a fila e a lista completa
+  const ff = crmFiltro, nomeF = ff ? ETAPA[ff].nome : '';
+  $('crmFilaTit').textContent = ff ? `Fila de hoje · ${nomeF}` : 'Fila de hoje';
+  $('crmListaTit').textContent = ff ? `${nomeF} · ${P.filter(p => p.s.etapa === ff).length} pessoa(s)` : 'Todas as pessoas';
   const prio = { vencendo:0, no_pagamento:1, reservou:2, boas_vindas:3, vencida:4, confirmada:5, checkin:6, ativacao:7 };
   const f2 = fila.filter(p => !ff || p.s.etapa === ff).sort((a, b) => (prio[a.s.etapa] ?? 9) - (prio[b.s.etapa] ?? 9));
   $('crmFila').innerHTML = f2.length ? f2.map(p => {
@@ -631,7 +633,7 @@ function renderCrm() {
     return `<div class="tarefa ${p.s.urg ? 'urg' : ''}"><div><div class="t1">${esc(p.nome)} <span class="chip">${ETAPA[p.s.etapa].nome}</span></div>
       <div class="t2">${p.lead ? esc(p.origem) : esc(p.codigo) + ' · ' + esc(loteNome(p.lote_id))}${sig ? ' · ' + (SINAL[sig.tipo] || sig.tipo) + ' ' + desde(sig.criado_em) : ''}${p.status === 'reservado' ? ' · vence ' + hora(p.expira_em) : ''}</div></div>
       <div class="acoes"><button class="btn wa" data-wa="${k}" data-chave="${p.s.tarefa}">${waIcon} WhatsApp</button><button class="btn" data-ver="${k}">Ver / editar</button><button class="btn" data-feito="${k}" data-chave="${p.s.tarefa}" title="Já falei por outro canal">Feito</button></div></div>`;
-  }).join('') : '<div class="empty">Nenhum contato pendente agora. 🎉</div>';
+  }).join('') : `<div class="empty">${ff ? `Ninguém de “${nomeF}” precisa de contato agora. A lista completa está logo abaixo.` : 'Nenhum contato pendente agora. 🎉'}</div>`;
   const q = $('crmBusca').value.trim().toLowerCase(), qd = q.replace(/\D/g, '');
   const T = P.filter(p => (!crmFiltro || p.s.etapa === crmFiltro) && (!q || String(p.nome).toLowerCase().includes(q) || (p.codigo || '').toLowerCase().includes(q) || (qd && String(p.whatsapp).includes(qd))));
   $('crmTabela').innerHTML = T.map(p => {
@@ -671,8 +673,8 @@ function abrirModal(p) {
   $('mFechar').onclick = () => $('crmModal').classList.add('hide');
 }
 $('crmModal').onclick = (e) => { if (e.target.id === 'crmModal') $('crmModal').classList.add('hide'); };
-$('crmEtapas').onclick = (e) => { const b = e.target.closest('button[data-e]'); if (b) { crmFiltro = b.dataset.e; renderCrm(); } };
-$('crmFiltroFila').onchange = renderCrm; $('crmBusca').oninput = renderCrm;
+$('crmEtapas').onclick = (e) => { const b = e.target.closest('button[data-e]'); if (!b) return; crmFiltro = crmFiltro === b.dataset.e ? '' : b.dataset.e; renderCrm(); if (crmFiltro) $('crmLista').scrollIntoView({ behavior:'smooth', block:'start' }); };
+$('crmBusca').oninput = renderCrm;
 document.getElementById('tab-crm').addEventListener('click', (e) => {
   const w = e.target.closest('[data-wa]'), v = e.target.closest('[data-ver]'), f = e.target.closest('[data-feito]');
   if (w) abrirWa(acharPessoa(w.dataset.wa), w.dataset.chave);
