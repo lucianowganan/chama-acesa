@@ -239,6 +239,10 @@
       </div>
       <div class="etapas" id="crmEtapas"></div>
       <div class="card" style="margin-bottom:18px">
+        <div class="toolbar"><h3 class="grow">Disparos WhatsApp</h3><span class="muted" style="font-size:.78rem">Boas-vindas e lista de espera saem sozinhos. Estes saem quando você clicar, uma vez por pessoa.</span></div>
+        <div id="crmDisparos" style="display:flex;gap:10px;flex-wrap:wrap"></div>
+      </div>
+      <div class="card" style="margin-bottom:18px">
         <div class="toolbar"><h3 class="grow" id="crmFilaTit">Fila de hoje</h3></div>
         <div class="fila" id="crmFila"></div>
       </div>
@@ -393,7 +397,9 @@ async function load() {
   VIP = v.data; INSC = i.data || []; PED = p.data || []; ING = g.data || []; LOTES = l.data || []; EVT = ev.data || []; ESP = es.data || [];
   EU = (await sb.auth.getUser()).data.user?.email || '';
   renderIng(); renderEsp(); renderCrm(); renderVip(); renderEd1();
+  if (!DISP_OK) { DISP_OK = true; renderDisparos(); }
 }
+var DISP_OK = false;
 /* ---------- Lista de espera ---------- */
 const STE = { aguardando:'Na fila', chamada:'Chamada · pagar', reservou:'Reservou', pagou:'Pagou', expirou:'Não pagou', desistiu:'Removida' };
 function renderEsp() {
@@ -682,6 +688,35 @@ document.getElementById('tab-crm').addEventListener('click', (e) => {
   else if (f) registrar(acharPessoa(f.dataset.feito), 'contato', f.dataset.chave, 'outro canal');
 });
 setInterval(() => { if (!$('tab-crm').classList.contains('hide')) renderCrm(); }, 60000);
+/* ---------- Disparos WhatsApp (modelos oficiais via To Talk) ---------- */
+const DISPAROS = [
+  ['chama_bonus_palestras', 'Bônus das palestras', 'todas as pagas · sugestão: 11/11'],
+  ['chama_lembrete_evento', 'Lembrete da véspera', 'todas as pagas · sugestão: 24/11'],
+  ['chama_pos_evento', 'Pós-evento', 'quem fez check-in · sugestão: 26/11'],
+];
+async function chamaWhats(body) {
+  const { data: { session } } = await sb.auth.getSession();
+  const r = await fetch('https://gbbjpltqmbhlfluqhrmg.supabase.co/functions/v1/chama-whats', { method: 'POST', headers: { Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  return r.json().catch(() => ({ erro: 'falha ' + r.status }));
+}
+async function renderDisparos() {
+  $('crmDisparos').innerHTML = DISPAROS.map(([m, nome, d]) => `<button class="btn" data-disp="${m}" style="flex:1;min-width:200px;text-align:left;padding:12px 14px"><b>${nome}</b><br><span class="muted" style="font-size:.74rem">${d}</span><br><span style="font-size:.8rem" id="n_${m}">…</span></button>`).join('');
+  for (const [m] of DISPAROS) { const j = await chamaWhats({ modelo: m, contar: true }); $('n_' + m).textContent = j.erro ? j.erro : j.pendentes ? `${j.pendentes} para enviar` : 'nada pendente'; }
+}
+$('crmDisparos').onclick = async (e) => {
+  const b = e.target.closest('button[data-disp]'); if (!b) return;
+  const m = b.dataset.disp, nome = DISPAROS.find(x => x[0] === m)[1];
+  const c = await chamaWhats({ modelo: m, contar: true });
+  if (c.erro) return alert(c.erro);
+  if (!c.pendentes) return alert('Ninguém pendente para "' + nome + '".');
+  if (!confirm(`Enviar "${nome}" agora para ${c.pendentes} pessoa(s) pelo WhatsApp oficial? Cada pessoa recebe uma vez só.`)) return;
+  b.disabled = true; $('n_' + m).textContent = 'enviando…';
+  const j = await chamaWhats({ modelo: m });
+  const ok = (j.feitos || []).filter(f => f.ok).length, err = (j.feitos || []).filter(f => f.ok === false).length, pul = (j.feitos || []).find(f => f.pulado);
+  alert(j.erro || pul?.pulado || `Enviadas: ${ok}${err ? ` · com erro: ${err}` : ''}`);
+  b.disabled = false; load(); renderDisparos();
+};
+
 
 /* ---------- Lista VIP ---------- */
 function renderVip() {
