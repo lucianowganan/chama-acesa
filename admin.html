@@ -125,6 +125,12 @@
 
   /* CRM */
   .etapas{display:flex;gap:8px;flex-wrap:wrap;margin-bottom:16px}
+  .btn.disp{display:flex;flex-direction:column;align-items:flex-start;gap:3px;flex:1;min-width:200px;text-align:left;padding:12px 14px;white-space:normal;height:auto}
+  .btn.disp small{font-size:.74rem;color:var(--txt2)} .btn.disp em{font-style:normal;font-size:.8rem;color:var(--douc)}
+  .conv{max-height:260px;overflow:auto;display:flex;flex-direction:column;gap:6px;margin-top:8px}
+  .conv div{max-width:85%;padding:8px 11px;border-radius:12px;font-size:.82rem;white-space:pre-wrap;line-height:1.4}
+  .conv .in{background:var(--surface2);align-self:flex-start} .conv .out{background:rgba(37,211,102,.16);align-self:flex-end}
+  .conv span{display:block;font-size:.68rem;opacity:.6;margin-top:3px}
   .etapas button{border:1px solid var(--line2);background:var(--surface);border-radius:12px;padding:10px 14px;cursor:pointer;text-align:left;min-width:120px}
   .etapas button.on{border-color:var(--brasa2);background:var(--surface2)}
   .etapas b{display:block;font-family:var(--display);font-size:1.5rem;line-height:1}
@@ -239,7 +245,7 @@
       </div>
       <div class="etapas" id="crmEtapas"></div>
       <div class="card" style="margin-bottom:18px">
-        <div class="toolbar"><h3 class="grow">Disparos WhatsApp</h3><span class="muted" style="font-size:.78rem">Boas-vindas e lista de espera saem sozinhos. Estes saem quando você clicar, uma vez por pessoa.</span></div>
+        <div class="toolbar"><h3 class="grow">Disparos WhatsApp</h3><span class="muted" style="font-size:.78rem">Pelo WhatsApp oficial (To Talk). Boas-vindas e lista de espera saem sozinhos; estes, quando você clicar, uma vez por pessoa.</span></div>
         <div id="crmDisparos" style="display:flex;gap:10px;flex-wrap:wrap"></div>
       </div>
       <div class="card" style="margin-bottom:18px">
@@ -652,6 +658,13 @@ function renderCrm() {
       <td><button class="btn" data-ver="${k}">Abrir</button></td></tr>`;
   }).join('') || '<tr><td colspan="6" class="empty">Ninguém nesta etapa.</td></tr>';
 }
+const fk = (w) => { const d = String(w || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, ''); return d.slice(0, 2) + d.slice(-8); };
+async function conversa(p) {
+  const { data } = await sb.from('totalk_eventos').select('tipo,recebido_em,payload,telefone').in('tipo', ['MESSAGE_RECEIVED', 'MESSAGE_SENT']).order('id').limit(3000);
+  const vistos = new Set(), msgs = (data || []).filter(e => fk(e.telefone) === fk(p.whatsapp) && e.payload?.content?.text && !vistos.has(e.payload.content.id) && vistos.add(e.payload.content.id));
+  $('mConv').innerHTML = msgs.length ? msgs.map(e => `<div class="${e.tipo === 'MESSAGE_RECEIVED' ? 'in' : 'out'}">${esc(e.payload.content.text)}<span>${hora(e.payload.content.createdAt || e.recebido_em)}</span></div>`).join('') : '<div class="muted">Nenhuma mensagem registrada desde 29/10.</div>';
+  $('mConv').scrollTop = 1e6;
+}
 const acharPessoa = (k) => pessoasCrm().find(p => (p.id ? 'i' + p.id : p.lead) === k);
 async function registrar(p, tipo, chave, detalhe) {
   const row = { tipo, etapa: chave || null, detalhe: detalhe || null, por: EU, ...(p.id ? { ingresso_id: p.id } : { lead: p.lead }) };
@@ -670,11 +683,20 @@ function abrirModal(p) {
     <label style="display:block;margin:14px 0 6px;font-size:.8rem;color:var(--txt2)">Mensagem (${chave ? chave.replace('_', ' ') : 'livre'}) — edite se quiser</label>
     <select class="field" id="mChave" style="margin-bottom:8px">${Object.keys(MSG).map(c => `<option value="${c}"${c === chave ? ' selected' : ''}>${c.replace('_', ' ')}</option>`).join('')}</select>
     <textarea id="mTexto">${esc(mensagem(p, chave))}</textarea>
-    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn wa" id="mEnviar">${waIcon} Enviar no WhatsApp</button><button class="btn" id="mNota">Salvar como nota</button><button class="btn" id="mFechar">Fechar</button></div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn wa" id="mEnviar">${waIcon} Enviar no WhatsApp</button><button class="btn wa" id="mTotalk">Enviar pelo To Talk</button><button class="btn" id="mNota">Salvar como nota</button><button class="btn" id="mFechar">Fechar</button></div>
+    <div class="muted" style="font-size:.72rem;margin-top:6px">"Enviar no WhatsApp" abre o seu WhatsApp. "Enviar pelo To Talk" sai pelo número oficial da Bioflora: texto livre só chega se a pessoa falou com vocês nas últimas 24h.</div>
+    <div class="hist"><b>Conversa no To Talk</b><div class="conv" id="mConv"><div class="muted">Carregando…</div></div></div>
     <div class="hist"><b>Histórico</b>${evs.length ? evs.map(e => `<div><span>${SINAL[e.tipo] || e.tipo}${e.etapa ? ' · ' + e.etapa.replace('_', ' ') : ''}${e.detalhe && e.tipo === 'nota' ? ': ' + esc(e.detalhe) : ''}${e.por ? ' <span class="muted">(' + esc(e.por.split('@')[0]) + ')</span>' : ''}</span><span class="muted">${hora(e.criado_em)}</span></div>`).join('') : '<div class="muted">Sem eventos ainda.</div>'}</div>`;
   $('crmModal').classList.remove('hide');
   $('mChave').onchange = () => { $('mTexto').value = mensagem(p, $('mChave').value); };
   $('mEnviar').onclick = () => { abrirWa(p, $('mChave').value, $('mTexto').value); $('crmModal').classList.add('hide'); };
+  $('mTotalk').onclick = async () => {
+    if (!confirm('Enviar esta mensagem pelo número oficial (To Talk)?')) return;
+    const j = await chamaWhats({ acao: 'texto', whatsapp: p.whatsapp, texto: $('mTexto').value, ingresso_id: p.id || undefined, lead: p.lead || undefined, etapa: $('mChave').value });
+    alert(j.ok ? 'Enviada pelo To Talk.' : 'Não enviada: ' + (j.erro || 'erro') + (/(24|janela|window)/i.test(j.erro || '') ? '' : '\nSe a pessoa não falou com vocês nas últimas 24h, use um dos modelos (Disparos WhatsApp).'));
+    if (j.ok) { $('crmModal').classList.add('hide'); load(); }
+  };
+  conversa(p);
   $('mNota').onclick = () => { const t = prompt('Nota sobre ' + p.nome.split(' ')[0] + ':'); if (t) { registrar(p, 'nota', null, t); $('crmModal').classList.add('hide'); } };
   $('mFechar').onclick = () => $('crmModal').classList.add('hide');
 }
@@ -688,33 +710,44 @@ document.getElementById('tab-crm').addEventListener('click', (e) => {
   else if (f) registrar(acharPessoa(f.dataset.feito), 'contato', f.dataset.chave, 'outro canal');
 });
 setInterval(() => { if (!$('tab-crm').classList.contains('hide')) renderCrm(); }, 60000);
-/* ---------- Disparos WhatsApp (modelos oficiais via To Talk) ---------- */
-const DISPAROS = [
-  ['chama_bonus_palestras', 'Bônus das palestras', 'todas as pagas · sugestão: 11/11'],
-  ['chama_lembrete_evento', 'Lembrete da véspera', 'todas as pagas · sugestão: 24/11'],
-  ['chama_pos_evento', 'Pós-evento', 'quem fez check-in · sugestão: 26/11'],
-];
+/* ---------- Disparos WhatsApp pelo To Talk (modelos oficiais aprovados) ---------- */
+// modelo -> [rótulo, público (filtro sobre as pessoas do CRM), dados extras por pessoa]
+const PUBLICO = {
+  chama_bonus_palestras: ['Bônus das palestras', 'todas as pagas', p => p.status === 'pago'],
+  chama_lembrete_evento: ['Lembrete da véspera', 'todas as pagas', p => p.status === 'pago'],
+  chama_pos_evento: ['Pós-evento', 'quem fez check-in', p => p.presente],
+  chama_ativacao_ed1: ['Convite · 1ª edição', 'participantes da 1ª edição sem inscrição', p => p.lead && p.chave === 'ativacao_ed1'],
+  chama_ativacao_vip: ['Convite · Lista VIP', 'Lista VIP sem inscrição', p => p.lead && p.chave === 'ativacao_vip'],
+  chama_reserva_pendente: ['Reserva sem pagamento', 'reservaram e não pagaram', p => ['reservou', 'no_pagamento', 'vencendo'].includes(p.s.etapa)],
+  chama_reserva_vencida: ['Reserva vencida', 'reserva venceu sem pagamento', p => p.s.etapa === 'vencida'],
+};
+let MODELOS_OK = [];
 async function chamaWhats(body) {
   const { data: { session } } = await sb.auth.getSession();
   const r = await fetch('https://gbbjpltqmbhlfluqhrmg.supabase.co/functions/v1/chama-whats', { method: 'POST', headers: { Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   return r.json().catch(() => ({ erro: 'falha ' + r.status }));
 }
+const publicoDe = (m) => pessoasCrm().filter(PUBLICO[m][2]).map(p => ({ nome: p.nome, whatsapp: p.whatsapp, ingresso_id: p.id || undefined, lead: p.lead || undefined, ticket: p.ticket, codigo: p.codigo, prazo: p.expira_em ? hora(p.expira_em) : undefined }));
 async function renderDisparos() {
-  $('crmDisparos').innerHTML = DISPAROS.map(([m, nome, d]) => `<button class="btn" data-disp="${m}" style="flex:1;min-width:200px;text-align:left;padding:12px 14px"><b>${nome}</b><br><span class="muted" style="font-size:.74rem">${d}</span><br><span style="font-size:.8rem" id="n_${m}">…</span></button>`).join('');
-  for (const [m] of DISPAROS) { const j = await chamaWhats({ modelo: m, contar: true }); $('n_' + m).textContent = j.erro ? j.erro : j.pendentes ? `${j.pendentes} para enviar` : 'nada pendente'; }
+  if (!MODELOS_OK.length) MODELOS_OK = (await chamaWhats({ acao: 'modelos' })).modelos || [];
+  const lista = Object.keys(PUBLICO).filter(m => MODELOS_OK.includes(m));
+  const falta = Object.keys(PUBLICO).filter(m => !MODELOS_OK.includes(m)).map(m => PUBLICO[m][0]);
+  $('crmDisparos').innerHTML = lista.map(m => `<button class="btn disp" data-disp="${m}"><b>${PUBLICO[m][0]}</b><small>${PUBLICO[m][1]}</small><em id="n_${m}">…</em></button>`).join('')
+    + (falta.length ? `<div class="muted" style="font-size:.74rem;width:100%">Aguardando aprovação no To Talk: ${falta.join(', ')}.</div>` : '');
+  for (const m of lista) { const j = await chamaWhats({ acao: 'enviar', modelo: m, pessoas: publicoDe(m), contar: true }); $('n_' + m).textContent = j.erro ? j.erro : j.pendentes ? `${j.pendentes} para enviar` : 'nada pendente'; }
 }
 $('crmDisparos').onclick = async (e) => {
   const b = e.target.closest('button[data-disp]'); if (!b) return;
-  const m = b.dataset.disp, nome = DISPAROS.find(x => x[0] === m)[1];
-  const c = await chamaWhats({ modelo: m, contar: true });
+  const m = b.dataset.disp, pessoas = publicoDe(m);
+  const c = await chamaWhats({ acao: 'enviar', modelo: m, pessoas, contar: true });
   if (c.erro) return alert(c.erro);
-  if (!c.pendentes) return alert('Ninguém pendente para "' + nome + '".');
-  if (!confirm(`Enviar "${nome}" agora para ${c.pendentes} pessoa(s) pelo WhatsApp oficial? Cada pessoa recebe uma vez só.`)) return;
+  if (!c.pendentes) return alert('Ninguém pendente para "' + PUBLICO[m][0] + '".');
+  if (!confirm(`Enviar "${PUBLICO[m][0]}" agora para ${c.pendentes} pessoa(s) pelo WhatsApp oficial (To Talk)? Cada pessoa recebe uma vez só.`)) return;
   b.disabled = true; $('n_' + m).textContent = 'enviando…';
-  const j = await chamaWhats({ modelo: m });
+  const j = await chamaWhats({ acao: 'enviar', modelo: m, pessoas });
   const ok = (j.feitos || []).filter(f => f.ok).length, err = (j.feitos || []).filter(f => f.ok === false).length, pul = (j.feitos || []).find(f => f.pulado);
   alert(j.erro || pul?.pulado || `Enviadas: ${ok}${err ? ` · com erro: ${err}` : ''}`);
-  b.disabled = false; load(); renderDisparos();
+  b.disabled = false; await load(); renderDisparos();
 };
 
 
