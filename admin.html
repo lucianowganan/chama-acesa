@@ -586,15 +586,19 @@ const ETAPA = {
   confirmada:   { nome:'Confirmada',            d:'paga e acolhida' },
   checkin:      { nome:'Check-in feito',        d:'esteve no evento' },
   cancelada:    { nome:'Cancelada',             d:'' },
+  nao_vai:      { nome:'Não vai nesta edição',  d:'avisou que não vai; segue na base para as próximas' },
 };
 const evsDe = (alvo) => EVT.filter(e => alvo.id ? e.ingresso_id === alvo.id : e.lead === alvo.lead);
 const contatou = (evs, chave) => evs.some(e => e.tipo === 'contato' && e.etapa === chave);
 const ultimo = (evs) => evs.find(e => e.tipo !== 'contato' && e.tipo !== 'nota') || evs[0];
-const SINAL = { reservou:'reservou', voltou_site:'voltou ao site', clicou_pagar:'foi ao pagamento', pagou:'pagou', email_convite:'recebeu o convite', contato:'recebeu contato', checkin:'fez check-in', cancelou:'cancelou', viu_ingresso:'abriu o ingresso' };
+const SINAL = { reservou:'reservou', voltou_site:'voltou ao site', clicou_pagar:'foi ao pagamento', pagou:'pagou', email_convite:'recebeu o convite', contato:'recebeu contato', checkin:'fez check-in', cancelou:'cancelou', viu_ingresso:'abriu o ingresso', nao_vai:'não vai nesta edição', reativou:'voltou para esta edição' };
 
 /** etapa atual + a tarefa (chave da mensagem) se houver contato a fazer agora */
 function etapaCrm(p) {
   const evs = evsDe(p), agora = Date.now(), ev25 = new Date('2026-11-25T03:00:00Z').getTime();
+  // "não vai nesta edição": sai da fila e dos disparos desta edição, sem apagar (vale o último entre nao_vai e reativou)
+  const inat = evs.find(e => e.tipo === 'nao_vai' || e.tipo === 'reativou');
+  if (inat?.tipo === 'nao_vai' && p.status !== 'pago') return { etapa:'nao_vai' };
   if (p.lead) return { etapa:'ativacao', tarefa: contatou(evs, p.chave) ? null : p.chave, urg:false };
   if (p.status === 'cancelado') return { etapa:'cancelada' };
   if (p.presente) return { etapa:'checkin', tarefa: agora > ev25 + 24 * H && !contatou(evs, 'pos_evento') ? 'pos_evento' : null };
@@ -683,10 +687,10 @@ function abrirModal(p) {
     <label style="display:block;margin:14px 0 6px;font-size:.8rem;color:var(--txt2)">Mensagem (${chave ? chave.replace('_', ' ') : 'livre'}) — edite se quiser</label>
     <select class="field" id="mChave" style="margin-bottom:8px">${Object.keys(MSG).map(c => `<option value="${c}"${c === chave ? ' selected' : ''}>${c.replace('_', ' ')}</option>`).join('')}</select>
     <textarea id="mTexto">${esc(mensagem(p, chave))}</textarea>
-    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn wa" id="mEnviar">${waIcon} Enviar no WhatsApp</button><button class="btn wa" id="mTotalk">Enviar pelo To Talk</button><button class="btn" id="mNota">Salvar como nota</button><button class="btn" id="mFechar">Fechar</button></div>
+    <div style="display:flex;gap:8px;margin-top:10px;flex-wrap:wrap"><button class="btn wa" id="mEnviar">${waIcon} Enviar no WhatsApp</button><button class="btn wa" id="mTotalk">Enviar pelo To Talk</button><button class="btn" id="mNota">Salvar como nota</button>${p.s.etapa === 'nao_vai' ? '<button class="btn" id="mInat">Voltar para esta edição</button>' : p.status === 'pago' ? '' : '<button class="btn" id="mInat">Não vai nesta edição</button>'}<button class="btn" id="mFechar">Fechar</button></div>
     <div class="muted" style="font-size:.72rem;margin-top:6px">"Enviar no WhatsApp" abre o seu WhatsApp. "Enviar pelo To Talk" sai pelo número oficial da Bioflora: texto livre só chega se a pessoa falou com vocês nas últimas 24h.</div>
     <div class="hist"><b>Conversa no To Talk</b><div class="conv" id="mConv"><div class="muted">Carregando…</div></div></div>
-    <div class="hist"><b>Histórico</b>${evs.length ? evs.map(e => `<div><span>${SINAL[e.tipo] || e.tipo}${e.etapa ? ' · ' + e.etapa.replace('_', ' ') : ''}${e.detalhe && e.tipo === 'nota' ? ': ' + esc(e.detalhe) : ''}${e.por ? ' <span class="muted">(' + esc(e.por.split('@')[0]) + ')</span>' : ''}</span><span class="muted">${hora(e.criado_em)}</span></div>`).join('') : '<div class="muted">Sem eventos ainda.</div>'}</div>`;
+    <div class="hist"><b>Histórico</b>${evs.length ? evs.map(e => `<div><span>${SINAL[e.tipo] || e.tipo}${e.etapa ? ' · ' + e.etapa.replace('_', ' ') : ''}${e.detalhe && (e.tipo === 'nota' || e.tipo === 'nao_vai') ? ': ' + esc(e.detalhe) : ''}${e.por ? ' <span class="muted">(' + esc(e.por.split('@')[0]) + ')</span>' : ''}</span><span class="muted">${hora(e.criado_em)}</span></div>`).join('') : '<div class="muted">Sem eventos ainda.</div>'}</div>`;
   $('crmModal').classList.remove('hide');
   $('mChave').onchange = () => { $('mTexto').value = mensagem(p, $('mChave').value); };
   $('mEnviar').onclick = () => { abrirWa(p, $('mChave').value, $('mTexto').value); $('crmModal').classList.add('hide'); };
@@ -698,6 +702,12 @@ function abrirModal(p) {
   };
   conversa(p);
   $('mNota').onclick = () => { const t = prompt('Nota sobre ' + p.nome.split(' ')[0] + ':'); if (t) { registrar(p, 'nota', null, t); $('crmModal').classList.add('hide'); } };
+  if ($('mInat')) $('mInat').onclick = () => {
+    if (p.s.etapa === 'nao_vai') { registrar(p, 'reativou', null, null); $('crmModal').classList.add('hide'); return; }
+    const motivo = prompt(`${p.nome.split(' ')[0]} não vai nesta edição. Motivo (opcional):`, '');
+    if (motivo === null) return;
+    registrar(p, 'nao_vai', null, motivo || null); $('crmModal').classList.add('hide');
+  };
   $('mFechar').onclick = () => $('crmModal').classList.add('hide');
 }
 $('crmModal').onclick = (e) => { if (e.target.id === 'crmModal') $('crmModal').classList.add('hide'); };
@@ -728,7 +738,7 @@ async function chamaWhats(body) {
   const r = await fetch('https://gbbjpltqmbhlfluqhrmg.supabase.co/functions/v1/chama-whats', { method: 'POST', headers: { Authorization: 'Bearer ' + session.access_token, 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
   return r.json().catch(() => ({ erro: 'falha ' + r.status }));
 }
-const publicoDe = (m) => pessoasCrm().filter(PUBLICO[m][2]).map(p => ({ nome: p.nome, whatsapp: p.whatsapp, ingresso_id: p.id || undefined, lead: p.lead || undefined, ticket: p.ticket, codigo: p.codigo, prazo: p.expira_em ? hora(p.expira_em) : undefined }));
+const publicoDe = (m) => pessoasCrm().filter(p => p.s.etapa !== 'nao_vai').filter(PUBLICO[m][2]).map(p => ({ nome: p.nome, whatsapp: p.whatsapp, ingresso_id: p.id || undefined, lead: p.lead || undefined, ticket: p.ticket, codigo: p.codigo, prazo: p.expira_em ? hora(p.expira_em) : undefined }));
 async function renderDisparos() {
   if (!MODELOS_OK.length) MODELOS_OK = (await chamaWhats({ acao: 'modelos' })).modelos || [];
   const lista = Object.keys(PUBLICO).filter(m => MODELOS_OK.includes(m));
