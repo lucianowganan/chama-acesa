@@ -148,6 +148,38 @@
   .hist{margin-top:14px;border-top:1px solid var(--line);padding-top:10px;font-size:.8rem}
   .hist div{display:flex;justify-content:space-between;gap:10px;padding:5px 0;border-bottom:1px dashed var(--line)}
   @media(max-width:1000px){.tiles{grid-template-columns:repeat(2,1fr)}.tile.hero{grid-column:span 2}.grid{grid-template-columns:1fr}header{padding:12px 16px;flex-wrap:wrap}main{padding:18px 16px}}
+  /* ---- CRM quadro (Kanban) ---- */
+  .crmbar{display:flex;gap:10px;align-items:center;flex-wrap:wrap;margin:6px 0 14px}
+  .seg{display:inline-flex;background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:3px}
+  .seg button{border:0;background:none;color:var(--txt2);padding:8px 14px;border-radius:9px;cursor:pointer;font:inherit;font-size:.82rem}
+  .seg button.on{background:var(--surface2);color:var(--txt);box-shadow:inset 0 0 0 1px var(--line2)}
+  .tog{display:inline-flex;gap:8px;align-items:center;font-size:.8rem;color:var(--txt2);cursor:pointer;padding:8px 12px;border:1px solid var(--line);border-radius:12px}
+  .tog input{accent-color:var(--brasa2)}
+  .board{display:flex;gap:12px;overflow-x:auto;padding-bottom:12px;align-items:flex-start;scroll-snap-type:x proximity}
+  .col{flex:0 0 272px;background:var(--surface);border:1px solid var(--line);border-radius:16px;display:flex;flex-direction:column;max-height:74vh;scroll-snap-align:start;transition:border-color .15s,background .15s}
+  .col.over{border-color:var(--brasa2);background:var(--surface2)}
+  .col-h{padding:12px 14px 10px;border-bottom:1px solid var(--line);position:relative}
+  .col-h::before{content:'';position:absolute;left:14px;right:14px;top:0;height:3px;border-radius:0 0 3px 3px;background:var(--c,var(--dourado))}
+  .col-h b{font-size:.86rem;display:flex;justify-content:space-between;align-items:center;gap:8px}
+  .col-h b span{font-size:.72rem;background:var(--surface2);border:1px solid var(--line2);border-radius:999px;padding:1px 8px;color:var(--txt2)}
+  .col-h small{display:block;font-size:.7rem;color:var(--muted);margin-top:3px}
+  .col-b{padding:10px;display:flex;flex-direction:column;gap:8px;overflow-y:auto;min-height:60px}
+  .kc{background:var(--surface2);border:1px solid var(--line);border-radius:12px;padding:10px 11px;cursor:grab;position:relative}
+  .kc:hover{border-color:var(--line2)} .kc.drag{opacity:.4}
+  .kc.task{box-shadow:inset 3px 0 0 var(--warn)} .kc.urg{box-shadow:inset 3px 0 0 var(--err)}
+  .kc .n{font-weight:600;font-size:.84rem;line-height:1.25;padding-right:52px}
+  .kc .m{font-size:.7rem;color:var(--muted);margin-top:3px}
+  .kc .a{margin-top:7px;font-size:.72rem;color:var(--douc);display:flex;align-items:center;gap:5px}
+  .kc .q{position:absolute;top:8px;right:8px;display:flex;gap:4px}
+  .kc .q button{width:24px;height:24px;border-radius:7px;border:1px solid var(--line2);background:var(--surface);color:var(--txt2);cursor:pointer;display:grid;place-items:center;padding:0}
+  .kc .q button.w{background:#1f6b3a;border-color:#2f8a4d;color:#eafff0}
+  .kc .q svg{width:13px;height:13px}
+  .col-e{font-size:.74rem;color:var(--muted);text-align:center;padding:14px 4px}
+  .more{font-size:.74rem;color:var(--txt2);background:none;border:1px dashed var(--line2);border-radius:10px;padding:8px;cursor:pointer}
+  .stats{display:flex;gap:26px;flex-wrap:wrap}
+  .stats div{display:flex;flex-direction:column} .stats b{font-family:var(--display);font-size:1.7rem;line-height:1} .stats span{font-size:.72rem;color:var(--muted);margin-top:4px}
+  .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--line2);padding:10px 16px;border-radius:12px;font-size:.82rem;z-index:99;opacity:0;transition:opacity .2s;pointer-events:none}
+  .toast.on{opacity:1}
 </style>
 </head>
 <body>
@@ -240,20 +272,27 @@
     <!-- ============ CRM ============ -->
     <section id="tab-crm" class="hide">
       <div class="pagehead">
-        <div><h2>CRM · acompanhamento</h2><p>Onde cada pessoa está e quem precisa de contato agora. Clique no WhatsApp: a mensagem já vai pronta e o contato fica registrado.</p></div>
-        <div class="countdown"><div class="n" id="nFila">—</div><span>contatos<br>para fazer agora</span></div>
+        <div><h2>CRM · acompanhamento</h2><p>Cada coluna é uma etapa. Cartão com barra amarela precisa de contato; vermelha, com urgência. Arraste para "Não vai nesta edição" para tirar alguém desta edição.</p></div>
+        <div class="stats"><div><b id="nFila">—</b><span>contatos agora</span></div><div><b id="nPagas">—</b><span>pagas</span></div><div><b id="nAtiv">—</b><span>para ativar</span></div><div><b id="nTotal">—</b><span>na base</span></div></div>
       </div>
-      <div class="etapas" id="crmEtapas"></div>
-      <div class="card" style="margin-bottom:18px">
+      <div class="crmbar">
+        <div class="seg"><button class="on" data-vis="quadro">Quadro</button><button data-vis="lista">Lista</button></div>
+        <input class="field" id="crmBusca" placeholder="Buscar nome, WhatsApp ou código" style="flex:1;min-width:220px">
+        <label class="tog"><input type="checkbox" id="crmSoTarefa"> Só quem precisa de contato</label>
+        <label class="tog"><input type="checkbox" id="crmVazias"> Mostrar colunas vazias</label>
+      </div>
+      <div class="board" id="crmBoard"></div>
+      <div class="etapas hide" id="crmEtapas"></div>
+      <details class="card" style="margin:16px 0 18px"><summary style="cursor:pointer;font-weight:600">Disparos WhatsApp em massa</summary><div style="margin-top:12px">
         <div class="toolbar"><h3 class="grow">Disparos WhatsApp</h3><span class="muted" style="font-size:.78rem">Pelo WhatsApp oficial (To Talk). Boas-vindas e lista de espera saem sozinhos; estes, quando você clicar, uma vez por pessoa.</span></div>
         <div id="crmDisparos" style="display:flex;gap:10px;flex-wrap:wrap"></div>
-      </div>
-      <div class="card" style="margin-bottom:18px">
+      </div></details>
+      <div class="card hide" style="margin-bottom:18px">
         <div class="toolbar"><h3 class="grow" id="crmFilaTit">Fila de hoje</h3></div>
         <div class="fila" id="crmFila"></div>
       </div>
-      <div class="card">
-        <div class="toolbar" id="crmLista"><h3 class="grow" id="crmListaTit">Todas as pessoas</h3><input class="field" id="crmBusca" placeholder="Buscar nome, WhatsApp ou código"></div>
+      <div class="card hide" id="crmListaCard">
+        <div class="toolbar" id="crmLista"><h3 class="grow" id="crmListaTit">Todas as pessoas</h3></div>
         <div class="tbl-wrap"><table>
           <thead><tr><th>Pessoa</th><th>Etapa</th><th>Último sinal</th><th>Contatos</th><th>Próxima ação</th><th></th></tr></thead>
           <tbody id="crmTabela"></tbody>
@@ -661,6 +700,7 @@ function renderCrm() {
       <td>${p.s.tarefa ? `<b style="color:var(--douc)">Contato: ${p.s.tarefa.replace('_', ' ')}</b>` : '<span class="muted">aguardar</span>'}</td>
       <td><button class="btn" data-ver="${k}">Abrir</button></td></tr>`;
   }).join('') || '<tr><td colspan="6" class="empty">Ninguém nesta etapa.</td></tr>';
+  renderBoard(P);
 }
 const fk = (w) => { const d = String(w || '').replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, ''); return d.slice(0, 2) + d.slice(-8); };
 async function conversa(p) {
@@ -669,6 +709,58 @@ async function conversa(p) {
   $('mConv').innerHTML = msgs.length ? msgs.map(e => `<div class="${e.tipo === 'MESSAGE_RECEIVED' ? 'in' : 'out'}">${esc(e.payload.content.text)}<span>${hora(e.payload.content.createdAt || e.recebido_em)}</span></div>`).join('') : '<div class="muted">Nenhuma mensagem registrada desde 29/10.</div>';
   $('mConv').scrollTop = 1e6;
 }
+
+/* ---------- CRM: quadro (colunas por etapa) ---------- */
+const COR = { ativacao:'#8f7a6f', reservou:'#d9ab5f', no_pagamento:'#e0a63a', vencendo:'#e05a4f', vencida:'#b4553c', boas_vindas:'#f2711c', confirmada:'#5fb37a', checkin:'#3f9e6a', nao_vai:'#6b5d57', cancelada:'#4a3c37' };
+const ICO_WA = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm5.3 14.1c-.2.6-1.3 1.2-1.8 1.2-.5.1-1 .2-3.3-.7-2.8-1.1-4.6-4-4.7-4.2-.1-.2-1.1-1.5-1.1-2.9s.7-2 1-2.3c.2-.3.5-.3.7-.3h.5c.2 0 .4 0 .6.5l.8 2c.1.2.1.3 0 .5l-.3.5-.4.4c-.1.1-.3.3-.1.6.2.3.7 1.2 1.6 2 1.1 1 2 1.3 2.3 1.4.3.1.5.1.6-.1l.9-1c.2-.3.4-.2.6-.1l1.9.9c.3.1.5.2.5.3.1.2.1.7-.1 1.3z"/></svg>';
+const ICO_ABRIR = '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 4h6v6M20 4l-9 9M18 14v5a1 1 0 0 1-1 1H5a1 1 0 0 1-1-1V7a1 1 0 0 1 1-1h5"/></svg>';
+const LIMITE = 40; const abertas = new Set();
+const toast = (t) => { let el = document.querySelector('.toast'); if (!el) { el = document.createElement('div'); el.className = 'toast'; document.body.appendChild(el); } el.textContent = t; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 2600); };
+function renderBoard(P) {
+  const q = $('crmBusca').value.trim().toLowerCase(), qd = q.replace(/\D/g, ''), so = $('crmSoTarefa').checked;
+  const V = P.filter(p => (!so || p.s.tarefa) && (!q || String(p.nome).toLowerCase().includes(q) || (p.codigo || '').toLowerCase().includes(q) || (qd && String(p.whatsapp).includes(qd))));
+  $('nPagas').textContent = P.filter(p => p.status === 'pago' && p.lote_id !== 'teste').length;
+  $('nAtiv').textContent = P.filter(p => p.s.etapa === 'ativacao').length;
+  $('nTotal').textContent = P.length;
+  const ordem = Object.keys(ETAPA), vazias = $('crmVazias').checked;
+  $('crmBoard').innerHTML = ordem.map(k => {
+    const cs = V.filter(p => p.s.etapa === k).sort((a, b) => (b.s.urg ? 2 : b.s.tarefa ? 1 : 0) - (a.s.urg ? 2 : a.s.tarefa ? 1 : 0));
+    if (!cs.length && !vazias && !['nao_vai'].includes(k)) return '';
+    const pend = cs.filter(p => p.s.tarefa).length, mostra = abertas.has(k) ? cs : cs.slice(0, LIMITE);
+    return `<div class="col" data-col="${k}" style="--c:${COR[k]}"><div class="col-h"><b>${ETAPA[k].nome}<span>${cs.length}</span></b><small>${pend ? pend + ' para contatar · ' : ''}${ETAPA[k].d || '&nbsp;'}</small></div>
+      <div class="col-b">${mostra.map(p => {
+        const key = p.id ? 'i' + p.id : p.lead, sig = ultimo(evsDe(p));
+        return `<div class="kc ${p.s.urg ? 'urg' : p.s.tarefa ? 'task' : ''}" draggable="true" data-k="${key}">
+          <div class="q">${p.s.tarefa ? `<button class="w" title="Abrir WhatsApp com a mensagem pronta" data-wa="${key}" data-chave="${p.s.tarefa}">${ICO_WA}</button>` : ''}<button title="Abrir" data-ver="${key}">${ICO_ABRIR}</button></div>
+          <div class="n">${esc(p.nome)}</div>
+          <div class="m">${p.lead ? esc(p.origem) : esc(p.codigo) + ' · ' + esc(loteNome(p.lote_id))}${sig ? ' · ' + (SINAL[sig.tipo] || sig.tipo) + ' ' + desde(sig.criado_em) : ''}</div>
+          ${p.s.tarefa ? `<div class="a">● Contato: ${p.s.tarefa.replace(/_/g, ' ')}${p.status === 'reservado' ? ' · vence ' + hora(p.expira_em) : ''}</div>` : ''}
+        </div>`;
+      }).join('') || '<div class="col-e">Ninguém aqui.</div>'}${cs.length > mostra.length ? `<button class="more" data-mais="${k}">Mostrar mais ${cs.length - mostra.length}</button>` : ''}</div></div>`;
+  }).join('');
+}
+// arrastar: so a etapa "Não vai nesta edição" é manual; as outras mudam sozinhas (reserva, pagamento, check-in)
+let arrastando = null;
+$('crmBoard').addEventListener('dragstart', (e) => { const c = e.target.closest('.kc'); if (c) { arrastando = c.dataset.k; c.classList.add('drag'); } });
+$('crmBoard').addEventListener('dragend', (e) => { e.target.closest('.kc')?.classList.remove('drag'); document.querySelectorAll('.col.over').forEach(c => c.classList.remove('over')); });
+$('crmBoard').addEventListener('dragover', (e) => { const c = e.target.closest('.col'); if (c) { e.preventDefault(); document.querySelectorAll('.col.over').forEach(x => x !== c && x.classList.remove('over')); c.classList.add('over'); } });
+$('crmBoard').addEventListener('drop', (e) => {
+  e.preventDefault(); const col = e.target.closest('.col')?.dataset.col, p = arrastando && acharPessoa(arrastando); arrastando = null;
+  if (!p || !col || col === p.s.etapa) return;
+  if (col === 'nao_vai') { if (p.status === 'pago') return toast('Quem já pagou: use transferência ou reembolso do ingresso.'); const m = prompt(`${p.nome.split(' ')[0]} não vai nesta edição. Motivo (opcional):`, ''); if (m !== null) { registrar(p, 'nao_vai', null, m || null); toast('Movida para "Não vai nesta edição".'); } return; }
+  if (p.s.etapa === 'nao_vai') { registrar(p, 'reativou', null, null); toast('Voltou para esta edição.'); return; }
+  toast('Essa etapa muda sozinha (reserva, pagamento, check-in). Só "Não vai nesta edição" é manual.');
+});
+$('crmBoard').addEventListener('click', (e) => {
+  const m = e.target.closest('[data-mais]'); if (m) { abertas.add(m.dataset.mais); renderCrm(); return; }
+  const c = e.target.closest('.kc'); if (c && !e.target.closest('button')) abrirModal(acharPessoa(c.dataset.k));
+});
+document.querySelectorAll('.seg [data-vis]').forEach(b => b.onclick = () => {
+  document.querySelectorAll('.seg [data-vis]').forEach(x => x.classList.toggle('on', x === b));
+  const lista = b.dataset.vis === 'lista'; $('crmBoard').classList.toggle('hide', lista); $('crmListaCard').classList.toggle('hide', !lista);
+});
+$('crmSoTarefa').onchange = renderCrm; $('crmVazias').onchange = renderCrm;
+
 const acharPessoa = (k) => pessoasCrm().find(p => (p.id ? 'i' + p.id : p.lead) === k);
 async function registrar(p, tipo, chave, detalhe) {
   const row = { tipo, etapa: chave || null, detalhe: detalhe || null, por: EU, ...(p.id ? { ingresso_id: p.id } : { lead: p.lead }) };
