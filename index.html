@@ -15,6 +15,8 @@
 <meta property="og:image" content="https://chamaacesa.farmaciabioflora.com.br/assets/images/og-chama-acesa-inscricoes.jpg">
 <meta property="og:image:width" content="1200"><meta property="og:image:height" content="630">
 <meta name="twitter:card" content="summary_large_image">
+<!-- ?c=convite (entrada por convite.html): mesma LP vendendo o Lote 0, fora do Google -->
+<script>if(new URLSearchParams(location.search).get('c')==='convite'){var m=document.createElement('meta');m.name='robots';m.content='noindex, nofollow';document.head.appendChild(m);}</script>
 <script src="assets/js/tracking.js"></script>
 <link rel="stylesheet" href="assets/css/inscricao.css">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -1421,8 +1423,17 @@
   });
 
   /* ================= Lote atual + inscricao (assets/js/inscricao.js) ================= */
-  ChamaInscricao.carregarLote();
-  ChamaInscricao.montarFormulario({ form: document.getElementById('inscricaoForm'), box: document.getElementById('formStep'), lote: null });
+  const LOTE_LP = new URLSearchParams(location.search).get('c') === 'convite' ? 'lote0' : null;
+  if (LOTE_LP) {
+    const fs = document.getElementById('formStep');
+    fs.querySelector('h2').textContent = 'Seu convite com valor especial';
+    fs.querySelector('.sub').textContent = 'Você recebeu este link por ser especial para a Bioflora. São poucas vagas com este valor.';
+    fs.querySelector('.lote-por').textContent = 'por pessoa · jantar, bebidas, palestras e brindes · no público geral o valor é R$ 199,90';
+    fs.querySelector('.lote-prox').style.display = 'none';
+    // Lote 0 esgotado: segue na LP normal, com o lote publico
+    ChamaInscricao.carregarLote(LOTE_LP).then((l) => { if (l && l.restantes <= 0) location.replace('./'); });
+  } else ChamaInscricao.carregarLote();
+  ChamaInscricao.montarFormulario({ form: document.getElementById('inscricaoForm'), box: document.getElementById('formStep'), lote: LOTE_LP });
 
   /* ================= Smooth anchor links w/ Lenis ================= */
   document.querySelectorAll('a[href^="#"]').forEach(link=>{
