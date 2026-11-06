@@ -491,6 +491,19 @@
   /* ===== Benefícios lista ===== */
   .benefits-sec{background:var(--creme); color:var(--vinho-1);}
   .benefits-sec .headline{font-family:var(--font-serif); text-align:center; font-size:clamp(1.6rem,3.6vw,2.2rem); margin-bottom:16px;}
+  .stack{max-width:640px; margin:0 auto; background:#fff; border-radius:20px; padding:10px 26px 28px; box-shadow:0 20px 60px rgba(86,15,17,.12); text-align:center;}
+  .stack-row{display:flex; justify-content:space-between; align-items:center; gap:16px; padding:15px 0; border-bottom:1px solid rgba(86,15,17,.1); text-align:left;}
+  .stack-row b{display:block; font-size:.98rem; color:var(--vinho-1);}
+  .stack-row span{display:block; font-size:.8rem; color:var(--vinho-3); opacity:.8; margin-top:2px;}
+  .stack-row s,.stack-total s{white-space:nowrap; color:var(--vinho-3); opacity:.75; font-size:.95rem;}
+  .stack-row em{white-space:nowrap; font-style:normal; font-size:.8rem; font-weight:600; color:var(--brasa); text-transform:uppercase; letter-spacing:.06em;}
+  .stack-total{display:flex; justify-content:space-between; padding:18px 0 6px; font-weight:600; color:var(--vinho-2);}
+  .stack-total s{font-size:1.15rem;}
+  .stack-preco{margin:14px 0 22px;}
+  .stack-preco span{display:block; font-size:.8rem; letter-spacing:.14em; text-transform:uppercase; color:var(--vinho-3);}
+  .stack-preco strong{display:block; font-family:var(--font-heading); font-size:clamp(2.6rem,9vw,3.4rem); line-height:1.1; color:var(--brasa);}
+  .stack-preco small{color:var(--vinho-3); font-size:.85rem;}
+  @media(max-width:600px){.stack{padding:6px 18px 24px}.stack-row b{font-size:.92rem}}
   .benefits-sec .sub{text-align:center; color:var(--vinho-3); max-width:500px; margin:0 auto 48px;}
   .benefits-list{display:grid; grid-template-columns:repeat(2,1fr); gap:18px; max-width:700px; margin:0 auto;}
   @media(max-width:600px){.benefits-list{grid-template-columns:1fr;}}
@@ -756,19 +769,24 @@
   </div>
 </section>
 
-<!-- ============ BENEFÍCIOS ============ -->
+<!-- ============ O QUE ESTÁ INCLUSO (empilhamento de valor) ============ -->
 <section class="benefits-sec sec-pad">
   <div class="container">
-    <p class="headline reveal">O que está incluso no seu ingresso</p>
-    <p class="sub reveal">Um valor só, sem surpresas na hora.</p>
-    <div class="benefits-list">
-      <div class="benefit-item reveal"><span class="check">✓</span><p>Rodízio japonês completo no Restaurante Shitake</p></div>
-      <div class="benefit-item reveal"><span class="check">✓</span><p>Bebidas inclusas durante o jantar</p></div>
-      <div class="benefit-item reveal"><span class="check">✓</span><p>Outras opções de pratos para quem não come comida japonesa</p></div>
-      <div class="benefit-item reveal"><span class="check">✓</span><p>Palestras com dermatologista, ginecologista, especialista em cabelo e couro cabeludo e farmacêutica</p></div>
-      <div class="benefit-item reveal"><span class="check">✓</span><p>Brindes especiais para cada participante</p></div>
-      <div class="benefit-item reveal"><span class="check">✓</span><p>Condições exclusivas em produtos no dia do evento</p></div>
-      <div class="benefit-item reveal"><span class="check">✓</span><p>Bônus: as palestras completas da 1ª edição em vídeo, liberadas na compra</p></div>
+    <p class="headline reveal">Tudo o que você recebe nessa noite</p>
+    <p class="sub reveal">Se fosse buscar cada parte separada, a conta seria esta:</p>
+    <div class="stack reveal">
+      <div class="stack-row"><div><b>Rodízio japonês Gold no Shitake</b><span>Com outras opções para quem não come japonês</span></div><s>R$ 139,90</s></div>
+      <div class="stack-row"><div><b>Bebidas inclusas</b><span>Refrigerantes e sucos, que custam R$ 9,90 cada no cardápio</span></div><em>inclusas</em></div>
+      <div class="stack-row"><div><b>Conversa com a Dra. Renata Duarte</b><span>Dermatologista · consulta particular</span></div><s>R$ 490,00</s></div>
+      <div class="stack-row"><div><b>Conversa com a Dra. Letícia Lopes</b><span>Especialista em cabelo e couro cabeludo · consulta particular</span></div><s>R$ 399,00</s></div>
+      <div class="stack-row"><div><b>Conversa com a Dra. Patrícia</b><span>Ginecologista · consulta particular</span></div><s>R$ 250,00</s></div>
+      <div class="stack-row"><div><b>Orientação da Wanessa</b><span>Farmacêutica e idealizadora do Chama Acesa</span></div><em>inclusa</em></div>
+      <div class="stack-row"><div><b>Sacolinha de brindes</b><span>Séruns, dermocosméticos, produtos para cabelo, cápsulas e lançamentos · média por participante</span></div><s>+ R$ 250,00</s></div>
+      <div class="stack-row"><div><b>Bônus: palestras completas da 1ª edição</b><span>Liberadas na hora da compra</span></div><s>R$ 499,00</s></div>
+      <div class="stack-row extra"><div><b>Sorteios de kits das lojas parceiras</b><span>Mais de R$ 1.000 em kits sorteados na noite, além de condições exclusivas em produtos</span></div><em>de presente</em></div>
+      <div class="stack-total"><span>Tudo isso somaria</span><s>R$ 2.027,90</s></div>
+      <div class="stack-preco"><span>Seu ingresso</span><strong data-lote-preco>R$ 199,90</strong><small>Pix ou cartão em até 3x sem juros</small></div>
+      <a href="#form" class="btn btn-primary">Garantir minha vaga</a>
     </div>
   </div>
 </section>
