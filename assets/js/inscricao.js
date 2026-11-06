@@ -169,7 +169,7 @@
   }
   async function abrirPagamento(box, r, nome, whatsapp) {
     if (r.status === 'pago') return mostrarPagamento(box, r, nome);
-    const url = await linkPagarme(r, whatsapp);
+    const url = r.url || await linkPagarme(r, whatsapp); // ingresso dupla ja vem com o link proprio
     if (url) mostrarCheckout(box, r, nome, url, whatsapp);
     else mostrarPagamento(box, r, nome);
   }
@@ -179,6 +179,17 @@
     const q = (id) => form.querySelector('#' + id);
     mask(q('cpf'), 'cpf');
     mask(q('whatsapp'), 'tel');
+    // ingresso dupla: so aparece quando o link de pagamento dela estiver configurado
+    const dupla = form.querySelector('#duplaBox');
+    if (dupla && !lote) {
+      mask(q('a_cpf'), 'cpf'); mask(q('a_whatsapp'), 'tel');
+      q('dupla').addEventListener('change', () => { dupla.classList.toggle('on', q('dupla').checked); btn.textContent = q('dupla').checked ? 'Reservar as duas vagas' : 'Reservar minha vaga'; });
+      rpc('chama_dupla_info', {}).then((d) => {
+        if (!d || !d.ativa) return;
+        document.querySelectorAll('[data-dupla-preco]').forEach((e) => (e.textContent = brl(d.preco)));
+        document.querySelectorAll('#duplaBox, .stack-dupla').forEach((e) => e.classList.remove('hide'));
+      }).catch(() => {});
+    }
     const btn = form.querySelector('button[type="submit"]');
     const err = document.createElement('p');
     err.className = 'form-err';
@@ -200,6 +211,13 @@
       if (nome.split(' ').filter(Boolean).length < 2) return erro('Digite seu nome completo.');
       if (!cpfValido(cpf)) return erro('Confira o CPF.');
       if (whatsapp.length < 10 || whatsapp.length > 11) return erro('Confira o WhatsApp com DDD.');
+      const comAmiga = !!(dupla && q('dupla') && q('dupla').checked);
+      const amiga = comAmiga ? { nome: q('a_nome').value.trim(), cpf: q('a_cpf').value.replace(/\D/g, ''), whatsapp: q('a_whatsapp').value.replace(/\D/g, ''), email: q('a_email').value.trim() } : null;
+      if (amiga) {
+        if (amiga.nome.split(' ').filter(Boolean).length < 2) return erro('Digite o nome completo da sua amiga.');
+        if (!cpfValido(amiga.cpf) || amiga.cpf === cpf) return erro('Confira o CPF da sua amiga.');
+        if (amiga.whatsapp.length < 10 || amiga.whatsapp.length > 11) return erro('Confira o WhatsApp da sua amiga com DDD.');
+      }
       if (!q('aceite').checked) return erro('Marque a autorização para continuar.');
       const label = btn.textContent;
       btn.disabled = true;
@@ -224,7 +242,9 @@
       }
       btn.textContent = 'Reservando sua vaga...';
       try {
-        const r = await rpc('chama_ingresso_reservar', {
+        const r = amiga
+          ? await rpc('chama_dupla_reservar', { p_nome: nome, p_cpf: cpf, p_whatsapp: whatsapp, p_email: q('email').value.trim(), p_aceite: true, a_nome: amiga.nome, a_cpf: amiga.cpf, a_whatsapp: amiga.whatsapp, a_email: amiga.email })
+          : await rpc('chama_ingresso_reservar', {
           p_nome: nome, p_cpf: cpf, p_whatsapp: whatsapp, p_email: q('email').value.trim(), p_aceite: true, p_lote: lote || null,
         });
         try { localStorage.setItem(CFG.storageKey, JSON.stringify({ r, nome, whatsapp })); } catch (e2) {}
@@ -237,6 +257,7 @@
         console.error(e3);
         btn.disabled = false;
         btn.textContent = label;
+        if (String(e3.message).includes('ja_inscrita')) return erro('Uma de vocês já tem inscrição. Faça a reserva da outra separadamente.');
         if (String(e3.message).includes('esgotado')) { carregarLote(lote); return erro(lote ? 'As vagas deste lote acabaram de esgotar.' : 'As vagas acabaram de esgotar. Toque de novo para entrar na lista de espera.'); }
         erro('Não conseguimos reservar agora. Confira os dados e tente de novo.');
       }

@@ -18,7 +18,7 @@
 <!-- ?c=convite (entrada por convite.html): mesma LP vendendo o Lote 0, fora do Google -->
 <script>if(new URLSearchParams(location.search).get('c')==='convite'){var m=document.createElement('meta');m.name='robots';m.content='noindex, nofollow';document.head.appendChild(m);}</script>
 <script src="assets/js/tracking.js"></script>
-<link rel="stylesheet" href="assets/css/inscricao.css">
+<link rel="stylesheet" href="assets/css/inscricao.css?v=dupla1">
 <link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">
 <style>
@@ -494,6 +494,16 @@
   /* ===== Benefícios lista ===== */
   .benefits-sec{background:var(--creme); color:var(--vinho-1);}
   .benefits-sec .headline{font-family:var(--font-serif); text-align:center; font-size:clamp(1.6rem,3.6vw,2.2rem); margin-bottom:16px;}
+  .dupla{margin:4px 0 16px; border:1px solid rgba(217,171,95,.35); border-radius:14px; padding:14px 16px; text-align:left;}
+  .dupla.hide,.stack-dupla.hide{display:none;}
+  .dupla-toggle{display:flex; gap:10px; align-items:center; cursor:pointer; font-size:.95rem;}
+  .dupla-toggle input{width:20px; height:20px; accent-color:var(--brasa); flex-shrink:0;}
+  .dupla-toggle strong{color:var(--dourado-claro);}
+  .dupla-campos{display:none; margin-top:14px;}
+  .dupla.on .dupla-campos{display:block;}
+  .dupla-tit{font-size:.8rem; letter-spacing:.12em; text-transform:uppercase; color:var(--dourado); margin-bottom:10px;}
+  .stack-dupla{margin:-6px 0 20px; font-size:.92rem; color:var(--vinho-2);}
+  .stack-dupla b{color:var(--brasa);}
   .stack{max-width:640px; margin:0 auto; background:#fff; border-radius:20px; padding:10px 26px 28px; box-shadow:0 20px 60px rgba(86,15,17,.12); text-align:center;}
   .stack-row{display:flex; justify-content:space-between; align-items:center; gap:16px; padding:15px 0; border-bottom:1px solid rgba(86,15,17,.1); text-align:left;}
   .stack-row b{display:block; font-size:.98rem; color:var(--vinho-1);}
@@ -789,6 +799,7 @@
       <div class="stack-row extra"><div><b>Sorteios de kits das lojas parceiras</b><span>Mais de R$ 1.000 em kits sorteados na noite, além de condições exclusivas em produtos</span></div><em>de presente</em></div>
       <div class="stack-total"><span>Tudo isso somaria</span><s>R$ 2.027,90</s></div>
       <div class="stack-preco"><span>Seu ingresso</span><strong data-lote-preco>R$ 199,90</strong><small>Pix ou cartão em até 3x sem juros</small></div>
+      <p class="stack-dupla hide">Vai com uma amiga? <b>2 ingressos por <span data-dupla-preco>R$ 359,90</span></b>: é só marcar a opção no formulário.</p>
       <a href="#form" class="btn btn-primary">Garantir minha vaga</a>
     </div>
   </div>
@@ -826,6 +837,16 @@
           <div class="form-group">
             <label for="email">E-mail</label>
             <input type="email" id="email" placeholder="seu@email.com" autocomplete="email" required>
+          </div>
+          <div class="dupla hide" id="duplaBox">
+            <label class="dupla-toggle"><input type="checkbox" id="dupla"> <span><b>Vou com uma amiga</b> · 2 ingressos por <strong data-dupla-preco>R$ 359,90</strong></span></label>
+            <div class="dupla-campos">
+              <p class="dupla-tit">Dados da sua amiga</p>
+              <div class="form-group"><label for="a_nome">Nome completo dela</label><input type="text" id="a_nome" placeholder="Nome completo da amiga"></div>
+              <div class="form-group"><label for="a_cpf">CPF dela</label><input type="text" id="a_cpf" placeholder="000.000.000-00" inputmode="numeric"></div>
+              <div class="form-group"><label for="a_whatsapp">WhatsApp dela</label><input type="tel" id="a_whatsapp" placeholder="(00) 00000-0000"></div>
+              <div class="form-group"><label for="a_email">E-mail dela</label><input type="email" id="a_email" placeholder="email@dela.com"></div>
+            </div>
           </div>
           <label class="consent"><input type="checkbox" id="aceite" required> <span>Concordo em receber comunicações do Chama Acesa e da Farmácia Bioflora por WhatsApp e e-mail, conforme a <a href="politica.html" target="_blank" rel="noopener">Política de Privacidade</a>, e li as <a href="regras.html" target="_blank" rel="noopener">regras de ingressos</a>, e estou de acordo com as <a href="politica.html#filmagem" target="_blank" rel="noopener">filmagens no dia do evento</a>.</span></label>
           <button type="submit" class="btn btn-primary">Reservar minha vaga</button>
@@ -915,7 +936,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="assets/js/inscricao.js"></script>
+<script src="assets/js/inscricao.js?v=dupla1"></script>
 <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>

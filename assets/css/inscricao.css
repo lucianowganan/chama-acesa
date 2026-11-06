@@ -66,3 +66,4 @@
 @keyframes gira{to{transform:rotate(360deg)}}
 .ingresso-qr{display:inline-block; margin-top:20px; padding:16px; background:#fff; border-radius:16px; line-height:0;}
 .ingresso-qr img, .ingresso-qr canvas{width:min(240px, 62vw) !important; height:auto !important; aspect-ratio:1;}
+.esgotado .dupla{display:none;}
