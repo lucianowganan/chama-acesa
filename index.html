@@ -298,6 +298,8 @@
     max-width:420px;
     margin-left:auto;margin-right:auto;
   }
+  .hero-note{margin-top:18px;}
+  @media(max-width:768px){.scroll-cue{display:none !important;}}
   .scroll-cue{
     position:absolute; bottom:20px; left:50%; transform:translateX(-50%);
     font-size:0.7rem; letter-spacing:0.15em; text-transform:uppercase; color:var(--texto-suave); opacity:0.6;
@@ -633,12 +635,12 @@
 
     <div class="hero-main-copy">
       <h3 class="hero-statement">
-        <span class="split-line"><span>A segunda edição tem data marcada.</span></span>
-        <span class="split-line"><em><span>25 de novembro, em Itajubá.</span></em></span>
+        <span class="split-line"><span>“É normal da idade.”</span></span>
+        <span class="split-line"><em><span>Não precisa ser só isso.</span></em></span>
       </h3>
-      <p class="sub reveal">Um encontro exclusivo para mulheres 35+ sobre saúde, sexualidade, bem-estar, autocuidado e tudo aquilo que faz parte dessa fase da nossa vida.</p>
+      <p class="sub reveal">Uma noite para mulheres 35+ conversarem sobre pele, cabelo, menopausa e autoestima. Sem tabu e sem se sentir sozinha.</p>
       <a href="#form" class="btn btn-primary reveal">Garantir minha vaga</a>
-      <p class="hero-note reveal"><strong style="color:var(--dourado-claro)">25/11 · 19h · Restaurante Shitake</strong><br><span data-lote-nome>Lote 1</span>: restam <strong style="color:var(--dourado-claro)" data-lote-restantes>—</strong> vagas</p>
+      <p class="hero-note reveal"><strong style="color:var(--dourado-claro)">25/11 · 19h · Restaurante Shitake</strong><br>Faltam <strong style="color:var(--dourado-claro)" data-faltam>—</strong> · vagas limitadas</p>
     </div>
   </div>
   <div class="scroll-cue"><span>role</span><div class="line"></div></div>
@@ -851,6 +853,14 @@
         <div class="faq-a"><p>Dia 25 de novembro, a partir das 19h, no Restaurante Shitake, em Itajubá (MG).</p></div>
       </div>
       <div class="faq-item">
+        <button class="faq-q">Posso ir sozinha? <span class="plus">+</span></button>
+        <div class="faq-a"><p>Pode, sim. O Chama Acesa é uma roda de conversa entre mulheres que estão vivendo a mesma fase, e as mesas são compartilhadas. É o tipo de noite em que você chega sem conhecer ninguém e sai conversando com várias.</p></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q">Vou precisar falar na frente de todo mundo? <span class="plus">+</span></button>
+        <div class="faq-a"><p>Não. Ninguém é obrigada a falar. Você pode só ouvir, e quem quiser pode fazer perguntas às especialistas.</p></div>
+      </div>
+      <div class="faq-item">
         <button class="faq-q">O que está incluso no ingresso? <span class="plus">+</span></button>
         <div class="faq-a"><p>Rodízio japonês com bebidas inclusas (com outras opções de pratos para quem não come comida japonesa), as palestras, brindes especiais e condições exclusivas em produtos no dia do evento.</p></div>
       </div>
@@ -871,8 +881,8 @@
         <div class="faq-a"><p>A reserva expira e a vaga volta para o lote. Você pode fazer uma nova inscrição, no valor do lote vigente.</p></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q">Posso comprar para uma amiga? <span class="plus">+</span></button>
-        <div class="faq-a"><p>Sim. Faça uma inscrição para cada pessoa, com o nome, CPF e WhatsApp dela.</p></div>
+        <button class="faq-q">Posso ir com uma amiga? <span class="plus">+</span></button>
+        <div class="faq-a"><p>Sim. E é ainda melhor. Faça uma inscrição para cada uma, com o nome, CPF e WhatsApp dela.</p></div>
       </div>
       <div class="faq-item">
         <button class="faq-q">O evento é exclusivo para mulheres? <span class="plus">+</span></button>
@@ -899,7 +909,7 @@
 
 <!-- STICKY MOBILE BAR -->
 <div class="sticky-bar" id="stickyBar">
-  <span>🔥 Restam <strong data-lote-restantes>—</strong> vagas</span>
+  <span>🔥 Faltam <strong data-faltam>—</strong></span>
   <a href="#form" class="btn btn-primary">Garantir vaga</a>
 </div>
 
@@ -1430,6 +1440,14 @@
       if(window.ScrollTrigger) ScrollTrigger.refresh();
     });
   });
+
+  /* ================= Contagem regressiva ate o evento ================= */
+  const faltam = () => {
+    const ms = new Date('2026-11-25T19:00:00-03:00') - new Date(), d = Math.ceil(ms / 864e5);
+    const txt = ms <= 0 ? 'é hoje' : d > 1 ? d + ' dias' : Math.ceil(ms / 36e5) + ' horas';
+    document.querySelectorAll('[data-faltam]').forEach((e) => (e.textContent = txt));
+  };
+  faltam(); setInterval(faltam, 60000);
 
   /* ================= Lote atual + inscricao (assets/js/inscricao.js) ================= */
   const LOTE_LP = new URLSearchParams(location.search).get('c') === 'convite' ? 'lote0' : null;
