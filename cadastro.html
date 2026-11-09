@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chama Acesa — Cadastro</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#170504">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;500;600&family=Newsreader:ital,opsz,wght@0,6..72,300..600;1,6..72,300..600&display=swap" rel="stylesheet">
+<style>
+  :root{--vinho-1:#170504;--vinho-2:#33090a;--vinho-3:#560f11;--brasa:#d3480f;--brasa-2:#f2711c;--dourado:#d9ab5f;--dourado-claro:#f4dfae;--texto:#f7ece1;--texto-suave:#e4c9b7;--creme:#fbf3ea;--serif:'Newsreader',Georgia,serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Montserrat',-apple-system,sans-serif;color:var(--texto);line-height:1.6;min-height:100vh;background:radial-gradient(ellipse at 50% 0%,var(--vinho-3),var(--vinho-1) 60%) fixed,var(--vinho-1)}
+  main{max-width:460px;margin:0 auto;padding:44px 16px 60px;text-align:center}
+  .logo{font-size:1.3rem;color:var(--creme);margin-bottom:22px}.logo b{font-family:var(--serif);font-weight:400;letter-spacing:.12em;color:var(--dourado)}
+  .eyebrow{font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dourado-claro)}
+  h1{font-family:var(--serif);font-style:italic;font-weight:400;font-size:2.1rem;line-height:1.15;color:var(--creme);margin:10px 0}
+  p.sub{color:var(--texto-suave);font-size:.95rem}
+  form{margin-top:24px;text-align:left;display:grid;gap:14px}
+  label{font-size:.78rem;letter-spacing:.06em;color:var(--dourado-claro)}
+  input[type=text],input[type=email],input[type=tel]{width:100%;margin-top:4px;padding:13px 14px;border-radius:12px;border:1px solid rgba(217,171,95,.35);background:rgba(23,5,4,.6);color:var(--creme);font:inherit;font-size:1rem}
+  .ck{display:flex;gap:10px;align-items:flex-start;font-size:.8rem;color:var(--texto-suave);letter-spacing:0}.ck a{color:var(--dourado-claro)}
+  button{margin-top:6px;padding:15px;border:0;border-radius:99px;font:inherit;font-weight:600;font-size:1rem;color:var(--creme);background:linear-gradient(135deg,var(--brasa),var(--brasa-2));cursor:pointer}
+  button:disabled{opacity:.6}
+  .erro{color:#ffb4a0;font-size:.88rem;min-height:1.2em}
+  .card{margin-top:24px;background:var(--creme);color:var(--vinho-1);border-radius:18px;padding:22px}
+  .tk{font-size:1.8rem;font-weight:600;letter-spacing:.3em;margin-top:8px}
+  .btn{display:inline-block;margin-top:20px;text-decoration:none;font-weight:600;padding:14px 26px;border-radius:99px;color:var(--creme);background:linear-gradient(135deg,var(--brasa),var(--brasa-2))}
+  .hide{display:none}
+</style>
+</head>
+<body>
+<main>
+  <div class="logo">Chama <b>ACESA</b></div>
+
+  <section id="carregando"><p class="sub">Carregando…</p></section>
+
+  <section id="invalido" class="hide">
+    <p class="eyebrow">Link indisponível</p>
+    <h1>Este link não é mais válido</h1>
+    <p class="sub">Ele já foi usado ou não existe. Fale com a gente pelo WhatsApp.</p>
+    <a class="btn" href="https://wa.me/5535984493997">Falar no WhatsApp</a>
+  </section>
+
+  <section id="form-sec" class="hide">
+    <p class="eyebrow">2ª edição · 25/11 · 19h</p>
+    <h1>Complete seu cadastro</h1>
+    <p class="sub">Sua vaga já está garantida. Só precisamos dos seus dados para gerar o seu ingresso de entrada.</p>
+    <form id="f" novalidate>
+      <label>Nome completo<input type="text" name="nome" autocomplete="name" required></label>
+      <label>CPF<input type="text" name="cpf" inputmode="numeric" maxlength="14" required></label>
+      <label>WhatsApp (com DDD)<input type="tel" name="whatsapp" autocomplete="tel" required></label>
+      <label>E-mail<input type="email" name="email" autocomplete="email" required></label>
+      <label class="ck"><input type="checkbox" name="aceite"> <span>Concordo com o uso dos meus dados para a organização do evento, conforme a <a href="politica.html" target="_blank">política de privacidade</a>.</span></label>
+      <p class="erro" id="erro"></p>
+      <button id="enviar">Gerar meu ingresso</button>
+    </form>
+  </section>
+
+  <section id="ok" class="hide">
+    <p class="eyebrow">Cadastro concluído</p>
+    <h1>Sua chama está acesa!</h1>
+    <p class="sub">Enviamos o convite com o QR Code para o seu e-mail. Este é o seu código de entrada:</p>
+    <div class="card"><div class="eyebrow" style="color:#8a4a2c">Ingresso</div><div class="tk" id="tk"></div></div>
+    <a class="btn" id="ver" href="#">Ver meu ingresso</a>
+  </section>
+</main>
+<script>
+  const SUPA = 'https://gbbjpltqmbhlfluqhrmg.supabase.co', KEY = 'sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP';
+  const rpc = (fn, body) => fetch(SUPA + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+    .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.message || 'erro'); return Array.isArray(j) ? j[0] : j; });
+  const $ = (id) => document.getElementById(id);
+  const show = (id) => ['carregando', 'invalido', 'form-sec', 'ok'].forEach((s) => $(s).classList.toggle('hide', s !== id));
+  const token = new URLSearchParams(location.search).get('k') || '';
+  const pronto = (t) => { $('tk').textContent = t; $('ver').href = 'ingresso.html?t=' + t; show('ok'); };
+
+  rpc('chama_cadastro_link', { p_token: token }).then((l) => {
+    if (!l) return show('invalido');
+    if (!l.valido) return l.ticket ? pronto(l.ticket) : show('invalido');
+    show('form-sec');
+  }).catch(() => show('invalido'));
+
+  const f = $('f');
+  f.cpf.addEventListener('input', () => { const d = f.cpf.value.replace(/\D/g, '').slice(0, 11); f.cpf.value = d.replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d)/, '$1.$2').replace(/(\d{3})(\d{1,2})$/, '$1-$2'); });
+  const MSG = { dados_invalidos: 'Confira os dados: nome, CPF com 11 dígitos, WhatsApp com DDD, e-mail e o aceite.', ja_inscrita: 'Este CPF já tem ingresso. Fale com a gente pelo WhatsApp.', link_usado: 'Este link já foi usado.', link_invalido: 'Link inválido.' };
+  f.addEventListener('submit', async (e) => {
+    e.preventDefault(); $('erro').textContent = ''; $('enviar').disabled = true;
+    try {
+      const r = await rpc('chama_cadastro_pago', { p_token: token, p_nome: f.nome.value, p_cpf: f.cpf.value, p_whatsapp: f.whatsapp.value, p_email: f.email.value, p_aceite: f.aceite.checked });
+      pronto(r.ticket);
+    } catch (err) { $('erro').textContent = MSG[err.message] || 'Não foi possível concluir. Tente de novo.'; }
+    $('enviar').disabled = false;
+  });
+</script>
+</body>
+</html>

@@ -248,6 +248,7 @@
           <h3 class="grow">Inscritas</h3>
           <input class="field" id="buscaI" placeholder="Buscar nome, CPF, WhatsApp ou CA2-…">
           <select class="field" id="fSt"><option value="">Todas</option><option value="pago">Pagas</option><option value="reservado">Aguardando</option><option value="expirado">Vencidas</option><option value="cancelado">Canceladas</option></select>
+          <button class="btn" id="btnLinkCad" title="Para quem já pagou fora do site (ex.: na recepção). Cada link vale para 1 pessoa.">Link de cadastro (já pago)</button>
           <button class="btn" id="btnCsvI"><svg viewBox="0 0 24 24"><path d="M12 3v12m0 0l-4-4m4 4l4-4M4 19h16"/></svg>CSV</button>
         </div>
         <div class="tbl-wrap"><table>
@@ -944,6 +945,17 @@ $('btnCsv').onclick = () => csv('chama-lista-vip', ['Inscricao','Nome','WhatsApp
   vipFiltered().map(r => [code(r.id), r.nome, r.whatsapp, r.email, r.interesse, ORIGENS[r.origem] || r.origem, ETAPAS[r.etapa], new Date(r.criado_em).toLocaleString('pt-BR')]));
 $('btnCsv1').onclick = () => csv('chama-1a-edicao', ['Numero','Nome','WhatsApp','Email','Status','Check-in'],
   INSC.map(r => [r.numero_inscricao, r.nome, r.whatsapp, r.email, r.status_pagamento, r.presente ? 'sim' : 'não']));
+</script>
+<script>
+document.getElementById('btnLinkCad').addEventListener('click', async () => {
+  const obs = prompt('Para quem é o link? (ex.: "Maria + amiga, paga na recepção"). Cada link cadastra 1 pessoa.');
+  if (obs === null) return;
+  const { data, error } = await sb.rpc('chama_admin_link_cadastro', { p_obs: obs });
+  if (error) return alert('Erro: ' + error.message);
+  const url = location.origin + location.pathname.replace(/admin\.html$/, '') + 'cadastro.html?k=' + data;
+  try { await navigator.clipboard.writeText(url); } catch (e) {}
+  prompt('Link copiado. Envie só para a pessoa (vale 1 cadastro):', url);
+});
 </script>
 </body>
 </html>
