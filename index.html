@@ -509,6 +509,9 @@
   .stack-row b{display:block; font-size:.98rem; color:var(--vinho-1);}
   .stack-row span{display:block; font-size:.8rem; color:var(--vinho-3); opacity:.8; margin-top:2px;}
   .stack-row s,.stack-total s{white-space:nowrap; color:var(--vinho-3); opacity:.75; font-size:.95rem;}
+  .stack-row .v{text-align:right; flex-shrink:0;}
+  .stack-row .v em{display:block;}
+  .stack-row .v s{display:block; font-size:.78rem; margin-top:2px;}
   .stack-row em{white-space:nowrap; font-style:normal; font-size:.8rem; font-weight:600; color:var(--brasa); text-transform:uppercase; letter-spacing:.06em;}
   .stack-total{display:flex; justify-content:space-between; padding:18px 0 6px; font-weight:600; color:var(--vinho-2);}
   .stack-total s{font-size:1.15rem;}
@@ -788,14 +791,14 @@
     <p class="headline reveal">Tudo o que você recebe nessa noite</p>
     <p class="sub reveal">Se fosse buscar cada parte separada, a conta seria esta:</p>
     <div class="stack reveal">
-      <div class="stack-row"><div><b>Rodízio japonês Gold no Shitake</b><span>Com outras opções para quem não come japonês</span></div><s>R$ 139,90</s></div>
-      <div class="stack-row"><div><b>Bebidas inclusas</b><span>Refrigerantes e sucos, que custam R$ 9,90 cada no cardápio</span></div><em>inclusas</em></div>
-      <div class="stack-row"><div><b>Consulta com as profissionais</b><span>Dra. Renata Duarte · Dra. Letícia Lopes · Dra. Patrícia</span></div><s>+ R$ 1.000,00</s></div>
-      <div class="stack-row"><div><b>Orientação da Wanessa</b><span>Farmacêutica e idealizadora do Chama Acesa</span></div><em>inclusa</em></div>
-      <div class="stack-row"><div><b>Brindes e lançamentos exclusivos</b><span>Séruns, dermocosméticos, produtos para cabelo, cápsulas e lançamentos · média por participante</span></div><s>+ R$ 250,00</s></div>
-      <div class="stack-row"><div><b>Bônus: palestras completas da 1ª edição</b><span>Liberadas na hora da compra</span></div><s>R$ 499,00</s></div>
-      <div class="stack-row extra"><div><b>Sorteios de kits das lojas parceiras</b><span>Mais de R$ 1.000 em kits sorteados na noite, além de condições exclusivas em produtos</span></div><em>de presente</em></div>
-      <div class="stack-total"><span>Tudo isso somaria</span><s>R$ 1.888,90</s></div>
+      <div class="stack-row"><div><b>Rodízio japonês Gold no Shitake</b><span>Com outras opções para quem não come japonês</span></div><div class="v"><em>incluso</em><s>R$ 139,90</s></div></div>
+      <div class="stack-row"><div><b>Bebidas</b><span>Refrigerantes e sucos, que custam R$ 9,90 cada no cardápio</span></div><div class="v"><em>incluso</em><s>R$ 29,70</s></div></div>
+      <div class="stack-row"><div><b>Consulta com as profissionais</b><span>Dra. Renata Duarte · Dra. Letícia Lopes · Dra. Patrícia</span></div><div class="v"><em>incluso</em><s>+ R$ 1.000,00</s></div></div>
+      <div class="stack-row"><div><b>Orientação da Wanessa</b><span>Farmacêutica e idealizadora do Chama Acesa</span></div><div class="v"><em>incluso</em><s>R$ 250,00</s></div></div>
+      <div class="stack-row"><div><b>Brindes e lançamentos exclusivos</b><span>Séruns, dermocosméticos, produtos para cabelo, cápsulas e lançamentos · média por participante</span></div><div class="v"><em>incluso</em><s>+ R$ 250,00</s></div></div>
+      <div class="stack-row"><div><b>Bônus: palestras completas da 1ª edição</b><span>Liberadas na hora da compra</span></div><div class="v"><em>incluso</em><s>R$ 499,00</s></div></div>
+      <div class="stack-row extra"><div><b>Sorteios de kits das lojas parceiras</b><span>Mais de R$ 1.000 em kits sorteados na noite, além de condições exclusivas em produtos</span></div><div class="v"><em>incluso</em><s>+ R$ 1.000,00</s></div></div>
+      <div class="stack-total"><span>Tudo isso somaria</span><s>R$ 3.168,60</s></div>
       <div class="stack-preco"><span>Seu ingresso</span><strong data-lote-preco>R$ 199,90</strong><small>Pix ou cartão em até 3x sem juros</small></div>
       <p class="stack-dupla hide">Vai com uma amiga? <b>2 ingressos por <span data-dupla-preco>R$ 359,90</span></b>: é só marcar a opção no formulário.</p>
       <a href="#form" class="btn btn-primary">Garantir minha vaga</a>
