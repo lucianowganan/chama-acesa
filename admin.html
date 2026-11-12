@@ -554,7 +554,7 @@ function renderIngTable() {
       <td><span class="st ${s}">${ST[s]}${r.status === 'pago' && r.forma ? ' · ' + (r.forma === 'cartao' ? 'cartão' : 'Pix') : ''}</span></td>
       <td class="muted">${new Date(r.reservado_em).toLocaleString('pt-BR', { day:'2-digit', month:'2-digit', hour:'2-digit', minute:'2-digit' })}</td>
       <td>${r.status !== 'pago' ? '<span class="muted">—</span>' : `<button class="btn mail" data-mail="${r.id}" title="${r.email ? esc(r.email) : 'sem e-mail'}">${r.email_enviado_em ? 'Reenviar' : 'Enviar'}</button>`}</td>
-      <td><select class="etapa" data-id="${r.id}">${[['reservado','Aguardando'],['pago_pix','Pago · Pix'],['pago_cartao','Pago · cartão'],['cancelado','Cancelar'],...(r.status === 'pago' ? [['transferir','Transferir (exceção)']] : [])].map(([k, v]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
+      <td><select class="etapa" data-id="${r.id}">${[['reservado','Aguardando'],['pago_pix','Pago · Pix'],['pago_cartao','Pago · cartão'],['cancelado','Cancelar'],['editar','Editar dados'],...(r.status === 'pago' ? [['transferir','Transferir (exceção)']] : [])].map(([k, v]) => `<option value="${k}"${k === sel ? ' selected' : ''}>${v}</option>`).join('')}</select></td>
     </tr>`;
   }).join('') : `<tr><td colspan="11" class="empty">${ING.length ? 'Nenhum resultado para esse filtro.' : 'Nenhuma inscrição ainda. As reservas da landing page aparecem aqui na hora.'}</td></tr>`;
   $('ingFoot').textContent = `${rows.length} de ${ING.length} inscrições`;
@@ -563,6 +563,19 @@ $('buscaI').oninput = renderIngTable; $('fSt').onchange = renderIngTable;
 $('tbIng').onchange = async (e) => {
   const s = e.target.closest('select.etapa'); if (!s) return;
   const v = s.value, r = ING.find(x => x.id == s.dataset.id);
+  if (v === 'editar') {
+    const nome = prompt('Nome completo:', r.nome); if (nome === null) { renderIngTable(); return; }
+    const cpf = prompt('CPF (só números):', r.cpf || ''); if (cpf === null) { renderIngTable(); return; }
+    const wa = prompt('WhatsApp com DDD:', r.whatsapp || ''); if (wa === null) { renderIngTable(); return; }
+    const email = prompt('E-mail:', r.email || ''); if (email === null) { renderIngTable(); return; }
+    const upd = { nome: nome.trim(), cpf: cpf.replace(/\D/g, ''), whatsapp: wa.replace(/\D/g, '').replace(/^55(?=\d{10,11}$)/, ''), email: email.trim() || null };
+    if (!upd.nome || upd.cpf.length !== 11 || upd.whatsapp.length < 10) { alert('Confira: nome, CPF com 11 dígitos e WhatsApp com DDD.'); renderIngTable(); return; }
+    const { error } = await sb.from('chama_ingressos').update(upd).eq('id', r.id);
+    if (error) { alert('Não foi possível salvar: ' + error.message); renderIngTable(); return; }
+    Object.assign(r, upd); renderIng();
+    if (r.status === 'pago' && upd.email && confirm('Dados salvos. Reenviar o convite com QR para ' + upd.email + '?')) enviarConvite(r.id);
+    return;
+  }
   if (v === 'transferir') {
     const nome = prompt('Nome completo da nova titular:'); const cpf = nome && prompt('CPF da nova titular:'); const wa = cpf && prompt('WhatsApp com DDD:'); const email = wa && prompt('E-mail (recebe o QR novo):');
     if (!wa) { renderIngTable(); return; }
