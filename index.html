@@ -1481,7 +1481,12 @@
     fs.querySelector('.lote-por').textContent = 'por pessoa · jantar, bebidas, palestras e brindes · no público geral o valor é R$ 199,90';
     fs.querySelector('.lote-prox').style.display = 'none';
     // Lote 0 esgotado: segue na LP normal, com o lote publico
-    ChamaInscricao.carregarLote(LOTE_LP).then((l) => { if (l && l.restantes <= 0) location.replace('./'); });
+    ChamaInscricao.carregarLote(LOTE_LP).then((l) => {
+      if (!l || l.restantes > 0) return;
+      const box = fs.querySelector('.lote-box'), f = document.getElementById('inscricaoForm');
+      if (f) f.style.display = 'none';
+      box.innerHTML = '<p class="lote-nome">' + (l.nome || 'Lote 0') + '</p><div class="lote-preco" style="font-size:1.6rem">Vagas esgotadas neste lote</div><p class="lote-por">As vagas com valor de convite acabaram, mas ainda dá para garantir a sua no lote atual.</p><a class="btn btn-primary" href="./#form" style="display:inline-block;margin-top:16px">Ver vagas do lote atual</a>';
+    });
   } else ChamaInscricao.carregarLote();
   ChamaInscricao.montarFormulario({ form: document.getElementById('inscricaoForm'), box: document.getElementById('formStep'), lote: LOTE_LP });
 
