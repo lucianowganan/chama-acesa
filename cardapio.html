@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Chama Acesa — Cardápio da noite</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="icon" href="assets/images/favicon.svg" type="image/svg+xml">
+<meta name="theme-color" content="#170504">
+<meta property="og:title" content="Chama Acesa · Monte seu pré-pedido">
+<meta property="og:description" content="Marque o que você quer comer no dia 25/11. Ajuda o Shitake a se organizar, e dá para mudar tudo na hora.">
+<link rel="preconnect" href="https://fonts.googleapis.com"><link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600&family=Newsreader:ital,opsz,wght@1,6..72,400;1,6..72,500&display=swap" rel="stylesheet">
+<style>
+  :root{--vinho-1:#170504;--vinho-2:#2a0809;--vinho-3:#560f11;--brasa:#d3480f;--brasa-2:#f2711c;--dourado:#d9ab5f;--dourado-claro:#f4dfae;--texto-suave:#e4c9b7;--creme:#fbf3ea;--serif:'Newsreader',Georgia,serif}
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:'Montserrat',-apple-system,sans-serif;color:var(--creme);line-height:1.5;background:radial-gradient(ellipse at 50% 0%,var(--vinho-3),var(--vinho-1) 55%) fixed,var(--vinho-1);padding-bottom:110px}
+  main{max-width:560px;margin:0 auto;padding:36px 16px 20px}
+  .top{text-align:center;margin-bottom:26px}
+  .logo{font-size:1.15rem}.logo b{font-family:var(--serif);font-weight:400;letter-spacing:.12em;color:var(--dourado)}
+  .eyebrow{font-size:.72rem;letter-spacing:.2em;text-transform:uppercase;color:var(--dourado-claro);margin-top:18px}
+  h1{font-family:var(--serif);font-style:italic;font-weight:400;font-size:2.3rem;line-height:1.1;margin:8px 0 10px}
+  h1 em{color:var(--brasa-2)}
+  .lead{color:var(--texto-suave);font-size:.93rem}
+  .aviso{margin-top:14px;font-size:.8rem;color:var(--dourado-claro);background:rgba(217,171,95,.1);border:1px solid rgba(217,171,95,.3);border-radius:12px;padding:10px 14px}
+  .cat{margin-top:22px;background:rgba(23,5,4,.55);border:1px solid rgba(217,171,95,.22);border-radius:18px;overflow:hidden}
+  .cat-h{display:flex;gap:14px;align-items:center;padding:12px}
+  .cat-h img{width:76px;height:76px;border-radius:12px;object-fit:cover;flex:none}
+  .cat-h .ph{width:76px;height:76px;border-radius:12px;flex:none;display:grid;place-items:center;font-size:2rem;background:rgba(242,113,28,.12)}
+  .cat-h h2{font-size:.8rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dourado)}
+  .cat-h p{font-size:.8rem;color:var(--texto-suave);margin-top:3px;line-height:1.4}
+  .itens{display:flex;flex-wrap:wrap;gap:8px;padding:0 12px 14px}
+  .it{border:1px solid rgba(251,243,234,.22);background:rgba(251,243,234,.04);color:var(--creme);font:inherit;font-size:.9rem;padding:9px 14px;border-radius:99px;cursor:pointer;transition:.15s}
+  .it.on{background:linear-gradient(135deg,var(--brasa),var(--brasa-2));border-color:transparent;font-weight:600}
+  .it.on::before{content:'✓ '}
+  .gold{border-color:rgba(217,171,95,.55);background:linear-gradient(180deg,rgba(86,15,17,.55),rgba(23,5,4,.6))}
+  form{margin-top:28px;display:grid;gap:12px;background:rgba(23,5,4,.6);border:1px solid rgba(217,171,95,.3);border-radius:18px;padding:18px}
+  form h2{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.5rem}
+  label{font-size:.76rem;letter-spacing:.06em;color:var(--dourado-claro)}
+  input,textarea{width:100%;margin-top:4px;padding:12px 14px;border-radius:12px;border:1px solid rgba(217,171,95,.35);background:rgba(23,5,4,.7);color:var(--creme);font:inherit;font-size:1rem}
+  textarea{min-height:70px;resize:vertical}
+  .erro{color:#ffb4a0;font-size:.86rem;min-height:1.1em}
+  .barra{position:fixed;left:0;right:0;bottom:0;padding:12px 16px calc(12px + env(safe-area-inset-bottom));background:rgba(23,5,4,.94);border-top:1px solid rgba(217,171,95,.3);backdrop-filter:blur(8px)}
+  .barra div{max-width:560px;margin:0 auto;display:flex;gap:12px;align-items:center}
+  .barra span{flex:1;font-size:.86rem;color:var(--texto-suave)}.barra b{color:var(--creme)}
+  button.main{border:0;border-radius:99px;padding:14px 24px;font:inherit;font-weight:600;color:var(--creme);background:linear-gradient(135deg,var(--brasa),var(--brasa-2));cursor:pointer}
+  button.main:disabled{opacity:.6}
+  .ok{display:none;text-align:center;margin-top:28px;padding:26px 18px;border-radius:18px;background:var(--creme);color:var(--vinho-1)}
+  .ok h2{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.7rem}
+  .ok p{font-size:.92rem;margin-top:8px}
+  .ok button{margin-top:14px;border:1px solid var(--vinho-3);background:none;border-radius:99px;padding:10px 20px;font:inherit;color:var(--vinho-3);cursor:pointer}
+  .rodape{text-align:center;font-size:.72rem;color:var(--texto-suave);opacity:.7;margin-top:24px}
+</style>
+</head>
+<body>
+<main>
+  <div class="top">
+    <div class="logo">Chama <b>ACESA</b></div>
+    <p class="eyebrow">25/11 · 19h · Restaurante Shitake</p>
+    <h1>Monte seu <em>pré-pedido</em></h1>
+    <p class="lead">Toque no que você gostaria de comer. Assim o Shitake se organiza com o tempo de preparo e tudo chega mais rápido na mesa.</p>
+    <p class="aviso">Não é compromisso: no dia você pode mudar, pedir mais ou trocar qualquer coisa. 😉</p>
+  </div>
+
+  <div id="menu"></div>
+
+  <form id="f" novalidate>
+    <h2>Quase lá</h2>
+    <label>Seu nome<input name="nome" autocomplete="name" required></label>
+    <label>Seu WhatsApp (o mesmo da inscrição)<input name="whatsapp" type="tel" autocomplete="tel" inputmode="tel" required></label>
+    <label>Alguma restrição ou observação? (opcional)<textarea name="obs" maxlength="300" placeholder="Ex.: não como camarão, sou vegetariana…"></textarea></label>
+    <p class="erro" id="erro"></p>
+  </form>
+
+  <div class="ok" id="ok">
+    <h2>Pré-pedido enviado! 🍣</h2>
+    <p>Obrigada! O Shitake vai preparar tudo com carinho. Se quiser mudar, é só abrir este link de novo e salvar.</p>
+    <button type="button" id="editar">Editar minhas escolhas</button>
+  </div>
+  <p class="rodape">Imagens ilustrativas. Rodízio Gold com bebidas inclusas.</p>
+</main>
+
+<div class="barra"><div><span><b id="qtd">0</b> itens escolhidos</span><button class="main" id="enviar" type="button">Enviar pré-pedido</button></div></div>
+
+<script>
+const IMG = (n) => 'assets/images/cardapio/' + n + '.jpg';
+const MENU = [
+  { c: 'Entradas', img: 'guioza', d: 'Para começar: guiozas, caldos e porções.', i: ['Guioza a vapor', 'Guioza na chapa', 'Guioza frito', 'Missoshiro', 'Shimeji', 'Sunomono', 'Pastel de queijo', 'Pastel de salmão', 'Rolinho de queijo', 'Rolinho primavera', 'Rolinho vegetariano', 'Croquete de salmão'] },
+  { c: 'Uramaki', img: 'uramaki', d: 'Enrolado com o arroz por fora e a alga por dentro.', i: ['Skin', 'Atum', 'Salmão', 'Califórnia', 'Filadélfia', 'Uramaki da casa', 'Patê de atum', 'Patê de salmão'] },
+  { c: 'Hossomaki', img: 'hossomaki', d: 'Rolinho fino com a alga por fora e um recheio só.', i: ['Atum', 'Kani', 'Pepino', 'Salmão', 'Pimenta biquinho', 'Patê de salmão'] },
+  { c: 'Niguiri', img: 'niguiri', d: 'Bolinho de arroz com uma fatia de peixe por cima.', i: ['Baterá', 'Salmão', 'Skin'] },
+  { c: 'Diou', img: 'diou', d: 'Arroz envolto por salmão, com cobertura por cima.', i: ['Doritos', 'Maracujá', 'Morango', 'Salmão'] },
+  { c: 'Hot roll', img: 'hotroll', d: 'Sushi empanado e frito, crocante, com molho tarê.', i: ['Salmão', 'Salmão com couve'] },
+  { c: 'Sashimi', img: 'sashimi', d: 'Fatias de peixe cru, sem arroz.', i: ['Atum', 'Peixe branco', 'Salmão maçaricado'] },
+  { c: 'Temaki', img: 'temaki', d: 'Cone de alga recheado com arroz e peixe.', i: ['Califórnia', 'Filadélfia', 'Salmão', 'Salmão grelhado', 'Prego', 'Atum', 'Skin'] },
+  { c: 'Pratos quentes', img: 'yakisoba', d: 'Para quem quer algo quentinho.', i: ['Arroz branco', 'Batata frita', 'Frango empanado', 'Gohan', 'Legumes refogados', 'Yakimeshi', 'Yakisoba'] },
+  { c: 'Especiais do chef · Gold', img: 'carpaccio', gold: true, d: 'Exclusivos do rodízio Gold.', i: ['Carpaccio de salmão', 'Carpaccio de alho-poró', 'Niguiri de alho-poró', 'Ceviche', 'Hossomaki da casa', 'Camarão empanado', 'Tempurá de camarão', 'Lula à dorê', 'Peixe à milanesa', 'Picanha', 'Filé mignon', 'Rolinho de doce de leite', 'Sashimi com flor de sal e azeite trufado'] },
+  { c: 'Sobremesas', emoji: '🍌', d: 'E de cortesia, uma taça de sorvete por pessoa.', i: ['Hot de banana', 'Rolinho de chocolate', 'Rolinho romeu e julieta'] },
+];
+const sel = new Set();
+const $ = (id) => document.getElementById(id);
+const key = (c, i) => c + ' · ' + i;
+$('menu').innerHTML = MENU.map((m) => `
+  <section class="cat${m.gold ? ' gold' : ''}">
+    <div class="cat-h">${m.img ? `<img src="${IMG(m.img)}" alt="${m.c}" loading="lazy">` : `<div class="ph">${m.emoji}</div>`}<div><h2>${m.c}</h2><p>${m.d}</p></div></div>
+    <div class="itens">${m.i.map((i) => `<button type="button" class="it" data-k="${key(m.c, i)}">${i}</button>`).join('')}</div>
+  </section>`).join('');
+const pinta = () => { document.querySelectorAll('.it').forEach((b) => b.classList.toggle('on', sel.has(b.dataset.k))); $('qtd').textContent = sel.size; };
+$('menu').addEventListener('click', (e) => { const b = e.target.closest('.it'); if (!b) return; sel.has(b.dataset.k) ? sel.delete(b.dataset.k) : sel.add(b.dataset.k); pinta(); });
+
+const SUPA = 'https://gbbjpltqmbhlfluqhrmg.supabase.co', KEY = 'sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP';
+const rpc = (fn, body) => fetch(SUPA + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
+  .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.message || 'erro'); return j; });
+const f = $('f');
+f.whatsapp.addEventListener('input', () => { const d = f.whatsapp.value.replace(/\D/g, '').slice(0, 11); f.whatsapp.value = d.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})$/, '$1-$2'); });
+// se ja salvou antes, recarrega as escolhas
+f.whatsapp.addEventListener('blur', async () => {
+  if (f.whatsapp.value.replace(/\D/g, '').length < 10 || sel.size) return;
+  try { const r = await rpc('chama_cardapio_ver', { p_whatsapp: f.whatsapp.value }); if (r && r.itens) { r.itens.forEach((k) => sel.add(k)); if (!f.nome.value) f.nome.value = r.nome; if (r.obs) f.obs.value = r.obs; pinta(); } } catch (e) {}
+});
+$('enviar').onclick = async () => {
+  $('erro').textContent = '';
+  if ($('ok').style.display === 'block') return;
+  if (!sel.size) { $('erro').textContent = 'Escolha pelo menos um item do cardápio.'; f.scrollIntoView({ behavior: 'smooth' }); return; }
+  if (f.nome.value.trim().length < 2 || f.whatsapp.value.replace(/\D/g, '').length < 10) { $('erro').textContent = 'Preencha seu nome e WhatsApp com DDD.'; f.scrollIntoView({ behavior: 'smooth' }); f.nome.value ? f.whatsapp.focus() : f.nome.focus(); return; }
+  $('enviar').disabled = true;
+  try {
+    await rpc('chama_cardapio_salvar', { p_nome: f.nome.value, p_whatsapp: f.whatsapp.value, p_itens: [...sel], p_obs: f.obs.value || null });
+    f.style.display = 'none'; $('ok').style.display = 'block'; $('ok').scrollIntoView({ behavior: 'smooth' });
+  } catch (e) { $('erro').textContent = 'Não foi possível enviar. Tente de novo.'; }
+  $('enviar').disabled = false;
+};
+$('editar').onclick = () => { $('ok').style.display = 'none'; f.style.display = 'grid'; window.scrollTo({ top: 0, behavior: 'smooth' }); };
+</script>
+</body>
+</html>
