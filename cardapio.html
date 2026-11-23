@@ -58,6 +58,12 @@
   .lista h3{font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dourado);margin-bottom:10px}
   .lista ol{padding-left:22px;font-size:.92rem;color:var(--texto-suave)}
   .lista li.eu{color:var(--brasa-2);font-weight:600}
+  .ac{position:relative}
+  .sug{display:none;position:absolute;left:0;right:0;top:100%;margin-top:4px;z-index:5;background:#2a0809;border:1px solid rgba(217,171,95,.45);border-radius:12px;overflow:hidden;box-shadow:0 12px 30px rgba(0,0,0,.5)}
+  .sug button{display:block;width:100%;text-align:left;border:0;border-bottom:1px solid rgba(217,171,95,.15);background:none;color:var(--creme);font:inherit;padding:12px 14px;cursor:pointer}
+  .sug button small{color:var(--dourado);margin-left:6px}
+  .sug p{padding:12px 14px;font-size:.85rem;color:var(--texto-suave)}
+  input.ok-nome{border-color:var(--brasa-2);box-shadow:0 0 0 2px rgba(242,113,28,.25)}
   .rodape{text-align:center;font-size:.72rem;color:var(--texto-suave);opacity:.7;margin-top:24px}
 </style>
 </head>
@@ -76,17 +82,16 @@
 
   <form id="f" novalidate>
     <h2>Quase lá</h2>
-    <label>Seu nome completo<input name="nome" autocomplete="name" required placeholder="Nome e sobrenome"></label>
+    <div class="ac"><label>Seu nome (comece a digitar e toque no seu)<input name="nome" autocomplete="off" required placeholder="Ex.: Ana Luiza"></label><div class="sug" id="sug"></div></div>
     <label>Alguma restrição ou observação? (opcional)<textarea name="obs" maxlength="300" placeholder="Ex.: não como camarão, sou vegetariana…"></textarea></label>
     <p class="erro" id="erro"></p>
   </form>
 
   <div class="ok" id="ok">
     <h2>Pré-pedido enviado! 🍣</h2>
-    <p>Obrigada! O Shitake vai preparar tudo com carinho. Se quiser mudar, é só abrir este link de novo, colocar o mesmo nome completo e enviar.</p>
+    <p>Obrigada! O Shitake vai preparar tudo com carinho. Se quiser mudar, é só abrir este link de novo, escolher seu nome e enviar.</p>
     <button type="button" id="editar">Editar minhas escolhas</button>
   </div>
-  <div class="lista"><h3>Já fizeram o pré-pedido</h3><ol id="nomes"><li>Carregando…</li></ol></div>
   <p class="rodape">Imagens ilustrativas. Rodízio Gold com bebidas inclusas.</p>
 </main>
 
@@ -132,26 +137,34 @@ const rpc = (fn, body) => fetch(SUPA + '/rest/v1/rpc/' + fn, { method: 'POST', h
   .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.message || 'erro'); return j; });
 const f = $('f');
 const esc = (x) => String(x).replace(/[&<>"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
-let meu = '';
-const chave = (x) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
-async function carregaNomes() {
-  try { const l = await rpc('chama_cardapio_nomes', {}); $('nomes').innerHTML = l.length ? l.map((n) => `<li${meu && chave(n) === meu ? ' class="eu"' : ''}>${esc(n)}</li>`).join('') : '<li>Seja a primeira! 🔥</li>'; } catch (e) { $('nomes').innerHTML = ''; }
-}
-carregaNomes(); setInterval(carregaNomes, 20000);
-// se ja enviou antes, recarrega as escolhas pelo nome
-f.nome.addEventListener('blur', async () => {
-  if (f.nome.value.trim().split(/\s+/).length < 2 || sel.size) return;
-  try { const r = await rpc('chama_cardapio_ver', { p_nome: f.nome.value }); if (r && r.itens) { r.itens.forEach((k) => sel.add(k)); if (r.obs) f.obs.value = r.obs; pinta(); } } catch (e) {}
+let escolhida = null, tmr;
+const sug = $('sug');
+f.nome.addEventListener('input', () => {
+  escolhida = null; f.nome.classList.remove('ok-nome');
+  clearTimeout(tmr); const q = f.nome.value.trim();
+  if (q.length < 3) { sug.style.display = 'none'; return; }
+  tmr = setTimeout(async () => {
+    try {
+      const l = await rpc('chama_cardapio_busca', { p_q: q });
+      sug.innerHTML = l.length ? l.map((x) => `<button type="button" data-c="${esc(x.codigo)}" data-n="${esc(x.nome)}">${esc(x.nome)}${x.ja_pediu ? '<small>já enviou · vai atualizar</small>' : ''}</button>`).join('') : '<p>Não encontramos esse nome entre as inscritas. Confira como você escreveu na inscrição.</p>';
+      sug.style.display = 'block';
+    } catch (e) {}
+  }, 250);
 });
+sug.addEventListener('click', async (e) => {
+  const b = e.target.closest('button'); if (!b) return;
+  escolhida = b.dataset.c; f.nome.value = b.dataset.n; f.nome.classList.add('ok-nome'); sug.style.display = 'none'; $('erro').textContent = '';
+  try { const r = await rpc('chama_cardapio_ver_ing', { p_codigo: escolhida }); if (r && r.itens && !sel.size) { r.itens.forEach((k) => sel.add(k)); if (r.obs) f.obs.value = r.obs; pinta(); } } catch (e) {}
+});
+document.addEventListener('click', (e) => { if (!e.target.closest('.ac')) sug.style.display = 'none'; });
 $('enviar').onclick = async () => {
   $('erro').textContent = '';
   if ($('ok').style.display === 'block') return;
   if (!sel.size) { $('erro').textContent = 'Escolha pelo menos um item do cardápio.'; f.scrollIntoView({ behavior: 'smooth' }); return; }
-  if (f.nome.value.trim().split(/\s+/).length < 2) { $('erro').textContent = 'Coloque seu nome completo (nome e sobrenome).'; f.scrollIntoView({ behavior: 'smooth' }); f.nome.focus(); return; }
+  if (!escolhida) { $('erro').textContent = 'Digite seu nome e toque nele na lista que aparece.'; f.scrollIntoView({ behavior: 'smooth' }); f.nome.focus(); return; }
   $('enviar').disabled = true;
   try {
-    await rpc('chama_cardapio_salvar', { p_nome: f.nome.value, p_itens: [...sel], p_obs: f.obs.value || null });
-    meu = chave(f.nome.value); carregaNomes();
+    await rpc('chama_cardapio_salvar_ing', { p_codigo: escolhida, p_itens: [...sel], p_obs: f.obs.value || null });
     f.style.display = 'none'; $('ok').style.display = 'block'; $('ok').scrollIntoView({ behavior: 'smooth' });
   } catch (e) { $('erro').textContent = 'Não foi possível enviar. Tente de novo.'; }
   $('enviar').disabled = false;
