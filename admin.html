@@ -685,8 +685,8 @@ function etapaCrm(p) {
 function pessoasCrm() {
   const wsIng = new Set(ING.map(r => r.whatsapp.replace(/\D/g, '').slice(-11)));
   const leads = [];
-  VIP.forEach(v => { const w = String(v.whatsapp).replace(/\D/g, '').slice(-11); if (!wsIng.has(w)) leads.push({ lead:'vip:' + v.id, chave:'ativacao_vip', nome:v.nome, whatsapp:w, origem:'Lista VIP', desde:v.criado_em }); wsIng.add(w); });
-  INSC.forEach(e => { const w = String(e.whatsapp).replace(/\D/g, '').slice(-11); if (w && !wsIng.has(w)) leads.push({ lead:'ed1:' + e.numero_inscricao, chave:'ativacao_ed1', nome:e.nome, whatsapp:w, origem:'1ª edição', desde:e.criado_em }); wsIng.add(w); });
+  VIP.forEach(v => { const w = String(v.whatsapp).replace(/\D/g, '').slice(-11); if (!wsIng.has(w)) leads.push({ lead:'vip:' + v.id, chave:'ativacao_vip', nome:v.nome, whatsapp:w, email:v.email, origem:'Lista VIP', desde:v.criado_em }); wsIng.add(w); });
+  INSC.forEach(e => { const w = String(e.whatsapp).replace(/\D/g, '').slice(-11); if (w && !wsIng.has(w)) leads.push({ lead:'ed1:' + e.numero_inscricao, chave:'ativacao_ed1', nome:e.nome, whatsapp:w, email:e.email, origem:'1ª edição', desde:e.criado_em }); wsIng.add(w); });
   return [...ING, ...leads].map(p => ({ ...p, s: etapaCrm(p) }));
 }
 function mensagem(p, chave) {
@@ -717,10 +717,10 @@ function renderCrm() {
       <div class="acoes"><button class="btn wa" data-wa="${k}" data-chave="${p.s.tarefa}">${waIcon} WhatsApp</button><button class="btn" data-ver="${k}">Ver / editar</button><button class="btn" data-feito="${k}" data-chave="${p.s.tarefa}" title="Já falei por outro canal">Feito</button></div></div>`;
   }).join('') : `<div class="empty">${ff ? `Ninguém de “${nomeF}” precisa de contato agora. A lista completa está logo abaixo.` : 'Nenhum contato pendente agora. 🎉'}</div>`;
   const q = $('crmBusca').value.trim().toLowerCase(), qd = q.replace(/\D/g, '');
-  const T = P.filter(p => (!crmFiltro || p.s.etapa === crmFiltro) && (!q || String(p.nome).toLowerCase().includes(q) || (p.codigo || '').toLowerCase().includes(q) || (qd && String(p.whatsapp).includes(qd))));
+  const T = P.filter(p => (!crmFiltro || p.s.etapa === crmFiltro) && (!q || String(p.nome).toLowerCase().includes(q) || (p.codigo || '').toLowerCase().includes(q) || String(p.email || '').toLowerCase().includes(q) || (qd && String(p.whatsapp).includes(qd))));
   $('crmTabela').innerHTML = T.map(p => {
     const k = p.id ? 'i' + p.id : p.lead, evs = evsDe(p), sig = ultimo(evs), nCont = evs.filter(e => e.tipo === 'contato').length;
-    return `<tr><td>${esc(p.nome)}<div class="muted" style="font-size:.74rem">${p.lead ? esc(p.origem) : esc(p.codigo)} · ${esc(fone(p.whatsapp))}</div></td>
+    return `<tr><td>${esc(p.nome)}<div class="muted" style="font-size:.74rem">${p.lead ? esc(p.origem) : esc(p.codigo)} · ${esc(fone(p.whatsapp))}${p.email ? ' · ' + esc(p.email) : ''}</div></td>
       <td><span class="chip">${ETAPA[p.s.etapa].nome}</span></td>
       <td class="muted">${sig ? (SINAL[sig.tipo] || sig.tipo) + ' ' + desde(sig.criado_em) : '—'}</td>
       <td>${nCont || '<span class="muted">0</span>'}</td>
@@ -745,7 +745,7 @@ const LIMITE = 40; const abertas = new Set();
 const toast = (t) => { let el = document.querySelector('.toast'); if (!el) { el = document.createElement('div'); el.className = 'toast'; document.body.appendChild(el); } el.textContent = t; el.classList.add('on'); clearTimeout(el._t); el._t = setTimeout(() => el.classList.remove('on'), 2600); };
 function renderBoard(P) {
   const q = $('crmBusca').value.trim().toLowerCase(), qd = q.replace(/\D/g, ''), so = $('crmSoTarefa').checked;
-  const V = P.filter(p => (!so || p.s.tarefa) && (!q || String(p.nome).toLowerCase().includes(q) || (p.codigo || '').toLowerCase().includes(q) || (qd && String(p.whatsapp).includes(qd))));
+  const V = P.filter(p => (!so || p.s.tarefa) && (!q || String(p.nome).toLowerCase().includes(q) || (p.codigo || '').toLowerCase().includes(q) || String(p.email || '').toLowerCase().includes(q) || (qd && String(p.whatsapp).includes(qd))));
   $('nPagas').textContent = P.filter(p => p.status === 'pago' && p.lote_id !== 'teste').length;
   $('nAtiv').textContent = P.filter(p => p.s.etapa === 'ativacao').length;
   $('nTotal').textContent = P.length;
@@ -760,6 +760,7 @@ function renderBoard(P) {
         return `<div class="kc ${p.s.urg ? 'urg' : p.s.tarefa ? 'task' : ''}" draggable="true" data-k="${key}">
           <div class="q">${p.s.tarefa ? `<button class="w" title="Abrir WhatsApp com a mensagem pronta" data-wa="${key}" data-chave="${p.s.tarefa}">${ICO_WA}</button>` : ''}<button title="Abrir" data-ver="${key}">${ICO_ABRIR}</button></div>
           <div class="n">${esc(p.nome)}</div>
+          ${p.email ? `<div class="m" style="word-break:break-all">✉ ${esc(p.email)}</div>` : ''}
           <div class="m">${p.lead ? esc(p.origem) : esc(p.codigo) + ' · ' + esc(loteNome(p.lote_id))}${sig ? ' · ' + (SINAL[sig.tipo] || sig.tipo) + ' ' + desde(sig.criado_em) : ''}</div>
           ${p.s.tarefa ? `<div class="a">● Contato: ${p.s.tarefa.replace(/_/g, ' ')}${p.status === 'reservado' ? ' · vence ' + hora(p.expira_em) : ''}</div>` : ''}
         </div>`;
@@ -802,7 +803,7 @@ function abrirWa(p, chave, texto) {
 function abrirModal(p) {
   const chave = p.s.tarefa || (p.lead ? p.chave : { reservou:'reservou', no_pagamento:'no_pagamento', vencendo:'vencendo', vencida:'vencida', boas_vindas:'boas_vindas', confirmada:'lembrete_d7', checkin:'pos_evento' }[p.s.etapa]);
   const evs = evsDe(p);
-  $('crmModalBox').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h3 style="font-family:var(--display)">${esc(p.nome)}</h3><div class="muted" style="font-size:.8rem">${p.lead ? esc(p.origem) : esc(p.codigo) + ' · ' + esc(loteNome(p.lote_id))} · ${esc(fone(p.whatsapp))}</div></div><span class="chip">${ETAPA[p.s.etapa].nome}</span></div>
+  $('crmModalBox').innerHTML = `<div style="display:flex;justify-content:space-between;align-items:start;gap:10px"><div><h3 style="font-family:var(--display)">${esc(p.nome)}</h3><div class="muted" style="font-size:.8rem">${p.lead ? esc(p.origem) : esc(p.codigo) + ' · ' + esc(loteNome(p.lote_id))} · ${esc(fone(p.whatsapp))}${p.email ? ` · <a href="mailto:${esc(p.email)}" style="color:inherit">${esc(p.email)}</a>` : ''}</div></div><span class="chip">${ETAPA[p.s.etapa].nome}</span></div>
     <label style="display:block;margin:14px 0 6px;font-size:.8rem;color:var(--txt2)">Mensagem (${chave ? chave.replace('_', ' ') : 'livre'}) — edite se quiser</label>
     <select class="field" id="mChave" style="margin-bottom:8px">${Object.keys(MSG).map(c => `<option value="${c}"${c === chave ? ' selected' : ''}>${c.replace('_', ' ')}</option>`).join('')}</select>
     <textarea id="mTexto">${esc(mensagem(p, chave))}</textarea>
