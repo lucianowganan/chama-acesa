@@ -49,6 +49,15 @@
   .ok h2{font-family:var(--serif);font-style:italic;font-weight:400;font-size:1.7rem}
   .ok p{font-size:.92rem;margin-top:8px}
   .ok button{margin-top:14px;border:1px solid var(--vinho-3);background:none;border-radius:99px;padding:10px 20px;font:inherit;color:var(--vinho-3);cursor:pointer}
+  .cat-h{position:relative}
+  .todos{margin-left:auto;align-self:flex-start;flex:none;border:1px solid rgba(217,171,95,.5);background:none;color:var(--dourado-claro);font:inherit;font-size:.72rem;padding:6px 10px;border-radius:99px;cursor:pointer}
+  .badge{display:inline-block;margin-top:6px;font-size:.72rem;font-weight:600;color:var(--vinho-1);background:var(--dourado-claro);padding:3px 10px;border-radius:99px}
+  .quente{border-color:rgba(242,113,28,.6)}
+  .tudo{display:block;width:100%;margin-top:18px;padding:14px;border-radius:16px;border:1px dashed rgba(242,113,28,.7);background:rgba(242,113,28,.1);color:var(--creme);font:inherit;font-weight:600;cursor:pointer}
+  .lista{margin-top:22px;padding:16px 18px;border-radius:18px;background:rgba(23,5,4,.55);border:1px solid rgba(217,171,95,.22)}
+  .lista h3{font-size:.74rem;letter-spacing:.18em;text-transform:uppercase;color:var(--dourado);margin-bottom:10px}
+  .lista ol{padding-left:22px;font-size:.92rem;color:var(--texto-suave)}
+  .lista li.eu{color:var(--brasa-2);font-weight:600}
   .rodape{text-align:center;font-size:.72rem;color:var(--texto-suave);opacity:.7;margin-top:24px}
 </style>
 </head>
@@ -62,21 +71,22 @@
     <p class="aviso">Não é compromisso: no dia você pode mudar, pedir mais ou trocar qualquer coisa. 😉</p>
   </div>
 
+  <button type="button" class="tudo" id="tudo">🍣 Quero um pouco de tudo (marcar todos)</button>
   <div id="menu"></div>
 
   <form id="f" novalidate>
     <h2>Quase lá</h2>
-    <label>Seu nome<input name="nome" autocomplete="name" required></label>
-    <label>Seu WhatsApp (o mesmo da inscrição)<input name="whatsapp" type="tel" autocomplete="tel" inputmode="tel" required></label>
+    <label>Seu nome completo<input name="nome" autocomplete="name" required placeholder="Nome e sobrenome"></label>
     <label>Alguma restrição ou observação? (opcional)<textarea name="obs" maxlength="300" placeholder="Ex.: não como camarão, sou vegetariana…"></textarea></label>
     <p class="erro" id="erro"></p>
   </form>
 
   <div class="ok" id="ok">
     <h2>Pré-pedido enviado! 🍣</h2>
-    <p>Obrigada! O Shitake vai preparar tudo com carinho. Se quiser mudar, é só abrir este link de novo e salvar.</p>
+    <p>Obrigada! O Shitake vai preparar tudo com carinho. Se quiser mudar, é só abrir este link de novo, colocar o mesmo nome completo e enviar.</p>
     <button type="button" id="editar">Editar minhas escolhas</button>
   </div>
+  <div class="lista"><h3>Já fizeram o pré-pedido</h3><ol id="nomes"><li>Carregando…</li></ol></div>
   <p class="rodape">Imagens ilustrativas. Rodízio Gold com bebidas inclusas.</p>
 </main>
 
@@ -93,7 +103,7 @@ const MENU = [
   { c: 'Hot roll', img: 'hotroll', d: 'Sushi empanado e frito, crocante, com molho tarê.', i: ['Salmão', 'Salmão com couve'] },
   { c: 'Sashimi', img: 'sashimi', d: 'Fatias de peixe cru, sem arroz.', i: ['Atum', 'Peixe branco', 'Salmão maçaricado'] },
   { c: 'Temaki', img: 'temaki', d: 'Cone de alga recheado com arroz e peixe.', i: ['Califórnia', 'Filadélfia', 'Salmão', 'Salmão grelhado', 'Prego', 'Atum', 'Skin'] },
-  { c: 'Pratos quentes', img: 'yakisoba', d: 'Para quem quer algo quentinho.', i: ['Arroz branco', 'Batata frita', 'Frango empanado', 'Gohan', 'Legumes refogados', 'Yakimeshi', 'Yakisoba'] },
+  { c: 'Pratos quentes', img: 'yakisoba', quente: true, d: 'Para quem quer algo quentinho.', i: ['Arroz branco', 'Batata frita', 'Frango empanado', 'Gohan', 'Legumes refogados', 'Yakimeshi', 'Yakisoba'] },
   { c: 'Especiais do chef · Gold', img: 'carpaccio', gold: true, d: 'Exclusivos do rodízio Gold.', i: ['Carpaccio de salmão', 'Carpaccio de alho-poró', 'Niguiri de alho-poró', 'Ceviche', 'Hossomaki da casa', 'Camarão empanado', 'Tempurá de camarão', 'Lula à dorê', 'Peixe à milanesa', 'Picanha', 'Filé mignon', 'Rolinho de doce de leite', 'Sashimi com flor de sal e azeite trufado'] },
   { c: 'Sobremesas', emoji: '🍌', d: 'E de cortesia, uma taça de sorvete por pessoa.', i: ['Hot de banana', 'Rolinho de chocolate', 'Rolinho romeu e julieta'] },
 ];
@@ -101,31 +111,47 @@ const sel = new Set();
 const $ = (id) => document.getElementById(id);
 const key = (c, i) => c + ' · ' + i;
 $('menu').innerHTML = MENU.map((m) => `
-  <section class="cat${m.gold ? ' gold' : ''}">
-    <div class="cat-h">${m.img ? `<img src="${IMG(m.img)}" alt="${m.c}" loading="lazy">` : `<div class="ph">${m.emoji}</div>`}<div><h2>${m.c}</h2><p>${m.d}</p></div></div>
+  <section class="cat${m.gold ? ' gold' : ''}${m.quente ? ' quente' : ''}">
+    <div class="cat-h">${m.img ? `<img src="${IMG(m.img)}" alt="${m.c}" loading="lazy">` : `<div class="ph">${m.emoji}</div>`}<div><h2>${m.c}</h2><p>${m.d}</p>${m.quente ? '<span class="badge">Para quem não come comida japonesa</span>' : ''}</div><button type="button" class="todos" data-c="${m.c}">Marcar todos</button></div>
     <div class="itens">${m.i.map((i) => `<button type="button" class="it" data-k="${key(m.c, i)}">${i}</button>`).join('')}</div>
   </section>`).join('');
-const pinta = () => { document.querySelectorAll('.it').forEach((b) => b.classList.toggle('on', sel.has(b.dataset.k))); $('qtd').textContent = sel.size; };
-$('menu').addEventListener('click', (e) => { const b = e.target.closest('.it'); if (!b) return; sel.has(b.dataset.k) ? sel.delete(b.dataset.k) : sel.add(b.dataset.k); pinta(); });
+const todasK = (c) => MENU.filter((m) => !c || m.c === c).flatMap((m) => m.i.map((i) => key(m.c, i)));
+const cheio = (c) => todasK(c).every((k) => sel.has(k));
+const pinta = () => {
+  document.querySelectorAll('.it').forEach((b) => b.classList.toggle('on', sel.has(b.dataset.k)));
+  document.querySelectorAll('.todos').forEach((b) => (b.textContent = cheio(b.dataset.c) ? 'Desmarcar' : 'Marcar todos'));
+  $('tudo').textContent = cheio() ? 'Desmarcar tudo' : '🍣 Quero um pouco de tudo (marcar todos)';
+  $('qtd').textContent = sel.size;
+};
+const alterna = (c) => { const ks = todasK(c), on = cheio(c); ks.forEach((k) => (on ? sel.delete(k) : sel.add(k))); pinta(); };
+$('tudo').onclick = () => alterna();
+$('menu').addEventListener('click', (e) => { const t = e.target.closest('.todos'); if (t) return alterna(t.dataset.c); const b = e.target.closest('.it'); if (!b) return; sel.has(b.dataset.k) ? sel.delete(b.dataset.k) : sel.add(b.dataset.k); pinta(); });
 
 const SUPA = 'https://gbbjpltqmbhlfluqhrmg.supabase.co', KEY = 'sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP';
 const rpc = (fn, body) => fetch(SUPA + '/rest/v1/rpc/' + fn, { method: 'POST', headers: { apikey: KEY, Authorization: 'Bearer ' + KEY, 'Content-Type': 'application/json' }, body: JSON.stringify(body) })
   .then(async (r) => { const j = await r.json(); if (!r.ok) throw new Error(j.message || 'erro'); return j; });
 const f = $('f');
-f.whatsapp.addEventListener('input', () => { const d = f.whatsapp.value.replace(/\D/g, '').slice(0, 11); f.whatsapp.value = d.replace(/^(\d{2})(\d)/, '($1) $2').replace(/(\d{5})(\d{1,4})$/, '$1-$2'); });
-// se ja salvou antes, recarrega as escolhas
-f.whatsapp.addEventListener('blur', async () => {
-  if (f.whatsapp.value.replace(/\D/g, '').length < 10 || sel.size) return;
-  try { const r = await rpc('chama_cardapio_ver', { p_whatsapp: f.whatsapp.value }); if (r && r.itens) { r.itens.forEach((k) => sel.add(k)); if (!f.nome.value) f.nome.value = r.nome; if (r.obs) f.obs.value = r.obs; pinta(); } } catch (e) {}
+const esc = (x) => String(x).replace(/[&<>"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+let meu = '';
+const chave = (x) => x.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().trim().replace(/\s+/g, ' ');
+async function carregaNomes() {
+  try { const l = await rpc('chama_cardapio_nomes', {}); $('nomes').innerHTML = l.length ? l.map((n) => `<li${meu && chave(n) === meu ? ' class="eu"' : ''}>${esc(n)}</li>`).join('') : '<li>Seja a primeira! 🔥</li>'; } catch (e) { $('nomes').innerHTML = ''; }
+}
+carregaNomes(); setInterval(carregaNomes, 20000);
+// se ja enviou antes, recarrega as escolhas pelo nome
+f.nome.addEventListener('blur', async () => {
+  if (f.nome.value.trim().split(/\s+/).length < 2 || sel.size) return;
+  try { const r = await rpc('chama_cardapio_ver', { p_nome: f.nome.value }); if (r && r.itens) { r.itens.forEach((k) => sel.add(k)); if (r.obs) f.obs.value = r.obs; pinta(); } } catch (e) {}
 });
 $('enviar').onclick = async () => {
   $('erro').textContent = '';
   if ($('ok').style.display === 'block') return;
   if (!sel.size) { $('erro').textContent = 'Escolha pelo menos um item do cardápio.'; f.scrollIntoView({ behavior: 'smooth' }); return; }
-  if (f.nome.value.trim().length < 2 || f.whatsapp.value.replace(/\D/g, '').length < 10) { $('erro').textContent = 'Preencha seu nome e WhatsApp com DDD.'; f.scrollIntoView({ behavior: 'smooth' }); f.nome.value ? f.whatsapp.focus() : f.nome.focus(); return; }
+  if (f.nome.value.trim().split(/\s+/).length < 2) { $('erro').textContent = 'Coloque seu nome completo (nome e sobrenome).'; f.scrollIntoView({ behavior: 'smooth' }); f.nome.focus(); return; }
   $('enviar').disabled = true;
   try {
-    await rpc('chama_cardapio_salvar', { p_nome: f.nome.value, p_whatsapp: f.whatsapp.value, p_itens: [...sel], p_obs: f.obs.value || null });
+    await rpc('chama_cardapio_salvar', { p_nome: f.nome.value, p_itens: [...sel], p_obs: f.obs.value || null });
+    meu = chave(f.nome.value); carregaNomes();
     f.style.display = 'none'; $('ok').style.display = 'block'; $('ok').scrollIntoView({ behavior: 'smooth' });
   } catch (e) { $('erro').textContent = 'Não foi possível enviar. Tente de novo.'; }
   $('enviar').disabled = false;
