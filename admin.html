@@ -994,7 +994,7 @@ async function carregarCardapio() {
   const cont = {};
   data.forEach(r => (r.itens || []).forEach(k => cont[k] = (cont[k] || 0) + 1));
   const porCat = {};
-  Object.entries(cont).forEach(([k, n]) => { const [c, i] = k.split(' · '); (porCat[c] = porCat[c] || []).push([i, n]); });
+  Object.entries(cont).forEach(([k, n]) => { const p = k.lastIndexOf(' · '), c = k.slice(0, p), i = k.slice(p + 3); (porCat[c] = porCat[c] || []).push([i, n]); });
   const esc = (x) => String(x ?? '').replace(/[&<>"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
   $('carResumo').innerHTML = Object.entries(porCat).map(([c, l]) => `<div style="margin-bottom:14px"><b>${esc(c)}</b><br>${l.sort((a, b) => b[1] - a[1]).map(([i, n]) => `${esc(i)}: <b>${n}</b>`).join(' · ')}</div>`).join('') || 'Ninguém respondeu ainda.';
   const obs = data.filter(r => r.obs);
