@@ -1,0 +1,93 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Sorteio · Chama Acesa</title>
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{--v1:#170504;--v3:#560f11;--brasa:#d3480f;--brasa2:#f2711c;--dour:#d9ab5f;--dc:#f4dfae;--creme:#fbf3ea;--suave:#e4c9b7}
+*{box-sizing:border-box;margin:0}
+body{min-height:100vh;font-family:Montserrat,sans-serif;color:var(--creme);background:radial-gradient(ellipse at 50% 40%,#7a2a10 0%,#3a0d0b 45%,var(--v1) 80%);display:flex;flex-direction:column;align-items:center;justify-content:center;padding:24px;text-align:center}
+.tag{font-size:13px;letter-spacing:.35em;color:var(--dour);text-transform:uppercase}
+h1{font-family:Newsreader,serif;font-weight:400;font-size:clamp(34px,5vw,60px);margin:10px 0 6px}
+h1 em{color:var(--dc)}
+.cont{color:var(--suave);font-size:18px}.cont b{color:var(--dc);font-size:22px}
+#nome{min-height:1.3em;margin:48px 0 32px;font-family:Newsreader,serif;font-style:italic;font-size:clamp(44px,8vw,110px);line-height:1.1;color:var(--creme);text-shadow:0 0 50px rgba(242,113,28,.6)}
+#nome.ganhou{color:var(--dc);animation:pop .6s ease}
+@keyframes pop{0%{transform:scale(.8)}60%{transform:scale(1.08)}100%{transform:scale(1)}}
+button{font-family:inherit;font-weight:700;border:0;border-radius:99px;cursor:pointer}
+.go{padding:22px 56px;font-size:24px;color:var(--creme);background:linear-gradient(135deg,var(--brasa),var(--brasa2));box-shadow:0 18px 50px rgba(211,72,15,.5)}
+.go:disabled{opacity:.5;cursor:default}
+.sec{margin-top:16px;padding:10px 22px;font-size:14px;color:var(--dc);background:transparent;border:1px solid rgba(244,223,174,.4)}
+.lst{margin-top:36px;max-width:640px;width:100%}
+.lst h2{font-size:13px;letter-spacing:.3em;color:var(--dour);font-weight:600;margin-bottom:10px}
+.lst ol{list-style:none;padding:0}.lst li{padding:10px 0;border-bottom:1px solid rgba(244,223,174,.18);font-size:18px}
+.lst li span{color:var(--brasa2);font-weight:700;margin-right:10px}
+#login{display:flex;flex-direction:column;gap:10px;width:300px}
+#login input{padding:14px;border-radius:12px;border:1px solid rgba(244,223,174,.3);background:rgba(23,5,4,.6);color:var(--creme);font:inherit}
+.err{color:#ff9b7a;font-size:14px}
+.hide{display:none!important}
+</style></head><body>
+<div class="tag">Chama Acesa · 2ª edição</div>
+<h1>Sorteio <em>da noite</em></h1>
+
+<form id="login"><p class="cont">Entre com o login do admin</p><input id="email" type="email" placeholder="E-mail" required><input id="senha" type="password" placeholder="Senha" required><button class="go" style="font-size:18px;padding:14px">Entrar</button><p class="err" id="lerr"></p></form>
+
+<div id="app" class="hide">
+  <p class="cont">Concorrendo: <b id="n">0</b> presentes com check-in</p>
+  <div id="nome">✨</div>
+  <button class="go" id="sortear">Sortear</button><br>
+  <button class="sec" id="recarregar">Atualizar check-ins</button>
+  <button class="sec" id="zerar">Zerar sorteadas</button>
+  <div class="lst hide" id="lstBox"><h2>SORTEADAS</h2><ol id="lst"></ol></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const sb = supabase.createClient('https://gbbjpltqmbhlfluqhrmg.supabase.co', 'sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP');
+const $ = (i) => document.getElementById(i);
+const KEY = 'chama-sorteio-ganhadoras';
+let presentes = [], ganhadoras = [];
+try { ganhadoras = JSON.parse(localStorage.getItem(KEY) || '[]'); } catch (e) {}
+const salvar = () => { try { localStorage.setItem(KEY, JSON.stringify(ganhadoras)); } catch (e) {} };
+const pool = () => presentes.filter((p) => !ganhadoras.some((g) => g.id === p.id));
+const nomeCurto = (n) => { const p = n.trim().split(/\s+/); return p.length > 2 ? p[0] + ' ' + p[p.length - 1] : n.trim(); };
+
+function render() {
+  $('n').textContent = pool().length;
+  $('lstBox').classList.toggle('hide', !ganhadoras.length);
+  $('lst').innerHTML = ganhadoras.map((g, i) => `<li><span>${i + 1}º</span>${g.nome.replace(/[<>&]/g, '')}</li>`).join('');
+  $('sortear').disabled = !pool().length;
+}
+async function carregar() {
+  const { data, error } = await sb.from('chama_ingressos').select('id,nome').eq('status', 'pago').eq('presente', true).neq('lote_id', 'teste');
+  if (error) { alert('Erro ao carregar: ' + error.message); return; }
+  presentes = data; render();
+}
+async function start() { $('login').classList.add('hide'); $('app').classList.remove('hide'); await carregar(); }
+
+$('login').addEventListener('submit', async (e) => {
+  e.preventDefault();
+  const { error } = await sb.auth.signInWithPassword({ email: $('email').value.trim(), password: $('senha').value });
+  if (error) $('lerr').textContent = 'Login inválido.'; else start();
+});
+sb.auth.getSession().then(({ data }) => { if (data.session) start(); });
+
+$('sortear').onclick = async () => {
+  await carregar();
+  const p = pool(); if (!p.length) return;
+  const sorteada = p[crypto.getRandomValues(new Uint32Array(1))[0] % p.length];
+  const el = $('nome'); el.classList.remove('ganhou'); $('sortear').disabled = true;
+  const t0 = performance.now(), dur = 3500;
+  await new Promise((fim) => {
+    (function giro() {
+      const k = (performance.now() - t0) / dur;
+      if (k >= 1) return fim();
+      el.textContent = nomeCurto(p[Math.floor(Math.random() * p.length)].nome);
+      setTimeout(giro, 40 + 260 * k * k);
+    })();
+  });
+  el.textContent = sorteada.nome.trim(); void el.offsetWidth; el.classList.add('ganhou');
+  ganhadoras.push(sorteada); salvar(); render();
+};
+$('recarregar').onclick = carregar;
+$('zerar').onclick = () => { if (confirm('Limpar a lista de sorteadas? Elas voltam a concorrer.')) { ganhadoras = []; salvar(); $('nome').textContent = '✨'; render(); } };
+</script>
+</body></html>
