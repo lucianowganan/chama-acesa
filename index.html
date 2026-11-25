@@ -1483,6 +1483,7 @@
     fs.querySelector('.lote-por').textContent = 'pelas 2 vagas · jantar, bebidas, palestras e brindes';
     fs.querySelector('.lote-prox').style.display = 'none';
     ChamaInscricao.carregarLote(LOTE_LP).then(() => { const pr = fs.querySelector('.lote-preco'); if (pr) pr.textContent = 'R$ 359,90'; });
+    setTimeout(() => fs.scrollIntoView({ block: 'start' }), 700);
   } else if (LOTE_LP) {
     const fs = document.getElementById('formStep');
     fs.querySelector('h2').textContent = 'Seu convite com valor especial';
