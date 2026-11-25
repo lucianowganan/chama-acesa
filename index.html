@@ -937,7 +937,7 @@
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
-<script src="assets/js/inscricao.js?v=dupla1"></script>
+<script src="assets/js/inscricao.js?v=dupla2"></script>
 <script src="https://unpkg.com/@studio-freight/lenis@1.0.42/dist/lenis.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/gsap.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/gsap/3.12.5/ScrollTrigger.min.js"></script>
@@ -1473,8 +1473,17 @@
   faltam(); setInterval(faltam, 60000);
 
   /* ================= Lote atual + inscricao (assets/js/inscricao.js) ================= */
-  const LOTE_LP = new URLSearchParams(location.search).get('c') === 'convite' ? 'lote0' : null;
-  if (LOTE_LP) {
+  const C_LP = new URLSearchParams(location.search).get('c');
+  const LOTE_LP = C_LP === 'convite' ? 'lote0' : C_LP === 'dupla' ? 'extra' : null;
+  if (LOTE_LP === 'extra') {
+    const fs = document.getElementById('formStep');
+    fs.querySelector('h2').textContent = 'Duas vagas reservadas para vocês';
+    fs.querySelector('.sub').textContent = 'As vagas do site esgotaram, mas abrimos estas duas para você e sua amiga. Preencha os dados das duas.';
+    fs.querySelector('.lote-preco').textContent = 'R$ 359,90';
+    fs.querySelector('.lote-por').textContent = 'pelas 2 vagas · jantar, bebidas, palestras e brindes';
+    fs.querySelector('.lote-prox').style.display = 'none';
+    ChamaInscricao.carregarLote(LOTE_LP).then(() => { const pr = fs.querySelector('.lote-preco'); if (pr) pr.textContent = 'R$ 359,90'; });
+  } else if (LOTE_LP) {
     const fs = document.getElementById('formStep');
     fs.querySelector('h2').textContent = 'Seu convite com valor especial';
     fs.querySelector('.sub').textContent = 'Você recebeu este link por ser especial para a Bioflora. São poucas vagas com este valor.';

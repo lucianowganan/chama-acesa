@@ -181,13 +181,14 @@
     mask(q('whatsapp'), 'tel');
     // ingresso dupla: so aparece quando o link de pagamento dela estiver configurado
     const dupla = form.querySelector('#duplaBox');
-    if (dupla && !lote) {
+    if (dupla && (!lote || lote === 'extra')) {
       mask(q('a_cpf'), 'cpf'); mask(q('a_whatsapp'), 'tel');
       q('dupla').addEventListener('change', () => { dupla.classList.toggle('on', q('dupla').checked); btn.textContent = q('dupla').checked ? 'Reservar as duas vagas' : 'Reservar minha vaga'; });
       rpc('chama_dupla_info', {}).then((d) => {
         if (!d || !d.ativa) return;
         document.querySelectorAll('[data-dupla-preco]').forEach((e) => (e.textContent = brl(d.preco)));
         document.querySelectorAll('#duplaBox, .stack-dupla').forEach((e) => e.classList.remove('hide'));
+        if (lote === 'extra') { q('dupla').checked = true; q('dupla').dispatchEvent(new Event('change')); dupla.querySelector('.dupla-toggle').style.display = 'none'; }
       }).catch(() => {});
     }
     const btn = form.querySelector('button[type="submit"]');
@@ -243,7 +244,7 @@
       btn.textContent = 'Reservando sua vaga...';
       try {
         const r = amiga
-          ? await rpc('chama_dupla_reservar', { p_nome: nome, p_cpf: cpf, p_whatsapp: whatsapp, p_email: q('email').value.trim(), p_aceite: true, a_nome: amiga.nome, a_cpf: amiga.cpf, a_whatsapp: amiga.whatsapp, a_email: amiga.email })
+          ? await rpc(lote === 'extra' ? 'chama_dupla_reservar_extra' : 'chama_dupla_reservar', { p_nome: nome, p_cpf: cpf, p_whatsapp: whatsapp, p_email: q('email').value.trim(), p_aceite: true, a_nome: amiga.nome, a_cpf: amiga.cpf, a_whatsapp: amiga.whatsapp, a_email: amiga.email })
           : await rpc('chama_ingresso_reservar', {
           p_nome: nome, p_cpf: cpf, p_whatsapp: whatsapp, p_email: q('email').value.trim(), p_aceite: true, p_lote: lote || null,
         });
