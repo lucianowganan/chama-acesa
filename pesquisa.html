@@ -1,0 +1,96 @@
+<!doctype html><html lang="pt-BR"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="robots" content="noindex">
+<title>Pesquisa · Chama Acesa</title>
+<link rel="icon" href="assets/images/favicon.svg">
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;500;600;700&family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&display=swap" rel="stylesheet">
+<style>
+:root{--v1:#170504;--v2:#33090a;--brasa:#d3480f;--brasa2:#f2711c;--dour:#d9ab5f;--dc:#f4dfae;--creme:#fbf3ea;--suave:#e4c9b7;--line:rgba(244,223,174,.2)}
+*{box-sizing:border-box;margin:0}
+body{font-family:Montserrat,sans-serif;color:var(--creme);background:radial-gradient(ellipse at 50% 0%,#5a1a0c,var(--v1) 60%) fixed;min-height:100vh;padding:28px 16px 60px}
+.w{max-width:620px;margin:0 auto}
+.top{text-align:center;margin-bottom:28px}
+.top img{width:200px}
+.tag{font-size:12px;letter-spacing:.3em;color:var(--dour);text-transform:uppercase;margin-top:18px}
+h1{font-family:Newsreader,serif;font-weight:400;font-size:38px;line-height:1.1;margin:10px 0}
+h1 em{color:var(--dc)}
+.sub{color:var(--suave);line-height:1.55}
+.q{background:rgba(23,5,4,.55);border:1px solid var(--line);border-radius:20px;padding:20px;margin-top:16px}
+.q h2{font-size:17px;font-weight:600;line-height:1.4;margin-bottom:14px}
+.q h2 small{display:block;font-weight:400;font-size:13px;color:var(--suave);margin-top:4px}
+.nps{display:grid;grid-template-columns:repeat(11,1fr);gap:5px}
+.nps button,.op button{font-family:inherit;font-weight:600;color:var(--creme);background:rgba(251,243,234,.06);border:1px solid var(--line);border-radius:10px;cursor:pointer}
+.nps button{padding:11px 0;font-size:15px}
+.nps-l{display:flex;justify-content:space-between;font-size:12px;color:var(--suave);margin-top:6px}
+button.on{background:linear-gradient(135deg,var(--brasa),var(--brasa2));border-color:transparent}
+.row{display:flex;justify-content:space-between;align-items:center;padding:9px 0;border-bottom:1px solid var(--line);gap:10px}
+.row:last-child{border:0}
+.row span{font-size:15px}
+.st{display:flex;gap:2px;flex-shrink:0}
+.st button{background:none;border:0;font-size:28px;line-height:1;color:rgba(244,223,174,.25);cursor:pointer;padding:0 1px}
+.st button.on{color:var(--brasa2);background:none}
+.op{display:flex;flex-wrap:wrap;gap:8px}
+.op button{padding:11px 16px;font-size:14px;font-weight:500}
+textarea{width:100%;min-height:90px;padding:12px;border-radius:12px;border:1px solid var(--line);background:rgba(23,5,4,.6);color:var(--creme);font:inherit;font-size:15px;resize:vertical}
+.env{display:block;width:100%;margin-top:24px;padding:18px;border:0;border-radius:99px;font:700 18px Montserrat;color:var(--creme);background:linear-gradient(135deg,var(--brasa),var(--brasa2));box-shadow:0 16px 40px rgba(211,72,15,.45);cursor:pointer}
+.err{color:#ff9b7a;text-align:center;margin-top:12px;display:none}
+.ok{text-align:center;padding:60px 10px}
+@media(max-width:420px){.nps{grid-template-columns:repeat(6,1fr)}.st button{font-size:25px}}
+</style></head><body><div class="w" id="w">
+<div class="top"><img src="assets/images/logo-chama-acesa.svg" onerror="this.style.display='none'" alt="Chama Acesa"><div class="tag">2ª edição · obrigada por vir</div>
+<h1 id="ola">Como foi a <em>sua noite?</em></h1><p class="sub">Leva 2 minutinhos e ajuda a gente a fazer a próxima edição ainda melhor.</p></div>
+<form id="f"></form>
+</div>
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.45.4/dist/umd/supabase.min.js"></script>
+<script>
+const sb = supabase.createClient('https://gbbjpltqmbhlfluqhrmg.supabase.co', 'sb_publishable_a_t-5SMQWML0AQ8muZv6Qg_jYYEIFeP');
+const T = new URLSearchParams(location.search).get('t') || '';
+const R = { notas: {}, temas: [] };
+const PARTES = ['Palestras', 'Rodízio e bebidas', 'Local (Shitake)', 'Organização e recepção', 'Brindes e sorteios', 'Mary Kay e Salão Spazzio'];
+const PAL = ['Dra. Renata (pele)', 'Dra. Letícia (cabelo)', 'Dra. Deborah Berti (hormônios)', 'Wanessa', 'Roda de conversa'];
+const TEMAS = ['Menopausa', 'Pele', 'Cabelo', 'Sono e ansiedade', 'Libido', 'Nutrição e emagrecimento', 'Autoestima', 'Outro'];
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const ops = (k, arr, multi) => `<div class="op" data-k="${k}" data-m="${multi ? 1 : ''}">${arr.map((o) => `<button type="button" data-v="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+const f = document.getElementById('f');
+f.innerHTML = `
+<div class="q"><h2>1. De 0 a 10, quanto você indicaria o Chama Acesa para uma amiga?</h2><div class="nps">${[...Array(11).keys()].map((n) => `<button type="button" data-n="${n}">${n}</button>`).join('')}</div><div class="nps-l"><span>Nada provável</span><span>Com certeza</span></div></div>
+<div class="q"><h2>2. Como você avalia cada parte da noite?</h2>${PARTES.map((p) => `<div class="row"><span>${p}</span><div class="st" data-p="${esc(p)}">${[1,2,3,4,5].map((s) => `<button type="button" data-s="${s}">★</button>`).join('')}</div></div>`).join('')}</div>
+<div class="q"><h2>3. Qual palestra mais marcou você?</h2>${ops('palestra', PAL)}</div>
+<div class="q"><h2>4. O que você mais gostou?</h2><textarea id="gostou" maxlength="1500"></textarea></div>
+<div class="q"><h2>5. O que podemos melhorar?</h2><textarea id="melhorar" maxlength="1500"></textarea></div>
+<div class="q"><h2>6. Que temas você quer ver na próxima edição?<small>Pode marcar mais de um</small></h2>${ops('temas', TEMAS, true)}</div>
+<div class="q"><h2>7. Você viria para a 3ª edição?</h2>${ops('voltaria', ['Com certeza', 'Talvez', 'Não'])}</div>
+<div class="q"><h2>8. Topa ter seu depoimento divulgado?</h2>${ops('depoimento_ok', ['Sim', 'Prefiro não'])}<textarea id="depoimento" maxlength="800" placeholder="Escreve aqui uma frase sobre a sua noite 🧡" style="display:none;margin-top:12px"></textarea></div>
+<button class="env" type="submit">Enviar minhas respostas</button><p class="err" id="err"></p>`;
+
+const pinta = () => {
+  f.querySelectorAll('.nps button').forEach((b) => b.classList.toggle('on', +b.dataset.n === R.nps));
+  f.querySelectorAll('.st').forEach((g) => g.querySelectorAll('button').forEach((b) => b.classList.toggle('on', +b.dataset.s <= (R.notas[g.dataset.p] || 0))));
+  f.querySelectorAll('.op').forEach((g) => g.querySelectorAll('button').forEach((b) => { const v = R[g.dataset.k]; b.classList.toggle('on', Array.isArray(v) ? v.includes(b.dataset.v) : v === b.dataset.v); }));
+  document.getElementById('depoimento').style.display = R.depoimento_ok === 'Sim' ? 'block' : 'none';
+};
+f.addEventListener('click', (e) => {
+  const b = e.target.closest('button[type=button]'); if (!b) return;
+  if (b.dataset.n) R.nps = +b.dataset.n;
+  else if (b.dataset.s) R.notas[b.parentNode.dataset.p] = +b.dataset.s;
+  else { const g = b.parentNode, k = g.dataset.k, v = b.dataset.v;
+    if (g.dataset.m) R[k] = R[k].includes(v) ? R[k].filter((x) => x !== v) : [...R[k], v]; else R[k] = v; }
+  pinta();
+});
+const err = (m) => { const e = document.getElementById('err'); e.textContent = m; e.style.display = 'block'; };
+f.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (R.nps === undefined) return err('Responda a pergunta 1 (de 0 a 10).');
+  ['gostou', 'melhorar', 'depoimento'].forEach((k) => (R[k] = document.getElementById(k).value.trim()));
+  const btn = f.querySelector('.env'); btn.disabled = true; btn.textContent = 'Enviando...';
+  const { error } = await sb.rpc('chama_pesquisa_salvar', { p_ticket: T, p_resp: R });
+  if (error) { btn.disabled = false; btn.textContent = 'Enviar minhas respostas'; return err('Não conseguimos enviar. Abra o link do seu e-mail e tente de novo.'); }
+  document.getElementById('w').innerHTML = `<div class="ok"><div class="tag">Chama Acesa</div><h1>Obrigada, <em>de coração!</em></h1><p class="sub">Suas respostas já chegaram pra gente. Até a próxima edição! 🧡</p></div>`;
+  scrollTo(0, 0);
+});
+(async () => {
+  if (!T) return err('Abra esta pesquisa pelo link do seu e-mail.');
+  const { data } = await sb.rpc('chama_pesquisa_ver', { p_ticket: T });
+  if (!data) return err('Link inválido. Abra pelo botão do seu e-mail.');
+  document.getElementById('ola').innerHTML = `${esc(data.nome)}, como foi a <em>sua noite?</em>`;
+  if (data.respostas) { Object.assign(R, data.respostas); ['gostou', 'melhorar', 'depoimento'].forEach((k) => (document.getElementById(k).value = R[k] || '')); pinta(); }
+})();
+</script></body></html>
