@@ -180,6 +180,7 @@
   .stats div{display:flex;flex-direction:column} .stats b{font-family:var(--display);font-size:1.7rem;line-height:1} .stats span{font-size:.72rem;color:var(--muted);margin-top:4px}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--line2);padding:10px 16px;border-radius:12px;font-size:.82rem;z-index:99;opacity:0;transition:opacity .2s;pointer-events:none}
   .toast.on{opacity:1}
+.pes-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px}.pes-card h3{margin:0 0 6px;font-size:.95rem}
 </style>
 </head>
 <body>
@@ -211,6 +212,7 @@
       <button data-tab="vip">Lista VIP</button>
       <button data-tab="ed1">1ª edição</button>
       <button data-tab="car">Cardápio</button>
+      <button data-tab="pes">Pesquisa</button>
     </nav>
     <div class="hright">
       <span class="who" id="who"></span>
@@ -385,6 +387,20 @@
       </div>
     </section>
   
+    <!-- ============ PESQUISA DE SATISFACAO ============ -->
+    <section id="tab-pes" class="hide">
+      <div class="pagehead"><div><h2>Pesquisa de satisfação · 2ª edição</h2></div></div>
+      <div class="tiles" id="pesTiles"></div>
+      <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:18px;margin-top:18px">
+        <div class="pes-card"><h3>Notas por parte da noite</h3><div id="pesNotas"></div></div>
+        <div class="pes-card"><h3>Palestra que mais marcou</h3><div id="pesPal"></div></div>
+        <div class="pes-card"><h3>Temas para a 3ª edição</h3><div id="pesTemas"></div></div>
+        <div class="pes-card"><h3>Viria para a 3ª edição</h3><div id="pesVolta"></div></div>
+      </div>
+      <h3 style="margin:26px 0 10px">Comentários</h3>
+      <div id="pesTxt"></div>
+    </section>
+
     <!-- ============ CARDAPIO (pre-pedido) ============ -->
     <section id="tab-car" class="hide">
       <div class="pagehead"><div><h2>Pré-pedido do cardápio</h2><p>Link para o grupo: chamaacesa.farmaciabioflora.com.br/cardapio.html</p></div>
@@ -437,8 +453,9 @@ $('btnRefresh').onclick = () => load();
 /* ---------- tabs ---------- */
 document.querySelectorAll('.tabs button').forEach(b => b.onclick = () => {
   document.querySelectorAll('.tabs button').forEach(x => x.classList.toggle('on', x === b));
-  ['ing', 'esp', 'crm', 'vip', 'ed1', 'car'].forEach(t => $('tab-' + t).classList.toggle('hide', b.dataset.tab !== t));
+  ['ing', 'esp', 'crm', 'vip', 'ed1', 'car', 'pes'].forEach(t => $('tab-' + t).classList.toggle('hide', b.dataset.tab !== t));
   if (b.dataset.tab === 'car') carregarCardapio();
+  if (b.dataset.tab === 'pes') carregarPesquisa();
 });
 
 /* ---------- dados ---------- */
@@ -985,6 +1002,31 @@ async function linkCadastro(tipo) {
 }
 document.getElementById('btnLinkCad').addEventListener('click', () => linkCadastro('recepcao'));
 document.getElementById('btnLinkCort').addEventListener('click', () => linkCadastro('cortesia'));
+
+async function carregarPesquisa() {
+  const esc = (x) => String(x ?? '').replace(/[&<>"]/g, (m) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[m]));
+  const [{ data, error }, { count: env }] = await Promise.all([
+    sb.from('chama_pesquisa').select('nome,respostas,atualizado_em').order('atualizado_em', { ascending: false }),
+    sb.from('chama_eventos').select('id', { count: 'exact', head: true }).eq('tipo', 'email_pesquisa'),
+  ]);
+  if (error) { $('pesTiles').textContent = 'Erro: ' + error.message; return; }
+  const R = data.map((d) => d.respostas || {}), n = R.length;
+  const nps = R.filter((r) => r.nps != null).map((r) => r.nps);
+  const score = nps.length ? Math.round(100 * (nps.filter((x) => x >= 9).length - nps.filter((x) => x <= 6).length) / nps.length) : '—';
+  const media = nps.length ? (nps.reduce((a, b) => a + b, 0) / nps.length).toFixed(1) : '—';
+  const volta = R.filter((r) => r.voltaria === 'Com certeza').length;
+  const tile = (k, v, hero) => `<div class="tile${hero ? ' hero' : ''}"><div class="k">${k}</div><div class="v">${v}</div></div>`;
+  $('pesTiles').innerHTML = tile('Responderam', `${n}<small style="font-size:.5em;opacity:.6"> / ${env ?? '—'}</small>`, true) + tile('NPS', score) + tile('Nota média (0–10)', media) + tile('Voltariam com certeza', n ? Math.round(100 * volta / n) + '%' : '—');
+  const barra = (rot, v, max, txt) => `<div style="margin:9px 0"><div style="display:flex;justify-content:space-between;font-size:.88rem"><span>${esc(rot)}</span><b>${txt}</b></div><div style="height:8px;border-radius:6px;background:#eee;margin-top:4px"><div style="height:100%;width:${max ? (100 * v / max) : 0}%;border-radius:6px;background:#f2711c"></div></div></div>`;
+  const notas = {}; R.forEach((r) => Object.entries(r.notas || {}).forEach(([k, v]) => (notas[k] = notas[k] || []).push(v)));
+  $('pesNotas').innerHTML = Object.entries(notas).map(([k, l]) => [k, l.reduce((a, b) => a + b, 0) / l.length, l.length]).sort((a, b) => b[1] - a[1]).map(([k, m, c]) => barra(k, m, 5, `${m.toFixed(1)} ★ <small style="opacity:.5">(${c})</small>`)).join('') || '—';
+  const conta = (arr) => { const o = {}; arr.forEach((x) => x && (o[x] = (o[x] || 0) + 1)); const e = Object.entries(o).sort((a, b) => b[1] - a[1]); const mx = e[0]?.[1] || 0; return e.map(([k, v]) => barra(k, v, mx, v)).join('') || '—'; };
+  $('pesPal').innerHTML = conta(R.map((r) => r.palestra));
+  $('pesTemas').innerHTML = conta(R.flatMap((r) => r.temas || []));
+  $('pesVolta').innerHTML = conta(R.map((r) => r.voltaria));
+  $('pesTxt').innerHTML = data.map((d) => { const r = d.respostas || {}; const l = [['Gostou', r.gostou], ['Melhorar', r.melhorar], ['Depoimento', r.depoimento_ok === 'Sim' ? r.depoimento : '']].filter((x) => x[1]);
+    return `<div style="padding:10px 0;border-bottom:1px solid var(--line)"><b>${esc(d.nome)}</b> <small style="opacity:.6">· nota ${r.nps ?? '—'} · ${esc(r.voltaria || '')}</small>${l.map(([k, v]) => `<br><small><b>${k}:</b> ${esc(v)}</small>`).join('')}</div>`; }).join('') || 'Ninguém respondeu ainda.';
+}
 
 let carTexto = '';
 async function carregarCardapio() {
