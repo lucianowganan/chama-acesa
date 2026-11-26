@@ -180,7 +180,7 @@
   .stats div{display:flex;flex-direction:column} .stats b{font-family:var(--display);font-size:1.7rem;line-height:1} .stats span{font-size:.72rem;color:var(--muted);margin-top:4px}
   .toast{position:fixed;bottom:24px;left:50%;transform:translateX(-50%);background:var(--surface2);border:1px solid var(--line2);padding:10px 16px;border-radius:12px;font-size:.82rem;z-index:99;opacity:0;transition:opacity .2s;pointer-events:none}
   .toast.on{opacity:1}
-.pes-card{background:#fff;border:1px solid var(--line);border-radius:14px;padding:16px 18px}.pes-card h3{margin:0 0 6px;font-size:.95rem}
+.pes-card{background:rgba(23,5,4,.55);border:1px solid rgba(244,223,174,.18);border-radius:14px;padding:16px 18px;color:#fbf3ea}.pes-card h3{margin:0 0 6px;font-size:.95rem;color:#f4dfae}
 </style>
 </head>
 <body>
@@ -1017,7 +1017,7 @@ async function carregarPesquisa() {
   const volta = R.filter((r) => r.voltaria === 'Com certeza').length;
   const tile = (k, v, hero) => `<div class="tile${hero ? ' hero' : ''}"><div class="k">${k}</div><div class="v">${v}</div></div>`;
   $('pesTiles').innerHTML = tile('Responderam', `${n}<small style="font-size:.5em;opacity:.6"> / ${env ?? '—'}</small>`, true) + tile('NPS', score) + tile('Nota média (0–10)', media) + tile('Voltariam com certeza', n ? Math.round(100 * volta / n) + '%' : '—');
-  const barra = (rot, v, max, txt) => `<div style="margin:9px 0"><div style="display:flex;justify-content:space-between;font-size:.88rem"><span>${esc(rot)}</span><b>${txt}</b></div><div style="height:8px;border-radius:6px;background:#eee;margin-top:4px"><div style="height:100%;width:${max ? (100 * v / max) : 0}%;border-radius:6px;background:#f2711c"></div></div></div>`;
+  const barra = (rot, v, max, txt) => `<div style="margin:9px 0"><div style="display:flex;justify-content:space-between;font-size:.88rem"><span>${esc(rot)}</span><b>${txt}</b></div><div style="height:8px;border-radius:6px;background:rgba(251,243,234,.12);margin-top:4px"><div style="height:100%;width:${max ? (100 * v / max) : 0}%;border-radius:6px;background:#f2711c"></div></div></div>`;
   const notas = {}; R.forEach((r) => Object.entries(r.notas || {}).forEach(([k, v]) => (notas[k] = notas[k] || []).push(v)));
   $('pesNotas').innerHTML = Object.entries(notas).map(([k, l]) => [k, l.reduce((a, b) => a + b, 0) / l.length, l.length]).sort((a, b) => b[1] - a[1]).map(([k, m, c]) => barra(k, m, 5, `${m.toFixed(1)} ★ <small style="opacity:.5">(${c})</small>`)).join('') || '—';
   const conta = (arr) => { const o = {}; arr.forEach((x) => x && (o[x] = (o[x] || 0) + 1)); const e = Object.entries(o).sort((a, b) => b[1] - a[1]); const mx = e[0]?.[1] || 0; return e.map(([k, v]) => barra(k, v, mx, v)).join('') || '—'; };
